@@ -1,6 +1,6 @@
 {
-  "name": "octopus-connector",
-  "version": "1.0.0",
+  "name": "octopus-connect",
+  "version": "0.0.1",
   "description": "",
   "main": "index.js",
   "scripts": {
