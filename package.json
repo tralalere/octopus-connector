@@ -9,14 +9,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/tralalere/octopus-connector.git"
+    "url": "git+https://github.com/tralalere/octopus-connect.git"
   },
   "author": "",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/tralalere/octopus-connector/issues"
+    "url": "https://github.com/tralalere/octopus-connect/issues"
   },
-  "homepage": "https://github.com/tralalere/octopus-connector#readme",
+  "homepage": "https://github.com/tralalere/octopus-connect#readme",
   "devDependencies": {
     "typescript": "^2.5.3"
   },
