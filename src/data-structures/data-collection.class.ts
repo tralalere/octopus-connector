@@ -12,7 +12,13 @@ export class DataCollection {
         public type:string,
         data:{[key:string]:any}[],
         private _connector:DataConnector
-    ) {}
+    ) {
+        for (let key in data) {
+            if (data.hasOwnProperty(key)) {
+                this.entities.push(new DataEntity(type, data[key], _connector));
+            }
+        }
+    }
 
     
 }

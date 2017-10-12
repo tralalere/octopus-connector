@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "clean": "rimraf bundles coverage src/**/*.d.ts src/**/*.metadata.json src/**/*.js tests/**/*.d.ts tests/**/*.metadata.json tests/**/*.js settings/**/*.d.ts settings/**/*.metadata.json settings/**/*.js index.d.ts index.metadata.json index.js",
+    "clean": "rimraf bundles coverage src/**/*.map src/**/*.d.ts src/**/*.metadata.json src/**/*.js tests/**/*.d.ts tests/**/*.metadata.json tests/**/*.js settings/**/*.d.ts settings/**/*.metadata.json settings/**/*.js index.d.ts index.metadata.json index.js",
     "start": "tsc && tsc -w",
     "compile": "tsc"
   },
