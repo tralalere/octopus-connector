@@ -6,14 +6,13 @@ import {Observable} from "rxjs/Rx";
 
 export class DataEntity {
 
-    id:number;
-
     private _attributes:{[key:string]:any} = {};
 
     constructor(
         public type:string,
         data:{[key:string]:any},
-        private _connector:DataConnector
+        private _connector:DataConnector = null,
+        public id:number = null
     ) {
         for (let key in data) {
             if (data.hasOwnProperty(key) && key !== "id") {
@@ -21,7 +20,9 @@ export class DataEntity {
             }
         }
 
-        this.id = +data["id"];
+        if (data["id"]) {
+            this.id = +data["id"];
+        }
     }
 
     set(key:string, value:any) {

@@ -21,25 +21,27 @@ export class DataConnector {
     ) {
         for (let interfaceName in _configuration.configuration) {
             if (_configuration.configuration.hasOwnProperty(interfaceName)) {
-                this._interfaces[interfaceName] = new this._builtInFactories[interfaceName](_configuration.configuration[interfaceName]);
+                this._interfaces[interfaceName] = new this._builtInFactories[interfaceName](_configuration.configuration[interfaceName], this);
             }
         }
     }
 
     private _getInterface(type:string):ExternalInterface {
-        if (!this._interfaces[type]) {
+        /*if (!this._interfaces[type]) {
             console.log("Unknown interface type : " + type);
             return null;
         } else {
             return this._interfaces[type];
-        }
+        }*/
+
+        return this._interfaces["localstorage"];
     }
 
     loadEntity(type:string, id:number, forced:boolean = true, fields:string[] = null):Observable<DataEntity> {
-        var choosenInterface:ExternalInterface = this._getInterface(type);
+        let selectedInterface:ExternalInterface = this._getInterface(type);
 
-        if (choosenInterface) {
-            let obs:Observable<DataEntity> = choosenInterface.loadEntity(type, id, fields);
+        if (selectedInterface) {
+            let obs:Observable<DataEntity> = selectedInterface.loadEntity(type, id, fields);
             return obs;
         } else {
             return null;
@@ -52,5 +54,16 @@ export class DataConnector {
 
     saveEntity(entity:DataEntity):Observable<DataEntity> {
         return Observable.create();
+    }
+
+    createEntity(type:string, data:{[key:string]:any}):Observable<DataEntity> {
+        let selectedInterface:ExternalInterface = this._getInterface(type);
+        let obs:Observable<DataEntity> = selectedInterface.createEntity(type, data);
+
+        obs.subscribe((data:DataEntity) => {
+            
+        });
+
+        return obs;
     }
 }

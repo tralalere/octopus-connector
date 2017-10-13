@@ -2,17 +2,19 @@
  * Created by Christophe on 12/10/2017.
  */
 import {ExternalInterface} from "../external-interface.interface";
-import {Observable} from "rxjs/Rx";
+import {Observable, BehaviorSubject} from "rxjs/Rx";
 import {DataEntity} from "../../data-structures/data-entity.class";
 import {DataCollection} from "../../data-structures/data-collection.class";
 import {LocalStorageConfiguration} from "./local-storage-configuration.interface";
+import {DataConnector} from "../../data-connector.class";
 
 export class LocalStorage implements ExternalInterface {
 
     private _dataStore:{[key:string]:Object} = {};
     
     constructor(
-        private _configuration:LocalStorageConfiguration
+        private _configuration:LocalStorageConfiguration,
+        private _connector:DataConnector
     ) {}
 
     private _getPrefixedType(type:string):string {
@@ -39,6 +41,19 @@ export class LocalStorage implements ExternalInterface {
         }
     }
 
+    private _setEntityInStore(type:string, id:number, data:{[key:string]:any}) {
+        let pointName:string = this._getPrefixedType(type);
+        this._loadPointFromStorageIfEmpty(type);
+        this._dataStore[pointName][id] = data;
+        this._savePointToStorage(type);
+    }
+
+    private _getEntityFromStore(type:string, id:number):{[key:string]:any} {
+        let pointName:string = this._getPrefixedType(type);
+        this._loadPointFromStorageIfEmpty(type);
+        return this._dataStore[pointName][id];
+    }
+
     private _savePointToStorage(type:string) {
         let pointName:string = this._getPrefixedType(type);
 
@@ -47,9 +62,29 @@ export class LocalStorage implements ExternalInterface {
         }
     }
 
+    private set _lastUsedId(value:number) {
+        let lastUsedIdKey:string = this._getPrefixedType("lastusedid");
+
+        localStorage[lastUsedIdKey] = value;
+    }
+
+    private get _lastUsedId():number {
+        let lastUsedIdKey:string = this._getPrefixedType("lastusedid");
+
+        if (!localStorage[lastUsedIdKey] || localStorage[lastUsedIdKey] === "") {
+            return 0;
+        } else {
+            return +localStorage[lastUsedIdKey];
+        }
+    }
+
     loadEntity(type:string, id:number, fields:string[] = null):Observable<DataEntity> {
         this._loadPointFromStorageIfEmpty(type);
-        return Observable.create();
+        let data:{[key:number]:any} = this._getEntityFromStore(type, id);
+
+        let entity:DataEntity = data ? new DataEntity(type, data, this._connector, id) : null;
+
+        return new BehaviorSubject(entity);
     }
 
     loadCollection(type:string, filter:{[key:string]:any} = null, order:{[key:string]:string}, fields:string[] = null):Observable<DataCollection> {
@@ -62,6 +97,9 @@ export class LocalStorage implements ExternalInterface {
     }
 
     createEntity(type:string, data:{[key:string]:any}):Observable<DataEntity> {
-        return Observable.create();
+        let newId:number = ++this._lastUsedId;
+        let entity:DataEntity = new DataEntity(type, data, this._connector, newId);
+        this._setEntityInStore(type, newId, data);
+        return new BehaviorSubject<DataEntity>(entity);
     }
 }
