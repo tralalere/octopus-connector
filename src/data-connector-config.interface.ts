@@ -8,6 +8,6 @@ export interface DataConnectorConfig {
     configuration: {
         localstorage?:LocalStorageConfiguration
     };
-    declarations:any;
+    declarations?:any;
     map?:{[key:string]:string};
 }
