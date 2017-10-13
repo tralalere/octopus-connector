@@ -23,9 +23,7 @@ export class LocalStorage implements ExternalInterface {
         }
     }
 
-    private _loadPointFromStore(type:string) {
-        let pointName:string = this._getPrefixedType(type);
-
+    private _loadPointFromStorage(pointName:string) {
         if (!localStorage[pointName] || localStorage[pointName] === "") {
             this._dataStore[pointName] = {};
         } else {
@@ -33,7 +31,15 @@ export class LocalStorage implements ExternalInterface {
         }
     }
 
-    private _savePointToStore(type:string) {
+    private _loadPointFromStorageIfEmpty(type:string) {
+        let pointName:string = this._getPrefixedType(type);
+
+        if (!this._dataStore[pointName]) {
+            this._loadPointFromStorage(pointName);
+        }
+    }
+
+    private _savePointToStorage(type:string) {
         let pointName:string = this._getPrefixedType(type);
 
         if (this._dataStore[pointName]) {
@@ -42,14 +48,20 @@ export class LocalStorage implements ExternalInterface {
     }
 
     loadEntity(type:string, id:number, fields:string[] = null):Observable<DataEntity> {
+        this._loadPointFromStorageIfEmpty(type);
         return Observable.create();
     }
 
     loadCollection(type:string, filter:{[key:string]:any} = null, order:{[key:string]:string}, fields:string[] = null):Observable<DataCollection> {
+        this._loadPointFromStorageIfEmpty(type);
         return Observable.create();
     }
 
     saveEntity():Observable<DataEntity> {
+        return Observable.create();
+    }
+
+    createEntity(type:string, data:{[key:string]:any}):Observable<DataEntity> {
         return Observable.create();
     }
 }
