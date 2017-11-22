@@ -1,21 +1,23 @@
 /**
  * Created by Christophe on 12/10/2017.
  */
-import {ExternalInterface} from "../external-interface.interface";
 import {Observable, BehaviorSubject} from "rxjs/Rx";
 import {DataEntity} from "../../data-structures/data-entity.class";
 import {DataCollection} from "../../data-structures/data-collection.class";
 import {LocalStorageConfiguration} from "./local-storage-configuration.interface";
 import {DataConnector} from "../../data-connector.class";
+import {ExternalInterface} from "../abstract-external-interface.class";
 
-export class LocalStorage implements ExternalInterface {
+export class LocalStorage extends ExternalInterface {
 
     private _dataStore:{[key:string]:Object} = {};
     
     constructor(
         private _configuration:LocalStorageConfiguration,
         private _connector:DataConnector
-    ) {}
+    ) {
+        super();
+    }
 
     private _getPrefixedType(type:string):string {
         if (this._configuration.prefix) {
@@ -78,7 +80,7 @@ export class LocalStorage implements ExternalInterface {
         }
     }
 
-    loadEntity(type:string, id:number, fields:string[] = null):Observable<DataEntity> {
+    loadEntity(type:string, id:number, fields:string[] = []):Observable<DataEntity> {
         this._loadPointFromStorageIfEmpty(type);
         let data:{[key:number]:any} = this._getEntityFromStore(type, id);
 

@@ -3,14 +3,17 @@
  */
 import {DataConnectorConfig} from "./data-connector-config.interface";
 import {DataEntity} from "./data-structures/data-entity.class";
-import {Observable} from "rxjs/Rx";
+import {Observable, BehaviorSubject} from "rxjs/Rx";
 import {DataCollection} from "./data-structures/data-collection.class";
-import {ExternalInterface} from "./data-interfaces/external-interface.interface";
+import {ExternalInterface} from "./data-interfaces/abstract-external-interface.class";
 import {LocalStorage} from "./data-interfaces/local-storage/local-storage.class";
+import {EntitiesDictionary, Dictionary} from "./types";
 
 export class DataConnector {
 
     private _interfaces:{[key:string]:ExternalInterface} = {};
+    private _entitiesStore:{[key:string]:Dictionary<DataEntity>} = {};
+    private _entitiesLiveStore:{[key:string]:{[key:number]:Observable<DataEntity>}} = {};
 
     private _builtInFactories:{[key:string]:any} = {
         localstorage: LocalStorage
@@ -37,14 +40,53 @@ export class DataConnector {
         return this._interfaces["localstorage"];
     }
 
-    loadEntity(type:string, id:number, forced:boolean = true, fields:string[] = null):Observable<DataEntity> {
-        let selectedInterface:ExternalInterface = this._getInterface(type);
+    private _useCache(type:string) {
+        return this._configuration.cached !== undefined && this._configuration.cached.indexOf(type) !== -1;
+    }
 
-        if (selectedInterface) {
-            let obs:Observable<DataEntity> = selectedInterface.loadEntity(type, id, fields);
-            return obs;
+    private _getEntityInStore(type:string, id:number):DataEntity {
+
+        if (this._entitiesStore[type] && this._entitiesStore[type][id]) {
+            return this._entitiesStore[type][id];
+        }
+
+        return null;
+    }
+
+    private _registerEntity(entity:DataEntity) {
+
+        if (!this._entitiesStore[entity.type]) {
+            this._entitiesStore[entity.type] = {};
+        }
+
+        this._entitiesStore[entity.type][entity.id] = entity;
+    }
+
+    loadEntity(type:string, id:number, fields:string[] = []):Observable<DataEntity> {
+
+        let entity:DataEntity;
+
+        if (this._useCache(type)) {
+            entity = this._getEntityInStore(type, id);
+        }
+
+        if (entity) {
+            this._registerEntity(entity);
+            return new BehaviorSubject<DataEntity>(entity);
         } else {
-            return null;
+            let selectedInterface:ExternalInterface = this._getInterface(type);
+
+            if (selectedInterface) {
+                let obs:Observable<DataEntity> = selectedInterface.loadEntity(type, id, fields);
+
+                obs.subscribe((entity:DataEntity) => {
+                    this._registerEntity(entity);
+                });
+
+                return obs;
+            } else {
+                return null;
+            }
         }
     }
 
