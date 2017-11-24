@@ -7,13 +7,13 @@ import {Observable, BehaviorSubject} from "rxjs/Rx";
 import {DataCollection} from "./data-structures/data-collection.class";
 import {ExternalInterface} from "./data-interfaces/abstract-external-interface.class";
 import {LocalStorage} from "./data-interfaces/local-storage/local-storage.class";
-import {EntitiesDictionary, Dictionary} from "./types";
+import {Dictionary} from "./types";
 
 export class DataConnector {
 
     private _interfaces:{[key:string]:ExternalInterface} = {};
     private _entitiesStore:{[key:string]:Dictionary<DataEntity>} = {};
-    private _entitiesLiveStore:{[key:string]:{[key:number]:Observable<DataEntity>}} = {};
+    private _entitiesLiveStore:{[key:string]:Dictionary<Observable<DataEntity>>} = {};
 
     private _builtInFactories:{[key:string]:any} = {
         localstorage: LocalStorage
@@ -40,7 +40,7 @@ export class DataConnector {
         return this._interfaces["localstorage"];
     }
 
-    private _useCache(type:string) {
+    private _useCache(type:string):boolean {
         return this._configuration.cached !== undefined && this._configuration.cached.indexOf(type) !== -1;
     }
 
@@ -48,6 +48,15 @@ export class DataConnector {
 
         if (this._entitiesStore[type] && this._entitiesStore[type][id]) {
             return this._entitiesStore[type][id];
+        }
+
+        return null;
+    }
+
+    private _getEntityObservableInStore(type:string, id:number):Observable<DataEntity> {
+
+        if (this._entitiesLiveStore[type] && this._entitiesLiveStore[type][id]) {
+            return this._entitiesLiveStore[type][id];
         }
 
         return null;
@@ -62,35 +71,51 @@ export class DataConnector {
         this._entitiesStore[entity.type][entity.id] = entity;
     }
 
-    loadEntity(type:string, id:number, fields:string[] = []):Observable<DataEntity> {
+    private _registerEntityObservable(type:string, id:number, obs:Observable<DataEntity>) {
 
-        let entity:DataEntity;
-
-        if (this._useCache(type)) {
-            entity = this._getEntityInStore(type, id);
+        if (!this._entitiesLiveStore[type]) {
+            this._entitiesLiveStore[type] = {};
         }
 
-        if (entity) {
-            this._registerEntity(entity);
-            return new BehaviorSubject<DataEntity>(entity);
-        } else {
-            let selectedInterface:ExternalInterface = this._getInterface(type);
-
-            if (selectedInterface) {
-                let obs:Observable<DataEntity> = selectedInterface.loadEntity(type, id, fields);
-
-                obs.subscribe((entity:DataEntity) => {
-                    this._registerEntity(entity);
-                });
-
-                return obs;
-            } else {
-                return null;
-            }
-        }
+        this._entitiesLiveStore[type][id] = obs;
     }
 
-    loadCollection(type:string, filter:{[key:string]:any} = null, forced:boolean = true, order:{[key:string]:string} = null, fields:string[] = null):Observable<DataCollection> {
+    loadEntity(type:string, id:number, fields:string[] = []):Observable<DataEntity> {
+
+        if (this._useCache(type)) {
+            let obs:Observable<DataEntity> = this._getEntityObservableInStore(type, id);
+
+            if (obs) {
+                return obs;
+            }
+        }
+
+        let selectedInterface:ExternalInterface = this._getInterface(type);
+
+        if (selectedInterface) {
+            let obs:Observable<DataEntity> = selectedInterface.loadEntity(type, id, fields);
+            this._registerEntityObservable(type, id, obs);
+
+            return obs;
+        }
+
+        return null;
+    }
+
+    loadEntities() {
+
+    }
+
+    loadCollection(type:string, filter:{[key:string]:any} = {}, fields:string[] = []):Observable<DataCollection> {
+
+        // utilisation du cache ??
+
+        let selectedInterface:ExternalInterface = this._getInterface(type);
+
+        if (selectedInterface) {
+
+        }
+
         return Observable.create();
     }
 
