@@ -11,20 +11,20 @@ import {Dictionary} from "./types";
 
 export class DataConnector {
 
-    private _interfaces:{[key:string]:ExternalInterface} = {};
-    private _entitiesStore:{[key:string]:Dictionary<DataEntity>} = {};
-    private _entitiesLiveStore:{[key:string]:Dictionary<Observable<DataEntity>>} = {};
+    private interfaces:{[key:string]:ExternalInterface} = {};
+    private entitiesStore:{[key:string]:Dictionary<DataEntity>} = {};
+    private entitiesLiveStore:{[key:string]:Dictionary<Observable<DataEntity>>} = {};
 
-    private _builtInFactories:{[key:string]:any} = {
+    private builtInFactories:{[key:string]:any} = {
         localstorage: LocalStorage
     };
 
     constructor(
-        private _configuration:DataConnectorConfig
+        private configuration:DataConnectorConfig
     ) {
-        for (let interfaceName in _configuration.configuration) {
-            if (_configuration.configuration.hasOwnProperty(interfaceName)) {
-                this._interfaces[interfaceName] = new this._builtInFactories[interfaceName](_configuration.configuration[interfaceName], this);
+        for (let interfaceName in configuration.configuration) {
+            if (configuration.configuration.hasOwnProperty(interfaceName)) {
+                this.interfaces[interfaceName] = new this.builtInFactories[interfaceName](configuration.configuration[interfaceName], this);
             }
         }
     }
@@ -37,17 +37,17 @@ export class DataConnector {
             return this._interfaces[type];
         }*/
 
-        return this._interfaces["localstorage"];
+        return this.interfaces["localstorage"];
     }
 
     private _useCache(type:string):boolean {
-        return this._configuration.cached !== undefined && this._configuration.cached.indexOf(type) !== -1;
+        return this.configuration.cached !== undefined && this.configuration.cached.indexOf(type) !== -1;
     }
 
     private _getEntityInStore(type:string, id:number):DataEntity {
 
-        if (this._entitiesStore[type] && this._entitiesStore[type][id]) {
-            return this._entitiesStore[type][id];
+        if (this.entitiesStore[type] && this.entitiesStore[type][id]) {
+            return this.entitiesStore[type][id];
         }
 
         return null;
@@ -55,8 +55,8 @@ export class DataConnector {
 
     private _getEntityObservableInStore(type:string, id:number):Observable<DataEntity> {
 
-        if (this._entitiesLiveStore[type] && this._entitiesLiveStore[type][id]) {
-            return this._entitiesLiveStore[type][id];
+        if (this.entitiesLiveStore[type] && this.entitiesLiveStore[type][id]) {
+            return this.entitiesLiveStore[type][id];
         }
 
         return null;
@@ -64,20 +64,20 @@ export class DataConnector {
 
     private _registerEntity(entity:DataEntity) {
 
-        if (!this._entitiesStore[entity.type]) {
-            this._entitiesStore[entity.type] = {};
+        if (!this.entitiesStore[entity.type]) {
+            this.entitiesStore[entity.type] = {};
         }
 
-        this._entitiesStore[entity.type][entity.id] = entity;
+        this.entitiesStore[entity.type][entity.id] = entity;
     }
 
     private _registerEntityObservable(type:string, id:number, obs:Observable<DataEntity>) {
 
-        if (!this._entitiesLiveStore[type]) {
-            this._entitiesLiveStore[type] = {};
+        if (!this.entitiesLiveStore[type]) {
+            this.entitiesLiveStore[type] = {};
         }
 
-        this._entitiesLiveStore[type][id] = obs;
+        this.entitiesLiveStore[type][id] = obs;
     }
 
     loadEntity(type:string, id:number, fields:string[] = []):Observable<DataEntity> {

@@ -5,10 +5,10 @@
 export class Console {
     
     constructor(
-        private _configuration:any
+        private configuration:any
     ) {}
     
-    log(args) {
+    static log(args) {
         console.log(args);
     }
 }

@@ -6,17 +6,17 @@ import {Observable} from "rxjs/Rx";
 
 export class DataEntity {
 
-    private _attributes:{[key:string]:any} = {};
+    private attributes:{[key:string]:any} = {};
 
     constructor(
         public type:string,
         data:{[key:string]:any},
-        private _connector:DataConnector = null,
+        private connector:DataConnector = null,
         public id:number = null
     ) {
         for (let key in data) {
             if (data.hasOwnProperty(key) && key !== "id") {
-                this._attributes[key] = data[key];
+                this.attributes[key] = data[key];
             }
         }
 
@@ -26,14 +26,14 @@ export class DataEntity {
     }
 
     set(key:string, value:any) {
-        this._attributes[key] = value;
+        this.attributes[key] = value;
     }
 
     get(key:string):any {
-        return this._attributes[key];
+        return this.attributes[key];
     }
     
     save():Observable<DataEntity> {
-        return this._connector.saveEntity(this);
+        return this.connector.saveEntity(this);
     }
 }

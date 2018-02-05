@@ -11,7 +11,7 @@ export class DataCollection {
     constructor(
         public type:string,
         data:{[key:string]:any}[]|{[key:number]:{[key:string]:any}} = null,
-        private _connector:DataConnector = null
+        private connector:DataConnector = null
     ) {
         for (let key in data) {
             if (data.hasOwnProperty(key)) {

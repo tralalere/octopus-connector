@@ -10,68 +10,68 @@ import {ExternalInterface} from "../abstract-external-interface.class";
 
 export class LocalStorage extends ExternalInterface {
 
-    private _dataStore:{[key:string]:Object} = {};
+    private dataStore:{[key:string]:Object} = {};
     
     constructor(
-        private _configuration:LocalStorageConfiguration,
-        private _connector:DataConnector
+        private configuration:LocalStorageConfiguration,
+        private connector:DataConnector
     ) {
         super();
     }
 
-    private _getPrefixedType(type:string):string {
-        if (this._configuration.prefix) {
-            return this._configuration.prefix + "-" + type;
+    private getPrefixedType(type:string):string {
+        if (this.configuration.prefix) {
+            return this.configuration.prefix + "-" + type;
         } else {
             return type;
         }
     }
 
-    private _loadPointFromStorage(pointName:string) {
+    private loadPointFromStorage(pointName:string) {
         if (!localStorage[pointName] || localStorage[pointName] === "") {
-            this._dataStore[pointName] = {};
+            this.dataStore[pointName] = {};
         } else {
-            this._dataStore[pointName] = JSON.parse(localStorage[pointName]);
+            this.dataStore[pointName] = JSON.parse(localStorage[pointName]);
         }
     }
 
-    private _loadPointFromStorageIfEmpty(type:string) {
-        let pointName:string = this._getPrefixedType(type);
+    private loadPointFromStorageIfEmpty(type:string) {
+        let pointName:string = this.getPrefixedType(type);
 
-        if (!this._dataStore[pointName]) {
-            this._loadPointFromStorage(pointName);
+        if (!this.dataStore[pointName]) {
+            this.loadPointFromStorage(pointName);
         }
     }
 
-    private _setEntityInStore(type:string, id:number, data:{[key:string]:any}) {
-        let pointName:string = this._getPrefixedType(type);
-        this._loadPointFromStorageIfEmpty(type);
-        this._dataStore[pointName][id] = data;
-        this._savePointToStorage(type);
+    private setEntityInStore(type:string, id:number, data:{[key:string]:any}) {
+        let pointName:string = this.getPrefixedType(type);
+        this.loadPointFromStorageIfEmpty(type);
+        this.dataStore[pointName][id] = data;
+        this.savePointToStorage(type);
     }
 
-    private _getEntityFromStore(type:string, id:number):{[key:string]:any} {
-        let pointName:string = this._getPrefixedType(type);
-        this._loadPointFromStorageIfEmpty(type);
-        return this._dataStore[pointName][id];
+    private getEntityFromStore(type:string, id:number):{[key:string]:any} {
+        let pointName:string = this.getPrefixedType(type);
+        this.loadPointFromStorageIfEmpty(type);
+        return this.dataStore[pointName][id];
     }
 
-    private _savePointToStorage(type:string) {
-        let pointName:string = this._getPrefixedType(type);
+    private savePointToStorage(type:string) {
+        let pointName:string = this.getPrefixedType(type);
 
-        if (this._dataStore[pointName]) {
-            localStorage[pointName] = JSON.stringify(this._dataStore[pointName]);
+        if (this.dataStore[pointName]) {
+            localStorage[pointName] = JSON.stringify(this.dataStore[pointName]);
         }
     }
 
-    private set _lastUsedId(value:number) {
-        let lastUsedIdKey:string = this._getPrefixedType("lastusedid");
+    private set lastUsedId(value:number) {
+        let lastUsedIdKey:string = this.getPrefixedType("lastusedid");
 
         localStorage[lastUsedIdKey] = value;
     }
 
-    private get _lastUsedId():number {
-        let lastUsedIdKey:string = this._getPrefixedType("lastusedid");
+    private get lastUsedId():number {
+        let lastUsedIdKey:string = this.getPrefixedType("lastusedid");
 
         if (!localStorage[lastUsedIdKey] || localStorage[lastUsedIdKey] === "") {
             return 0;
@@ -81,16 +81,16 @@ export class LocalStorage extends ExternalInterface {
     }
 
     loadEntity(type:string, id:number, fields:string[] = []):Observable<DataEntity> {
-        this._loadPointFromStorageIfEmpty(type);
-        let data:{[key:number]:any} = this._getEntityFromStore(type, id);
+        this.loadPointFromStorageIfEmpty(type);
+        let data:{[key:number]:any} = this.getEntityFromStore(type, id);
 
-        let entity:DataEntity = data ? new DataEntity(type, data, this._connector, id) : null;
+        let entity:DataEntity = data ? new DataEntity(type, data, this.connector, id) : null;
 
         return new BehaviorSubject(entity);
     }
 
     loadCollection(type:string, filter:{[key:string]:any} = null, order:{[key:string]:string}, fields:string[] = null):Observable<DataCollection> {
-        this._loadPointFromStorageIfEmpty(type);
+        this.loadPointFromStorageIfEmpty(type);
         return Observable.create();
     }
 
@@ -99,9 +99,9 @@ export class LocalStorage extends ExternalInterface {
     }
 
     createEntity(type:string, data:{[key:string]:any}):Observable<DataEntity> {
-        let newId:number = ++this._lastUsedId;
-        let entity:DataEntity = new DataEntity(type, data, this._connector, newId);
-        this._setEntityInStore(type, newId, data);
+        let newId:number = ++this.lastUsedId;
+        let entity:DataEntity = new DataEntity(type, data, this.connector, newId);
+        this.setEntityInStore(type, newId, data);
         return new BehaviorSubject<DataEntity>(entity);
     }
 }
