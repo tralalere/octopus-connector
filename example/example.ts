@@ -10,6 +10,11 @@ let connector:DataConnector = new DataConnector({
         localstorage: {
             prefix: "test"
         }
+    },
+    map: {
+        "endpoint1": {
+            type: "localstorage"
+        }
     }
 });
 

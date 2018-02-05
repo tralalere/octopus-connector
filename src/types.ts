@@ -7,6 +7,10 @@ export interface EntitiesDictionary {
     [key:number]:DataEntity;
 }
 
-export interface Dictionary<T> {
+export interface NumberDictionary<T> {
     [key:number]:T;
+}
+
+export interface StringDictionary<T> {
+    [key:string]:T;
 }
