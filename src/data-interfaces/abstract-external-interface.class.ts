@@ -23,7 +23,7 @@ export abstract class ExternalInterface {
     }
 
     authenticate() {
-        console.warn("Authenticated not implemented in interface");
+        console.warn("Authenticate not implemented in interface");
     }
 
     release(type:string) {
