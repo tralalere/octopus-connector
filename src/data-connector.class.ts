@@ -54,6 +54,8 @@ export class DataConnector {
         return false;
     }
 
+
+    // TODO: utile ou pas ?
     private getEntityInStore(type:string, id:number):DataEntity {
 
         if (this.entitiesStore[type] && this.entitiesStore[type][id]) {
@@ -65,8 +67,8 @@ export class DataConnector {
 
     private getEntityObservableInStore(type:string, id:number):Observable<DataEntity> {
 
-        if (this.entitiesLiveStore[type] && this.entitiesLiveStore[type][id]) {
-            return this.entitiesLiveStore[type][id];
+        if (this.entitiesLiveStore[type]) {
+            return this.entitiesLiveStore[type].getEntity(id);
         }
 
         return null;
