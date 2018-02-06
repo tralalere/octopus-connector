@@ -5,7 +5,7 @@ import * as ObjectHash from "object-hash";
 export class CollectionStore {
 
     private collections:{[key:string]:Observable<DataCollection>} = {};
-    private filters:{[key:string]:any};
+    private filters:{[key:string]:any} = {};
 
     constructor() {}
 

@@ -14,3 +14,11 @@ export interface NumberDictionary<T> {
 export interface StringDictionary<T> {
     [key:string]:T;
 }
+
+export interface EntityDataSet {
+    [key:number]:any;
+}
+
+export interface CollectionDataSet {
+    [key:number]:EntityDataSet;
+}

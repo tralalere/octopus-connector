@@ -16,7 +16,6 @@ import {EntityStore} from "./stores/entity-store.class";
 export class DataConnector {
 
     private interfaces:{[key:string]:ExternalInterface} = {};
-    private entitiesStore:{[key:string]:NumberDictionary<DataEntity>} = {};
 
     private entitiesLiveStore:{[key:string]:EntityStore} = {};
     private collectionsLiveStore:{[key:string]:CollectionStore} = {};
@@ -54,17 +53,6 @@ export class DataConnector {
         return false;
     }
 
-
-    // TODO: utile ou pas ?
-    private getEntityInStore(type:string, id:number):DataEntity {
-
-        if (this.entitiesStore[type] && this.entitiesStore[type][id]) {
-            return this.entitiesStore[type][id];
-        }
-
-        return null;
-    }
-
     private getEntityObservableInStore(type:string, id:number):Observable<DataEntity> {
 
         if (this.entitiesLiveStore[type]) {
@@ -80,16 +68,6 @@ export class DataConnector {
         }
 
         return null;
-    }
-
-    // TODO: pas utilisé, usage à vérifier
-    private registerEntity(entity:DataEntity) {
-
-        if (!this.entitiesStore[entity.type]) {
-            this.entitiesStore[entity.type] = {};
-        }
-
-        this.entitiesStore[entity.type][entity.id] = entity;
     }
 
     private registerEntityObservable(type:string, id:number, obs:Observable<DataEntity>) {

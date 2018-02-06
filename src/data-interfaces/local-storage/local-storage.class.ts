@@ -7,10 +7,11 @@ import {DataCollection} from "../../data-structures/data-collection.class";
 import {LocalStorageConfiguration} from "./local-storage-configuration.interface";
 import {DataConnector} from "../../data-connector.class";
 import {ExternalInterface} from "../abstract-external-interface.class";
+import {CollectionDataSet, EntityDataSet} from "../../types";
 
 export class LocalStorage extends ExternalInterface {
 
-    private dataStore:{[key:string]:Object} = {};
+    private dataStore:CollectionDataSet = {};
     
     constructor(
         private configuration:LocalStorageConfiguration,
@@ -50,10 +51,37 @@ export class LocalStorage extends ExternalInterface {
         this.savePointToStorage(type);
     }
 
-    private getEntityFromStore(type:string, id:number):{[key:string]:any} {
+    private getEntityFromStore(type:string, id:number):EntityDataSet {
         let pointName:string = this.getPrefixedType(type);
         this.loadPointFromStorageIfEmpty(type);
         return this.dataStore[pointName][id];
+    }
+
+    private getCollectionFromStore(type:string, filter:{[key:string]:any} = {}):CollectionDataSet {
+
+        let pointName:string = this.getPrefixedType(type);
+        this.loadPointFromStorageIfEmpty(type);
+
+        let dataSet:CollectionDataSet = {};
+
+        let keys:string[] = Object.keys(this.dataStore[pointName]);
+        let filterKeys:string[] = Object.keys(filter);
+
+        keys.forEach((key:string) => {
+            let matching:boolean = true;
+
+            filterKeys.forEach((filterKey:string) => {
+                if (filter[filterKey] !== this.dataStore[pointName][+key]) {
+                    matching = false;
+                }
+            });
+
+            if (matching) {
+                dataSet[+key] = this.dataStore[pointName][+key];
+            }
+        });
+
+        return dataSet;
     }
 
     private savePointToStorage(type:string) {
@@ -73,7 +101,7 @@ export class LocalStorage extends ExternalInterface {
     private get lastUsedId():number {
         let lastUsedIdKey:string = this.getPrefixedType("lastusedid");
 
-        if (!localStorage[lastUsedIdKey] || localStorage[lastUsedIdKey] === "") {
+        if (localStorage[lastUsedIdKey] === undefined || localStorage[lastUsedIdKey] === "") {
             return 0;
         } else {
             return +localStorage[lastUsedIdKey];
@@ -89,9 +117,13 @@ export class LocalStorage extends ExternalInterface {
         return new BehaviorSubject(entity);
     }
 
-    loadCollection(type:string, filter:{[key:string]:any} = null):Observable<DataCollection> {
+    loadCollection(type:string, filter:{[key:string]:any} = {}):Observable<DataCollection> {
         this.loadPointFromStorageIfEmpty(type);
-        return Observable.create();
+        let data:CollectionDataSet = this.getCollectionFromStore(type, filter);
+
+        let collection:DataCollection = data ? new DataCollection(type, data, this.connector) : null;
+
+        return new BehaviorSubject(collection);
     }
 
     saveEntity():Observable<DataEntity> {

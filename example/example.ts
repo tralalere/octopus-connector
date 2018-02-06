@@ -3,6 +3,7 @@
  */
 import {DataConnector} from "../src/data-connector.class";
 import {DataEntity} from "../src/data-structures/data-entity.class";
+import {DataCollection} from "../src/data-structures/data-collection.class";
 
 let connector:DataConnector = new DataConnector({
     defaultInterface: "localstorage",
@@ -23,5 +24,9 @@ let connector:DataConnector = new DataConnector({
 });*/
 
 connector.loadEntity("endpoint1", 2).subscribe((data:DataEntity) => {
+    console.log(data);
+});
+
+connector.loadCollection("endpoint1").subscribe((data:DataCollection) => {
     console.log(data);
 });

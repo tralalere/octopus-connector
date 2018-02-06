@@ -3,6 +3,7 @@
  */
 import {DataConnector} from "../data-connector.class";
 import {DataEntity} from "./data-entity.class";
+import {CollectionDataSet, EntityDataSet} from "../types";
 
 export class DataCollection {
 
@@ -10,20 +11,12 @@ export class DataCollection {
 
     constructor(
         public type:string,
-        data:{[key:string]:any}[]|{[key:number]:{[key:string]:any}} = null,
+        data:CollectionDataSet = {},
         private connector:DataConnector = null
     ) {
-        for (let key in data) {
-            if (data.hasOwnProperty(key)) {
-
-                /*if (Number.isInteger(key)) {
-                    this.entities.push(new DataEntity(type, data[key], _connector));
-                } else {
-                    this.entities.push(new DataEntity(type, data[key], _connector));
-                }*/
-            }
-        }
+        let keys:string[] = Object.keys(data);
+        keys.forEach((key:string) => {
+            this.entities.push(new DataEntity(type, data[key], connector, +key));
+        });
     }
-
-    
 }

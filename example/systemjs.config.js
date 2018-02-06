@@ -7,7 +7,8 @@
         paths: {
             'octopus-connect': "../node_modules/octopus-connect",
             'src': "../src",
-            "rxjs": "../node_modules/rxjs"
+            "rxjs": "../node_modules/rxjs",
+            "object-hash": "../node_modules/object-hash"
         },
         packages: {
             'src': {
@@ -18,10 +19,14 @@
             },
             "rxjs": {
                 defaultExtension: "js"
+            },
+            "object-hash": {
+                defaultExtension: "js"
             }
         },
         map: {
-            "rxjs": "rxjs/bundles/"
+            "rxjs": "rxjs/bundles/",
+            "object-hash": "object-hash/dist/object_hash.js"
         }
     })
 })(this);
