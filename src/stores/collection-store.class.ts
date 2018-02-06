@@ -7,13 +7,16 @@ export class CollectionStore {
     private collections:{[key:string]:Observable<DataCollection>} = {};
     private filters:{[key:string]:any};
 
-    constructor(
-
-    ) {
-
-    }
+    constructor() {}
 
     addCollection(collection:Observable<DataCollection>, filter:{[key:string]:any}) {
         let hash:string = ObjectHash(filter);
+        this.collections[hash] = collection;
+        this.filters[hash] = filter;
+    }
+
+    getCollection(filter:{[key:string]:any}):Observable<DataCollection> {
+        let hash:string = ObjectHash(filter);
+        return this.collections[hash] ? this.collections[hash] : null;
     }
 }

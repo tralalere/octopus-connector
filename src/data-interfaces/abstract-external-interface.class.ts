@@ -12,7 +12,7 @@ export abstract class ExternalInterface {
         return null;
     }
     
-    loadCollection(type:string, filter:{[key:string]:any} = {}, order:{[key:string]:string}):Observable<DataCollection> {
+    loadCollection(type:string, filter:{[key:string]:any} = {}):Observable<DataCollection> {
         console.warn("LoadCollection not implemented in interface");
         return null;
     }
@@ -20,6 +20,14 @@ export abstract class ExternalInterface {
     createEntity(type:string, data:{[key:string]:any}):Observable<DataEntity> {
         console.warn("CreateEntity not implemented in interface");
         return null;
+    }
+
+    authenticate() {
+        console.warn("Authenticated not implemented in interface");
+    }
+
+    release(type:string) {
+        console.warn("Release not implemented in interface");
     }
 
 }

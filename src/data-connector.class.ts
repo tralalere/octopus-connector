@@ -10,14 +10,16 @@ import {LocalStorage} from "./data-interfaces/local-storage/local-storage.class"
 import {NumberDictionary, StringDictionary} from "./types";
 import {Http} from "./data-interfaces/http/http.class";
 import {Nodejs} from "./data-interfaces/nodejs/nodejs.class";
+import {CollectionStore} from "./stores/collection-store.class";
+import {EntityStore} from "./stores/entity-store.class";
 
 export class DataConnector {
 
     private interfaces:{[key:string]:ExternalInterface} = {};
     private entitiesStore:{[key:string]:NumberDictionary<DataEntity>} = {};
-    private entitiesLiveStore:{[key:string]:NumberDictionary<Observable<DataEntity>>} = {};
 
-    private collectionsLiveStore:{[key:string]:StringDictionary<Observable<DataEntity>>} = {};
+    private entitiesLiveStore:{[key:string]:EntityStore} = {};
+    private collectionsLiveStore:{[key:string]:CollectionStore} = {};
 
     private builtInFactories:{[key:string]:any} = {
         localstorage: LocalStorage,
@@ -47,7 +49,7 @@ export class DataConnector {
     }
 
     private useCache(type:string):boolean {
-        // TODO: pas bon
+        // TODO: pas bon, mis en commentaire
         //return this.configuration.cached !== undefined && this.configuration.cached.indexOf(type) !== -1;
         return false;
     }
@@ -70,6 +72,15 @@ export class DataConnector {
         return null;
     }
 
+    private getCollectionObservableInStore(type:string, filter:{[key:string]:any}):Observable<DataCollection> {
+        if (this.collectionsLiveStore[type]) {
+            return this.collectionsLiveStore[type].getCollection(filter);
+        }
+
+        return null;
+    }
+
+    // TODO: pas utilisé, usage à vérifier
     private registerEntity(entity:DataEntity) {
 
         if (!this.entitiesStore[entity.type]) {
@@ -82,13 +93,22 @@ export class DataConnector {
     private registerEntityObservable(type:string, id:number, obs:Observable<DataEntity>) {
 
         if (!this.entitiesLiveStore[type]) {
-            this.entitiesLiveStore[type] = {};
+            this.entitiesLiveStore[type] = new EntityStore();
         }
 
-        this.entitiesLiveStore[type][id] = obs;
+        this.entitiesLiveStore[type].addEntity(obs, id);
     }
 
-    loadEntity(type:string, id:number, fields:string[] = []):Observable<DataEntity> {
+    private registerCollectionObservable(type:string, filter:{[key:string]:any}, obs:Observable<DataCollection>) {
+
+        if (!this.collectionsLiveStore[type]) {
+            this.collectionsLiveStore[type] = new CollectionStore();
+        }
+
+        this.collectionsLiveStore[type].addCollection(obs, filter);
+    }
+
+    loadEntity(type:string, id:number):Observable<DataEntity> {
 
         if (this.useCache(type)) {
             let obs:Observable<DataEntity> = this.getEntityObservableInStore(type, id);
@@ -101,7 +121,7 @@ export class DataConnector {
         let selectedInterface:ExternalInterface = this.getInterface(type);
 
         if (selectedInterface) {
-            let obs:Observable<DataEntity> = selectedInterface.loadEntity(type, id, fields);
+            let obs:Observable<DataEntity> = selectedInterface.loadEntity(type, id);
             this.registerEntityObservable(type, id, obs);
 
             return obs;
@@ -116,12 +136,21 @@ export class DataConnector {
 
     loadCollection(type:string, filter:{[key:string]:any} = {}):Observable<DataCollection> {
 
-        // utilisation du cache ??
+        if (this.useCache(type)) {
+            let obs:Observable<DataCollection> = this.getCollectionObservableInStore(type, filter);
+
+            if (obs) {
+                return obs;
+            }
+        }
 
         let selectedInterface:ExternalInterface = this.getInterface(type);
 
         if (selectedInterface) {
+            let obs:Observable<DataCollection> = selectedInterface.loadCollection(type, filter);
+            this.registerCollectionObservable(type, filter, obs);
 
+            return obs;
         }
 
         return Observable.create();
@@ -135,8 +164,8 @@ export class DataConnector {
         let selectedInterface:ExternalInterface = this.getInterface(type);
         let obs:Observable<DataEntity> = selectedInterface.createEntity(type, data);
 
-        obs.subscribe((data:DataEntity) => {
-            
+        obs.take(1).subscribe((data:DataEntity) => {
+            this.registerEntityObservable(type, data.id, obs);
         });
 
         return obs;

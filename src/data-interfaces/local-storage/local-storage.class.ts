@@ -89,7 +89,7 @@ export class LocalStorage extends ExternalInterface {
         return new BehaviorSubject(entity);
     }
 
-    loadCollection(type:string, filter:{[key:string]:any} = null, order:{[key:string]:string}, fields:string[] = null):Observable<DataCollection> {
+    loadCollection(type:string, filter:{[key:string]:any} = null):Observable<DataCollection> {
         this.loadPointFromStorageIfEmpty(type);
         return Observable.create();
     }
