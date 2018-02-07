@@ -12,6 +12,9 @@ import {Http} from "./data-interfaces/http/http.class";
 import {Nodejs} from "./data-interfaces/nodejs/nodejs.class";
 import {CollectionStore} from "./stores/collection-store.class";
 import {EntityStore} from "./stores/entity-store.class";
+import {ReplaySubject} from "rxjs/Rx";
+import {EndpointConfig} from "./endpoint-config.interface";
+import {ModelSchema} from "octopus-model";
 
 export class DataConnector {
 
@@ -37,19 +40,36 @@ export class DataConnector {
     }
 
     private getInterface(type:string):ExternalInterface {
-        /*if (!this._interfaces[type]) {
-            console.log("Unknown interface type : " + type);
-            return null;
-        } else {
-            return this._interfaces[type];
-        }*/
+        let conf:string|EndpointConfig = this.getEndpointConfiguration(type);
 
-        return this.interfaces["http"];
+        if (typeof conf === "string") {
+            return this.interfaces[conf];
+        } else if (conf && conf.type) {
+            return this.interfaces[conf.type];
+        } else {
+            return this.interfaces[this.configuration.defaultInterface];
+        }
+    }
+
+    private getEndpointConfiguration(type:string):string|EndpointConfig {
+        return this.configuration.map[type];
+    }
+
+    private getEndpointStructureModel(type:string):ModelSchema {
+        let conf:string|EndpointConfig = this.getEndpointConfiguration(type);
+
+        if (conf && typeof conf === "object") {
+            return conf.structure;
+        }
     }
 
     private useCache(type:string):boolean {
-        // TODO: pas bon, mis en commentaire
-        //return this.configuration.cached !== undefined && this.configuration.cached.indexOf(type) !== -1;
+        let conf:string|EndpointConfig = this.getEndpointConfiguration(type);
+
+        if (conf && typeof conf === "object") {
+            return !!conf.cached;
+        }
+
         return false;
     }
 
@@ -86,6 +106,15 @@ export class DataConnector {
         }
 
         return this.entitiesLiveStore[type].registerEntity(entity, id);
+    }
+
+    private registerEntitySubject(type:string, id:number, subject:ReplaySubject<DataEntity>) {
+
+        if (!this.entitiesLiveStore[type]) {
+            this.entitiesLiveStore[type] = new EntityStore();
+        }
+
+        this.entitiesLiveStore[type].registerEntitySubject(id, subject);
     }
 
     private getCollectionObservable(type:string, filter:{[key:string]:any}):Observable<DataCollection> {
@@ -141,8 +170,6 @@ export class DataConnector {
 
             return entityObservable;
         }
-
-
     }
 
     loadEntities() {
@@ -185,14 +212,27 @@ export class DataConnector {
 
     createEntity(type:string, data:{[key:string]:any}):Observable<DataEntity> {
         let selectedInterface:ExternalInterface = this.getInterface(type);
+
+        let structure:ModelSchema = this.getEndpointStructureModel(type);
+
+        if (structure) {
+            data = structure.generateModel(null, data);
+        }
+
         let entity:DataEntity|Observable<DataEntity> = selectedInterface.createEntity(type, data);
 
-        if (entity instanceof Observable) {
-            entity.take(1).subscribe((entity:DataEntity) => {
+        let entitySubject:ReplaySubject<DataEntity> = new ReplaySubject<DataEntity>(1);
 
+        if (entity instanceof Observable) {
+            entity.take(1).subscribe((createdEntity:DataEntity) => {
+                this.registerEntitySubject(type, createdEntity.id, entitySubject);
+                this.registerEntity(type, createdEntity.id, createdEntity);
             });
         } else {
-            return this.registerEntity(type, data.id, entity);
+            this.registerEntitySubject(type, entity.id, entitySubject);
+            this.registerEntity(type, entity.id, entity);
         }
+
+        return entitySubject;
     }
 }

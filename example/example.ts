@@ -4,6 +4,7 @@
 import {DataConnector} from "../src/data-connector.class";
 import {DataEntity} from "../src/data-structures/data-entity.class";
 import {DataCollection} from "../src/data-structures/data-collection.class";
+import {ObjectsStructures} from "./objects-structures.class";
 
 let connector:DataConnector = new DataConnector({
     defaultInterface: "localstorage",
@@ -17,7 +18,8 @@ let connector:DataConnector = new DataConnector({
     },
     map: {
         "endpoint1": {
-            type: "localstorage"
+            type: "localstorage",
+            structure: ObjectsStructures.endpoint1
         },
         "lesson_light": {
             type: "http"
@@ -25,17 +27,17 @@ let connector:DataConnector = new DataConnector({
     }
 });
 
-/*connector.createEntity("endpoint1", {key1: "val1", key2: "val2"}).subscribe((data:DataEntity) => {
+connector.createEntity("endpoint2", {key1: "val1", key2: "val2"}).subscribe((data:DataEntity) => {
     console.log(data);
-});*/
+});
 
 /*connector.loadEntity("lesson_light", 6).subscribe((data:DataEntity) => {
     console.log(data);
 });*/
 
-connector.loadCollection("lesson_light").subscribe((collection:DataCollection) => {
+/*connector.loadCollection("lesson_light").subscribe((collection:DataCollection) => {
     console.log(collection);
-});
+});*/
 
 /*connector.loadCollection("endpoint1").subscribe((data:DataCollection) => {
     console.log(data);

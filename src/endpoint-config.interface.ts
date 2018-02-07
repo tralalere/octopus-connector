@@ -1,7 +1,7 @@
-import {Model} from "octopus-model";
+import {ModelSchema} from "octopus-model";
 
 export interface EndpointConfig {
     type:string;
-    structure?:Model;
+    structure?:ModelSchema;
     cached?:boolean;
 }

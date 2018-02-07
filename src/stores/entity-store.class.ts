@@ -23,6 +23,10 @@ export class EntityStore {
 
     }
 
+    registerEntitySubject(id:number, subject:ReplaySubject<DataEntity>) {
+        this.entities[id] = subject;
+    }
+
     getEntityObservable(id:number):Observable<DataEntity> {
 
         if (this.entities[id]) {
