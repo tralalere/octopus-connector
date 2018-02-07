@@ -44,7 +44,7 @@ export class DataConnector {
             return this._interfaces[type];
         }*/
 
-        return this.interfaces["localstorage"];
+        return this.interfaces["http"];
     }
 
     private useCache(type:string):boolean {
@@ -56,7 +56,7 @@ export class DataConnector {
     private getEntityObservableInStore(type:string, id:number):Observable<DataEntity> {
 
         if (this.entitiesLiveStore[type]) {
-            return this.entitiesLiveStore[type].getEntity(id);
+            return this.entitiesLiveStore[type].getEntityObservable(id);
         }
 
         return null;
@@ -64,10 +64,19 @@ export class DataConnector {
 
     private getCollectionObservableInStore(type:string, filter:{[key:string]:any}):Observable<DataCollection> {
         if (this.collectionsLiveStore[type]) {
-            return this.collectionsLiveStore[type].getCollection(filter);
+            return this.collectionsLiveStore[type].getCollectionObservable(filter);
         }
 
         return null;
+    }
+
+    private getEntityObservable(type:string, id:number):Observable<DataEntity> {
+
+        if (!this.entitiesLiveStore[type]) {
+            this.entitiesLiveStore[type] = new EntityStore();
+        }
+
+        return this.entitiesLiveStore[type].getEntityObservable(id);
     }
 
     private registerEntity(type:string, id:number, entity:DataEntity):Observable<DataEntity> {
@@ -77,6 +86,15 @@ export class DataConnector {
         }
 
         return this.entitiesLiveStore[type].registerEntity(entity, id);
+    }
+
+    private getCollectionObservable(type:string, filter:{[key:string]:any}):Observable<DataCollection> {
+
+        if (!this.collectionsLiveStore[type]) {
+            this.collectionsLiveStore[type] = new CollectionStore();
+        }
+
+        return this.collectionsLiveStore[type].getCollectionObservable(filter);
     }
 
     private registerCollection(type:string, filter:{[key:string]:any}, collection:DataCollection):Observable<DataCollection> {
@@ -110,11 +128,21 @@ export class DataConnector {
         let selectedInterface:ExternalInterface = this.getInterface(type);
 
         if (selectedInterface) {
-            let entity:DataEntity = selectedInterface.loadEntity(type, id);
-            return this.registerEntity(type, id, entity);
+            let entity:DataEntity|Observable<DataEntity> = selectedInterface.loadEntity(type, id);
+            let entityObservable:Observable<DataEntity> = this.getEntityObservable(type, id);
+
+            if (entity instanceof Observable) {
+                entity.take(1).subscribe((entity:DataEntity) => {
+                    this.registerEntity(type, id, entity);
+                });
+            } else {
+                this.registerEntity(type, id, entity);
+            }
+
+            return entityObservable;
         }
 
-        return null;
+
     }
 
     loadEntities() {
@@ -134,11 +162,21 @@ export class DataConnector {
         let selectedInterface:ExternalInterface = this.getInterface(type);
 
         if (selectedInterface) {
-            let collection:DataCollection = selectedInterface.loadCollection(type, filter);
-            return this.registerCollection(type, filter, collection);
+            let collectionObservable:Observable<DataCollection> = this.getCollectionObservable(type, filter);
+            let collection:DataCollection|Observable<DataCollection> = selectedInterface.loadCollection(type, filter);
+
+            if (collection instanceof Observable) {
+                collection.take(1).subscribe((collection:DataCollection) => {
+                    this.registerCollection(type, filter, collection);
+                });
+            } else {
+                this.registerCollection(type, filter, collection);
+            }
+
+            return collectionObservable;
         }
 
-        return Observable.create();
+        return null;
     }
 
     saveEntity(entity:DataEntity):Observable<DataEntity> {
@@ -147,8 +185,14 @@ export class DataConnector {
 
     createEntity(type:string, data:{[key:string]:any}):Observable<DataEntity> {
         let selectedInterface:ExternalInterface = this.getInterface(type);
-        let entity:DataEntity = selectedInterface.createEntity(type, data);
+        let entity:DataEntity|Observable<DataEntity> = selectedInterface.createEntity(type, data);
 
-        return this.registerEntity(type, data.id, entity);
+        if (entity instanceof Observable) {
+            entity.take(1).subscribe((entity:DataEntity) => {
+
+            });
+        } else {
+            return this.registerEntity(type, data.id, entity);
+        }
     }
 }

@@ -10,11 +10,17 @@ let connector:DataConnector = new DataConnector({
     configuration: {
         localstorage: {
             prefix: "test"
+        },
+        http: {
+            apiUrl: "https://api.e-talmud.com/api/"
         }
     },
     map: {
         "endpoint1": {
             type: "localstorage"
+        },
+        "lesson_light": {
+            type: "http"
         }
     }
 });
@@ -23,10 +29,14 @@ let connector:DataConnector = new DataConnector({
     console.log(data);
 });*/
 
-connector.loadEntity("endpoint1", 2).subscribe((data:DataEntity) => {
+/*connector.loadEntity("lesson_light", 6).subscribe((data:DataEntity) => {
     console.log(data);
+});*/
+
+connector.loadCollection("lesson_light").subscribe((collection:DataCollection) => {
+    console.log(collection);
 });
 
-connector.loadCollection("endpoint1").subscribe((data:DataCollection) => {
+/*connector.loadCollection("endpoint1").subscribe((data:DataCollection) => {
     console.log(data);
-});
+});*/
