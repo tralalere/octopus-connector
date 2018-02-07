@@ -4,10 +4,12 @@
 import {DataConnector} from "../data-connector.class";
 import {DataEntity} from "./data-entity.class";
 import {CollectionDataSet, EntityDataSet} from "../types";
+import {Observable} from "rxjs/Observable";
 
 export class DataCollection {
 
     entities:DataEntity[] = [];
+    entitiesObservables:Observable<DataEntity>[] = [];
 
     constructor(
         public type:string,

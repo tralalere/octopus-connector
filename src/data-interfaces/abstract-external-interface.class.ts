@@ -7,17 +7,17 @@ import {DataCollection} from "../data-structures/data-collection.class";
 
 export abstract class ExternalInterface {
     
-    loadEntity(type:string, id:number, fields:string[] = []):Observable<DataEntity> {
+    loadEntity(type:string, id:number, fields:string[] = []):DataEntity {
         console.warn("LoadEntity not implemented in interface");
         return null;
     }
     
-    loadCollection(type:string, filter:{[key:string]:any} = {}):Observable<DataCollection> {
+    loadCollection(type:string, filter:{[key:string]:any} = {}):DataCollection {
         console.warn("LoadCollection not implemented in interface");
         return null;
     }
     
-    createEntity(type:string, data:{[key:string]:any}):Observable<DataEntity> {
+    createEntity(type:string, data:{[key:string]:any}):DataEntity {
         console.warn("CreateEntity not implemented in interface");
         return null;
     }

@@ -108,32 +108,30 @@ export class LocalStorage extends ExternalInterface {
         }
     }
 
-    loadEntity(type:string, id:number, fields:string[] = []):Observable<DataEntity> {
+    loadEntity(type:string, id:number, fields:string[] = []):DataEntity {
         this.loadPointFromStorageIfEmpty(type);
         let data:{[key:number]:any} = this.getEntityFromStore(type, id);
 
-        let entity:DataEntity = data ? new DataEntity(type, data, this.connector, id) : null;
-
-        return new BehaviorSubject(entity);
+        return data ? new DataEntity(type, data, this.connector, id) : null;
     }
 
-    loadCollection(type:string, filter:{[key:string]:any} = {}):Observable<DataCollection> {
+    loadCollection(type:string, filter:{[key:string]:any} = {}):DataCollection {
         this.loadPointFromStorageIfEmpty(type);
         let data:CollectionDataSet = this.getCollectionFromStore(type, filter);
 
         let collection:DataCollection = data ? new DataCollection(type, data, this.connector) : null;
 
-        return new BehaviorSubject(collection);
+        return collection;
     }
 
     saveEntity():Observable<DataEntity> {
         return Observable.create();
     }
 
-    createEntity(type:string, data:{[key:string]:any}):Observable<DataEntity> {
+    createEntity(type:string, data:{[key:string]:any}):DataEntity {
         let newId:number = ++this.lastUsedId;
         let entity:DataEntity = new DataEntity(type, data, this.connector, newId);
         this.setEntityInStore(type, newId, data);
-        return new BehaviorSubject<DataEntity>(entity);
+        return entity;
     }
 }

@@ -14,15 +14,15 @@ export class Http extends ExternalInterface {
         super();
     }
 
-    loadEntity(type:string, id:number, fields:string[] = []):Observable<DataEntity> {
+    loadEntity(type:string, id:number, fields:string[] = []):DataEntity {
         return null;
     }
 
-    loadCollection(type:string, filter:{[key:string]:any} = null):Observable<DataCollection> {
+    loadCollection(type:string, filter:{[key:string]:any} = null):DataCollection {
         return null;
     }
 
-    createEntity(type:string, data:{[key:string]:any}):Observable<DataEntity> {
+    createEntity(type:string, data:{[key:string]:any}):DataEntity {
         return null;
     }
 }
