@@ -19,7 +19,7 @@ export class DataCollection {
 
         if (Array.isArray(data)) {
             data.forEach((elem:Object) => {
-                this.entities.push(new DataEntity(type, elem, elem["id"]));
+                this.entities.push(new DataEntity(type, elem, connector, elem["id"]));
             });
         } else {
             let keys:string[] = Object.keys(data);
