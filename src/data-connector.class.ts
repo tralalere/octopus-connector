@@ -85,6 +85,15 @@ export class DataConnector {
             this.collectionsLiveStore[type] = new CollectionStore();
         }
 
+        // registering entities
+        let entitiesObservables:Observable<DataEntity>[] = [];
+
+        collection.entities.forEach((entity:DataEntity) => {
+            entitiesObservables.push(this.registerEntity(type, entity.id, entity));
+        });
+
+        collection.entitiesObservables = entitiesObservables;
+
         return this.collectionsLiveStore[type].registerCollection(collection, filter);
     }
 

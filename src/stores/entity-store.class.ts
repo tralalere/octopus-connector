@@ -4,13 +4,14 @@ import {BehaviorSubject} from "rxjs/Rx";
 
 export class EntityStore {
 
-    private entities:{[key:number]:Observable<DataEntity>} = {};
+    private entities:{[key:number]:BehaviorSubject<DataEntity>} = {};
 
     constructor() {}
 
     registerEntity(entity:DataEntity, id:number):Observable<DataEntity> {
 
         if (this.entities[id]) {
+            this.entities[id].next(entity);
             return this.entities[id];
         } else {
             let subject:BehaviorSubject<DataEntity> = new BehaviorSubject<DataEntity>(entity);

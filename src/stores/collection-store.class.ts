@@ -5,7 +5,7 @@ import {BehaviorSubject} from "rxjs/Rx";
 
 export class CollectionStore {
 
-    private collections:{[key:string]:Observable<DataCollection>} = {};
+    private collections:{[key:string]:BehaviorSubject<DataCollection>} = {};
     private filters:{[key:string]:any} = {};
 
     constructor() {}
@@ -16,6 +16,7 @@ export class CollectionStore {
         this.filters[hash] = filter;
 
         if (this.collections[hash]) {
+            this.collections[hash].next(collection);
             return this.collections[hash];
         } else {
             let subject:BehaviorSubject<DataCollection> = new BehaviorSubject<DataCollection>(collection);
