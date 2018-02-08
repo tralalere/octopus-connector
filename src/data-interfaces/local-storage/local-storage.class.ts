@@ -63,6 +63,7 @@ export class LocalStorage extends ExternalInterface {
 
         if (this.dataStore[pointName][id]) {
             delete this.dataStore[pointName][id];
+            this.savePointToStorage(type);
             return true;
         }
 

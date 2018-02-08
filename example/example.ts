@@ -46,3 +46,8 @@ let connector:DataConnector = new DataConnector({
 connector.loadCollection("endpoint2").subscribe((data:DataCollection) => {
     console.log(data);
 });
+
+connector.loadEntity("endpoint2", 7).take(1).subscribe((data:DataEntity) => {
+    console.log(data);
+    data.remove();
+});

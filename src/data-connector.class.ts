@@ -175,19 +175,25 @@ export class DataConnector {
             if (entityData instanceof Observable) {
                 entityData.take(1).subscribe((entity:EntityDataSet) => {
 
-                    if (structure) {
-                        entity = structure.filterModel(entity);
+                    if (entity) {
+                        if (structure) {
+                            entity = structure.filterModel(entity);
+                        }
+
+                        this.registerEntity(type, id, new DataEntity(type, entity, this, id));
                     }
 
-                    this.registerEntity(type, id, new DataEntity(type, entity, this, id));
                 });
             } else {
 
-                if (structure) {
-                    entityData = structure.filterModel(entityData);
+                if (entityData) {
+                    if (structure) {
+                        entityData = structure.filterModel(entityData);
+                    }
+
+                    this.registerEntity(type, id, new DataEntity(type, entityData, this, id));
                 }
 
-                this.registerEntity(type, id, new DataEntity(type, entityData, this, id));
             }
 
             return entityObservable;
