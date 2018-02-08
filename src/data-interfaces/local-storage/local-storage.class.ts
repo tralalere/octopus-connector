@@ -2,8 +2,6 @@
  * Created by Christophe on 12/10/2017.
  */
 import {Observable, BehaviorSubject} from "rxjs/Rx";
-import {DataEntity} from "../../data-structures/data-entity.class";
-import {DataCollection} from "../../data-structures/data-collection.class";
 import {LocalStorageConfiguration} from "./local-storage-configuration.interface";
 import {DataConnector} from "../../data-connector.class";
 import {ExternalInterface} from "../abstract-external-interface.class";
@@ -108,30 +106,28 @@ export class LocalStorage extends ExternalInterface {
         }
     }
 
-    loadEntity(type:string, id:number, fields:string[] = []):DataEntity {
+    loadEntity(type:string, id:number, fields:string[] = []):EntityDataSet {
         this.loadPointFromStorageIfEmpty(type);
-        let data:{[key:number]:any} = this.getEntityFromStore(type, id);
+        let data:EntityDataSet = this.getEntityFromStore(type, id);
 
-        return data ? new DataEntity(type, data, this.connector, id) : null;
+        return data ? data : null;
     }
 
-    loadCollection(type:string, filter:{[key:string]:any} = {}):DataCollection {
+    loadCollection(type:string, filter:{[key:string]:any} = {}):CollectionDataSet {
         this.loadPointFromStorageIfEmpty(type);
         let data:CollectionDataSet = this.getCollectionFromStore(type, filter);
 
-        let collection:DataCollection = data ? new DataCollection(type, data, this.connector) : null;
-
-        return collection;
+        return data ? data : null;
     }
 
-    saveEntity():Observable<DataEntity> {
+    saveEntity():Observable<EntityDataSet> {
         return Observable.create();
     }
 
-    createEntity(type:string, data:{[key:string]:any}):DataEntity {
+    createEntity(type:string, data:EntityDataSet):EntityDataSet {
         let newId:number = ++this.lastUsedId;
-        let entity:DataEntity = new DataEntity(type, data, this.connector, newId);
+        data.id = newId;
         this.setEntityInStore(type, newId, data);
-        return entity;
+        return data;
     }
 }

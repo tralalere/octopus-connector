@@ -17,6 +17,7 @@ export interface StringDictionary<T> {
 
 export interface EntityDataSet {
     [key:number]:any;
+    id?:number;
 }
 
 export interface CollectionDataSet {

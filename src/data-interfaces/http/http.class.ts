@@ -1,9 +1,8 @@
 import {ExternalInterface} from "../abstract-external-interface.class";
 import {DataConnector} from "../../data-connector.class";
 import {HttpConfiguration} from "./http-configuration.interface";
-import {DataCollection} from "../../data-structures/data-collection.class";
-import {DataEntity} from "../../data-structures/data-entity.class";
 import {BehaviorSubject, Observable, ReplaySubject} from "rxjs/Rx";
+import {CollectionDataSet, EntityDataSet} from "../../types";
 
 export class Http extends ExternalInterface {
 
@@ -14,11 +13,11 @@ export class Http extends ExternalInterface {
         super();
     }
 
-    loadEntity(type:string, id:number):Observable<DataEntity> {
+    loadEntity(type:string, id:number):Observable<EntityDataSet> {
         let request:XMLHttpRequest = new XMLHttpRequest();
         request.open("GET", <string>this.configuration.apiUrl + type + "/" + id, true);
 
-        let subject:ReplaySubject<DataEntity> = new ReplaySubject<DataEntity>(1);
+        let subject:ReplaySubject<EntityDataSet> = new ReplaySubject<EntityDataSet>(1);
 
         // TODO: voir de quelle manière passer les headers, qui peuvent être optionnels
         //request.setRequestHeader('Content-Type', 'application/json');
@@ -38,11 +37,11 @@ export class Http extends ExternalInterface {
         return subject;
     }
 
-    loadCollection(type:string, filter:{[key:string]:any} = null):Observable<DataCollection> {
+    loadCollection(type:string, filter:{[key:string]:any} = null):Observable<CollectionDataSet> {
         let request:XMLHttpRequest = new XMLHttpRequest();
         request.open("GET", <string>this.configuration.apiUrl + type, true);
 
-        let subject:ReplaySubject<DataCollection> = new ReplaySubject<DataCollection>(1);
+        let subject:ReplaySubject<CollectionDataSet> = new ReplaySubject<CollectionDataSet>(1);
 
         request.onreadystatechange = () => {
             if (request.readyState === XMLHttpRequest.DONE) {
@@ -59,7 +58,7 @@ export class Http extends ExternalInterface {
         return subject;
     }
 
-    createEntity(type:string, data:{[key:string]:any}):Observable<DataEntity> {
+    createEntity(type:string, data:{[key:string]:any}):Observable<EntityDataSet> {
         return null;
     }
 
@@ -67,13 +66,20 @@ export class Http extends ExternalInterface {
         return null;
     }
 
-    protected extractEntity(type:string, responseText:string):DataEntity {
+    protected extractEntity(type:string, responseText:string):EntityDataSet {
         let data:Object = JSON.parse(responseText);
-        return new DataEntity(type, data["data"][0], this.connector, +data["data"][0]["id"]);
+        return data["data"][0];
     }
 
-    protected extractCollection(type:string, responseText:string):DataCollection {
+    protected extractCollection(type:string, responseText:string):CollectionDataSet {
         let data:Object = JSON.parse(responseText);
-        return new DataCollection(type, data["data"], this.connector);
+
+        let collectionData:CollectionDataSet = {};
+
+        data["data"].forEach((entityData:EntityDataSet) => {
+            collectionData[entityData["id"]] = entityData;
+        });
+
+        return collectionData;
     }
 }

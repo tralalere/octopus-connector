@@ -7,7 +7,7 @@ import {Observable, BehaviorSubject} from "rxjs/Rx";
 import {DataCollection} from "./data-structures/data-collection.class";
 import {ExternalInterface} from "./data-interfaces/abstract-external-interface.class";
 import {LocalStorage} from "./data-interfaces/local-storage/local-storage.class";
-import {NumberDictionary, StringDictionary} from "./types";
+import {CollectionDataSet, EntityDataSet, NumberDictionary, StringDictionary} from "./types";
 import {Http} from "./data-interfaces/http/http.class";
 import {Nodejs} from "./data-interfaces/nodejs/nodejs.class";
 import {CollectionStore} from "./stores/collection-store.class";
@@ -157,15 +157,15 @@ export class DataConnector {
         let selectedInterface:ExternalInterface = this.getInterface(type);
 
         if (selectedInterface) {
-            let entity:DataEntity|Observable<DataEntity> = selectedInterface.loadEntity(type, id);
+            let entityData:EntityDataSet|Observable<EntityDataSet> = selectedInterface.loadEntity(type, id);
             let entityObservable:Observable<DataEntity> = this.getEntityObservable(type, id);
 
-            if (entity instanceof Observable) {
-                entity.take(1).subscribe((entity:DataEntity) => {
-                    this.registerEntity(type, id, entity);
+            if (entityData instanceof Observable) {
+                entityData.take(1).subscribe((entity:EntityDataSet) => {
+                    this.registerEntity(type, id, new DataEntity(type, entity, this, id));
                 });
             } else {
-                this.registerEntity(type, id, entity);
+                this.registerEntity(type, id, new DataEntity(type, entityData, this, id));
             }
 
             return entityObservable;
@@ -190,14 +190,14 @@ export class DataConnector {
 
         if (selectedInterface) {
             let collectionObservable:Observable<DataCollection> = this.getCollectionObservable(type, filter);
-            let collection:DataCollection|Observable<DataCollection> = selectedInterface.loadCollection(type, filter);
+            let collection:CollectionDataSet|Observable<CollectionDataSet> = selectedInterface.loadCollection(type, filter);
 
             if (collection instanceof Observable) {
-                collection.take(1).subscribe((collection:DataCollection) => {
-                    this.registerCollection(type, filter, collection);
+                collection.take(1).subscribe((newCollection:CollectionDataSet) => {
+                    this.registerCollection(type, filter, new DataCollection(type, newCollection, this));
                 });
             } else {
-                this.registerCollection(type, filter, collection);
+                this.registerCollection(type, filter, new DataCollection(type, collection, this));
             }
 
             return collectionObservable;
@@ -219,18 +219,18 @@ export class DataConnector {
             data = structure.generateModel(null, data);
         }
 
-        let entity:DataEntity|Observable<DataEntity> = selectedInterface.createEntity(type, data);
+        let entity:EntityDataSet|Observable<EntityDataSet> = selectedInterface.createEntity(type, data);
 
         let entitySubject:ReplaySubject<DataEntity> = new ReplaySubject<DataEntity>(1);
 
         if (entity instanceof Observable) {
-            entity.take(1).subscribe((createdEntity:DataEntity) => {
+            entity.take(1).subscribe((createdEntity:EntityDataSet) => {
                 this.registerEntitySubject(type, createdEntity.id, entitySubject);
-                this.registerEntity(type, createdEntity.id, createdEntity);
+                this.registerEntity(type, createdEntity.id, new DataEntity(type, createdEntity, this, createdEntity.id));
             });
         } else {
             this.registerEntitySubject(type, entity.id, entitySubject);
-            this.registerEntity(type, entity.id, entity);
+            this.registerEntity(type, entity.id, new DataEntity(type, entity, this, entity.id));
         }
 
         return entitySubject;
