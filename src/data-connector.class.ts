@@ -115,6 +115,13 @@ export class DataConnector {
             this.entitiesLiveStore[type] = new EntityStore();
         }
 
+        if (!this.collectionsLiveStore[type]) {
+            this.collectionsLiveStore[type] = new CollectionStore();
+        }
+
+        // TODO: on met à jour toutes les collections pouvant accepter l'entité
+        this.collectionsLiveStore[type].registerEntityInCollections(entity);
+
         return this.entitiesLiveStore[type].registerEntity(entity, id);
     }
 

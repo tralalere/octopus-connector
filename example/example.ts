@@ -31,6 +31,15 @@ let connector:DataConnector = new DataConnector({
     }
 });
 
+let count:HTMLElement = document.getElementById("count");
+let button:HTMLElement = document.getElementById("test-button");
+
+button.addEventListener("click", () => {
+    connector.createEntity("endpoint2").subscribe((data:DataEntity) => {
+        console.log("au click", data);
+    });
+});
+
 /*connector.createEntity("endpoint2", {key1: "ok1", key2: "val2"}).subscribe((data:DataEntity) => {
     console.log(data);
 });*/
@@ -41,6 +50,7 @@ let connector:DataConnector = new DataConnector({
 
 connector.loadCollection("lesson_light").subscribe((collection:DataCollection) => {
     console.log(collection);
+    count.innerText = collection.entities.length.toString();
 });
 
 /*connector.loadCollection("endpoint2", {key1: "ok1"}).subscribe((data:DataCollection) => {

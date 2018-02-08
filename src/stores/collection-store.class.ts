@@ -3,11 +3,13 @@ import {DataCollection} from "../data-structures/data-collection.class";
 import * as ObjectHash from "object-hash";
 import {BehaviorSubject} from "rxjs/Rx";
 import {ReplaySubject} from "rxjs/Rx";
+import {DataEntity} from "../data-structures/data-entity.class";
 
 export class CollectionStore {
 
-    private collections:{[key:string]:ReplaySubject<DataCollection>} = {};
+    private collectionObservables:{[key:string]:ReplaySubject<DataCollection>} = {};
     private filters:{[key:string]:any} = {};
+    private collections:{[key:string]:DataCollection} = {};
 
     constructor() {}
 
@@ -15,27 +17,53 @@ export class CollectionStore {
 
         let hash:string = ObjectHash(filter);
         this.filters[hash] = filter;
+        this.collections[hash] = collection;
 
-        if (this.collections[hash]) {
-            this.collections[hash].next(collection);
-            return this.collections[hash];
+        if (this.collectionObservables[hash]) {
+            this.collectionObservables[hash].next(collection);
+            return this.collectionObservables[hash];
         } else {
             let subject:ReplaySubject<DataCollection> = new ReplaySubject<DataCollection>(1);
             subject.next(collection);
-            this.collections[hash] = subject;
+            this.collectionObservables[hash] = subject;
             return subject;
         }
+    }
+
+    registerEntityInCollections(entity:DataEntity) {
+        let collectionKeys:string[] = Object.keys(this.collections);
+
+        console.log("yep");
+
+        collectionKeys.forEach((key:string) => {
+            console.log("là");
+            if (this.matchFilter(entity, this.filters[key])) {
+                console.log("ici");
+            }
+        });
+    }
+
+    matchFilter(entity:DataEntity, filter:{[key:string]:any}):boolean {
+        let filterKeys:string[] = Object.keys(filter);
+
+        for (let key of filterKeys) {
+            if (entity.attributes[key] !== undefined && filter[key] !== entity.attributes[key]) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     getCollectionObservable(filter:{[key:string]:any}):Observable<DataCollection> {
 
         let hash:string = ObjectHash(filter);
 
-        if (this.collections[hash]) {
-            return this.collections[hash];
+        if (this.collectionObservables[hash]) {
+            return this.collectionObservables[hash];
         } else {
             let subject:ReplaySubject<DataCollection> = new ReplaySubject<DataCollection>(1);
-            this.collections[hash] = subject;
+            this.collectionObservables[hash] = subject;
             return subject;
         }
     }
