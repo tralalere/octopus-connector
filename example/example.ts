@@ -31,7 +31,7 @@ let connector:DataConnector = new DataConnector({
     }
 });
 
-/*connector.createEntity("endpoint2", {key1: "val1", key2: "val2"}).subscribe((data:DataEntity) => {
+/*connector.createEntity("endpoint2", {key1: "ok1", key2: "val2"}).subscribe((data:DataEntity) => {
     console.log(data);
 });*/
 
@@ -39,15 +39,15 @@ let connector:DataConnector = new DataConnector({
     console.log(data);
 });*/
 
-/*connector.loadCollection("lesson_light").subscribe((collection:DataCollection) => {
+connector.loadCollection("lesson_light").subscribe((collection:DataCollection) => {
     console.log(collection);
+});
+
+/*connector.loadCollection("endpoint2", {key1: "ok1"}).subscribe((data:DataCollection) => {
+    console.log(data);
 });*/
 
-connector.loadCollection("endpoint2").subscribe((data:DataCollection) => {
-    console.log(data);
-});
-
-connector.loadEntity("endpoint2", 7).take(1).subscribe((data:DataEntity) => {
+/*connector.loadEntity("endpoint2", 7).take(1).subscribe((data:DataEntity) => {
     console.log(data);
     data.remove();
-});
+});*/

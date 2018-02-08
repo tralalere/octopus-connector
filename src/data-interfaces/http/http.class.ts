@@ -1,11 +1,13 @@
 import {ExternalInterface} from "../abstract-external-interface.class";
 import {DataConnector} from "../../data-connector.class";
-import {HttpConfiguration} from "./http-configuration.interface";
+import {HeaderObject, HttpConfiguration} from "./http-configuration.interface";
 import {BehaviorSubject, Observable, ReplaySubject} from "rxjs/Rx";
 import {CollectionDataSet, EntityDataSet} from "../../types";
 import {DataEntity} from "../../data-structures/data-entity.class";
 
 export class Http extends ExternalInterface {
+
+    private headers:HeaderObject[] = [];
 
     constructor(
         private configuration:HttpConfiguration,
@@ -13,6 +15,16 @@ export class Http extends ExternalInterface {
     ) {
         super();
         this.useDiff = true;
+
+        if (configuration.headers) {
+            this.headers = configuration.headers;
+        }
+    }
+
+    private addHeaders(request:XMLHttpRequest) {
+        this.headers.forEach((header:HeaderObject) => {
+            request.setRequestHeader(header.key, header.value);
+        });
     }
 
     loadEntity(type:string, id:number):Observable<EntityDataSet> {
@@ -21,8 +33,7 @@ export class Http extends ExternalInterface {
 
         let subject:ReplaySubject<EntityDataSet> = new ReplaySubject<EntityDataSet>(1);
 
-        // TODO: voir de quelle manière passer les headers, qui peuvent être optionnels
-        //request.setRequestHeader('Content-Type', 'application/json');
+        this.addHeaders(request);
         
         request.onreadystatechange = () => {
             if (request.readyState === XMLHttpRequest.DONE) {
@@ -39,9 +50,29 @@ export class Http extends ExternalInterface {
         return subject;
     }
 
-    loadCollection(type:string, filter:{[key:string]:any} = null):Observable<CollectionDataSet> {
+    loadCollection(type:string, filter:{[key:string]:any} = {}):Observable<CollectionDataSet> {
         let request:XMLHttpRequest = new XMLHttpRequest();
-        request.open("GET", <string>this.configuration.apiUrl + type, true);
+
+        let url:string = <string>this.configuration.apiUrl + type;
+
+        let filterKeys:string[] = Object.keys(filter);
+
+        if (filterKeys.length > 0) {
+            url += "?";
+        }
+
+        filterKeys.forEach((key:string, index:number) => {
+            let val:any = filter[key];
+            url += "filter[" + key + "]=" + val;
+
+            if (index < filterKeys.length - 1) {
+                url += "&";
+            }
+        });
+
+        request.open("GET", url, true);
+
+        this.addHeaders(request);
 
         let subject:ReplaySubject<CollectionDataSet> = new ReplaySubject<CollectionDataSet>(1);
 
@@ -64,6 +95,8 @@ export class Http extends ExternalInterface {
         let request:XMLHttpRequest = new XMLHttpRequest();
         request.open("PATCH", <string>this.configuration.apiUrl + type + "/" + id, true);
 
+        this.addHeaders(request);
+
         let subject:ReplaySubject<CollectionDataSet> = new ReplaySubject<EntityDataSet>(1);
 
         request.onreadystatechange = () => {
@@ -85,6 +118,8 @@ export class Http extends ExternalInterface {
         let request:XMLHttpRequest = new XMLHttpRequest();
         request.open("POST", <string>this.configuration.apiUrl + type, true);
 
+        this.addHeaders(request);
+
         let subject:ReplaySubject<CollectionDataSet> = new ReplaySubject<EntityDataSet>(1);
 
         request.onreadystatechange = () => {
@@ -105,6 +140,8 @@ export class Http extends ExternalInterface {
     deleteEntity(type:string, id:number):Observable<boolean> {
         let request:XMLHttpRequest = new XMLHttpRequest();
         request.open("DELETE", <string>this.configuration.apiUrl + type + "/" + id, true);
+
+        this.addHeaders(request);
 
         let subject:ReplaySubject<boolean> = new ReplaySubject<boolean>(1);
 

@@ -84,7 +84,7 @@ export class LocalStorage extends ExternalInterface {
             let matching:boolean = true;
 
             filterKeys.forEach((filterKey:string) => {
-                if (filter[filterKey] !== this.dataStore[pointName][+key]) {
+                if (filter[filterKey] !== this.dataStore[pointName][+key][filterKey]) {
                     matching = false;
                 }
             });

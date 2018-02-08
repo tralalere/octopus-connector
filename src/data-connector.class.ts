@@ -283,7 +283,7 @@ export class DataConnector {
         return entityObservable;
     }
 
-    createEntity(type:string, data:{[key:string]:any}):Observable<DataEntity> {
+    createEntity(type:string, data:{[key:string]:any} = {}):Observable<DataEntity> {
         let selectedInterface:ExternalInterface = this.getInterface(type);
 
         let structure:ModelSchema = this.getEndpointStructureModel(type);
