@@ -21,6 +21,10 @@ let connector:DataConnector = new DataConnector({
             type: "localstorage",
             structure: ObjectsStructures.endpoint1
         },
+        "endpoint2": {
+            type: "localstorage",
+            structure: ObjectsStructures.endpoint1
+        },
         "lesson_light": {
             type: "http"
         }
@@ -39,6 +43,6 @@ let connector:DataConnector = new DataConnector({
     console.log(collection);
 });*/
 
-connector.loadCollection("endpoint1").subscribe((data:DataCollection) => {
+connector.loadCollection("endpoint2").subscribe((data:DataCollection) => {
     console.log(data);
 });

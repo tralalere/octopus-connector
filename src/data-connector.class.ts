@@ -160,11 +160,23 @@ export class DataConnector {
             let entityData:EntityDataSet|Observable<EntityDataSet> = selectedInterface.loadEntity(type, id);
             let entityObservable:Observable<DataEntity> = this.getEntityObservable(type, id);
 
+            let structure:ModelSchema = this.getEndpointStructureModel(type);
+
             if (entityData instanceof Observable) {
                 entityData.take(1).subscribe((entity:EntityDataSet) => {
+
+                    if (structure) {
+                        entity = structure.filterModel(entity);
+                    }
+
                     this.registerEntity(type, id, new DataEntity(type, entity, this, id));
                 });
             } else {
+
+                if (structure) {
+                    entityData = structure.filterModel(entityData);
+                }
+
                 this.registerEntity(type, id, new DataEntity(type, entityData, this, id));
             }
 
@@ -187,6 +199,7 @@ export class DataConnector {
         }
 
         let selectedInterface:ExternalInterface = this.getInterface(type);
+        let structure:ModelSchema = this.getEndpointStructureModel(type);
 
         if (selectedInterface) {
             let collectionObservable:Observable<DataCollection> = this.getCollectionObservable(type, filter);
@@ -194,10 +207,10 @@ export class DataConnector {
 
             if (collection instanceof Observable) {
                 collection.take(1).subscribe((newCollection:CollectionDataSet) => {
-                    this.registerCollection(type, filter, new DataCollection(type, newCollection, this));
+                    this.registerCollection(type, filter, new DataCollection(type, newCollection, this, structure));
                 });
             } else {
-                this.registerCollection(type, filter, new DataCollection(type, collection, this));
+                this.registerCollection(type, filter, new DataCollection(type, collection, this, structure));
             }
 
             return collectionObservable;
