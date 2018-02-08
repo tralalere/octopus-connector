@@ -6,7 +6,8 @@ import {Observable} from "rxjs/Rx";
 
 export class DataEntity {
 
-    private attributes:{[key:string]:any} = {};
+    attributes:{[key:string]:any} = {};
+    private attributesRef:{[key:string]:any};
 
     constructor(
         public type:string,
@@ -23,6 +24,8 @@ export class DataEntity {
         if (data["id"]) {
             this.id = +data["id"];
         }
+
+        this.generateReferenceObject();
     }
 
     set(key:string, value:any) {
@@ -34,6 +37,54 @@ export class DataEntity {
     }
     
     save():Observable<DataEntity> {
-        return this.connector.saveEntity(this);
+        let obs:Observable<DataEntity> = this.connector.saveEntity(this);
+
+        obs.take(1).subscribe(() => {
+            this.generateReferenceObject();
+        });
+
+        return obs;
+    }
+
+    remove():Observable<boolean> {
+        return this.connector.deleteEntity(this);
+    }
+
+    private generateReferenceObject() {
+        let ref:{[key:string]:any} = {};
+
+        let keys:string[] = Object.keys(this.attributes);
+
+        keys.forEach((key:string) => {
+            ref[key] = this.attributes[key];
+        });
+
+        this.attributesRef = ref;
+    }
+
+    getClone():{[key:string]:any} {
+        let clone:{[key:string]:any} = {};
+
+        let keys:string[] = Object.keys(this.attributes);
+
+        keys.forEach((key:string) => {
+            clone[key] = this.attributes[key];
+        });
+
+        return clone;
+    }
+
+    getDiff():{[key:string]:any} {
+        let diff:{[key:string]:any} = {};
+
+        let keys:string[] = Object.keys(this.attributes);
+
+        keys.forEach((key:string) => {
+            if (this.attributes[key] !== undefined && this.attributesRef[key] !== undefined && this.attributesRef[key] !== this.attributes[key]) {
+                diff[key] = this.attributes[key];
+            }
+        });
+
+        return diff;
     }
 }

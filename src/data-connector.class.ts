@@ -73,6 +73,16 @@ export class DataConnector {
         return false;
     }
 
+    private getExclusions(type:string):string[] {
+        let conf:string|EndpointConfig = this.getEndpointConfiguration(type);
+
+        if (conf && typeof conf === "object") {
+            return conf.exclusions ? conf.exclusions : [];
+        }
+
+        return [];
+    }
+
     private getEntityObservableInStore(type:string, id:number):Observable<DataEntity> {
 
         if (this.entitiesLiveStore[type]) {
@@ -220,7 +230,51 @@ export class DataConnector {
     }
 
     saveEntity(entity:DataEntity):Observable<DataEntity> {
-        return Observable.create();
+
+        let selectedInterface:ExternalInterface = this.getInterface(entity.type);
+        let structure:ModelSchema = this.getEndpointStructureModel(entity.type);
+
+        // TODO: c'est ici qu'on doit générer le diff (ou pas) et les exclusions (ou pas)
+
+        let dataToSave:EntityDataSet;
+
+        if (selectedInterface.useDiff) {
+            dataToSave = entity.getDiff();
+        } else {
+            dataToSave = entity.getClone();
+        }
+
+        let exclusions:string[] = this.getExclusions(entity.type);
+
+        exclusions.forEach((key:string) => {
+            if (dataToSave[key]) {
+                delete dataToSave[key];
+            }
+        });
+
+        let entityData:EntityDataSet|Observable<EntityDataSet> = selectedInterface.saveEntity(dataToSave, entity.type, entity.id);
+
+        let entityObservable:Observable<DataEntity> = this.getEntityObservable(entity.type, entity.id);
+
+        if (entityData instanceof Observable) {
+            entityData.take(1).subscribe((saveEntity:EntityDataSet) => {
+
+                if (structure) {
+                    saveEntity = structure.filterModel(saveEntity);
+                }
+
+                this.registerEntity(entity.type, entity.id, new DataEntity(entity.type, saveEntity, this, entity.id));
+            });
+        } else {
+
+            if (structure) {
+                entityData = structure.filterModel(entityData);
+            }
+
+            this.registerEntity(entity.type, entity.id, new DataEntity(entity.type, entityData, this, entity.id));
+        }
+
+        return entityObservable;
     }
 
     createEntity(type:string, data:{[key:string]:any}):Observable<DataEntity> {
@@ -231,6 +285,14 @@ export class DataConnector {
         if (structure) {
             data = structure.generateModel(null, data);
         }
+
+        let exclusions:string[] = this.getExclusions(type);
+
+        exclusions.forEach((key:string) => {
+            if (data[key]) {
+                delete data[key];
+            }
+        });
 
         let entity:EntityDataSet|Observable<EntityDataSet> = selectedInterface.createEntity(type, data);
 
@@ -247,5 +309,23 @@ export class DataConnector {
         }
 
         return entitySubject;
+    }
+
+    deleteEntity(entity:DataEntity):Observable<boolean> {
+        let selectedInterface:ExternalInterface = this.getInterface(entity.type);
+
+        let subject:ReplaySubject<boolean> = new ReplaySubject<boolean>(1);
+
+        let result:boolean|Observable<boolean> = selectedInterface.deleteEntity(entity.type, entity.id);
+
+        if (result instanceof Observable) {
+            result.take(1).subscribe((res:boolean) => {
+                subject.next(res);
+            });
+        } else {
+            subject.next(result);
+        }
+
+        return subject;
     }
 }

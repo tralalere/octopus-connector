@@ -3,6 +3,7 @@ import {DataConnector} from "../../data-connector.class";
 import {HttpConfiguration} from "./http-configuration.interface";
 import {BehaviorSubject, Observable, ReplaySubject} from "rxjs/Rx";
 import {CollectionDataSet, EntityDataSet} from "../../types";
+import {DataEntity} from "../../data-structures/data-entity.class";
 
 export class Http extends ExternalInterface {
 
@@ -11,6 +12,7 @@ export class Http extends ExternalInterface {
         private connector:DataConnector
     ) {
         super();
+        this.useDiff = true;
     }
 
     loadEntity(type:string, id:number):Observable<EntityDataSet> {
@@ -58,8 +60,67 @@ export class Http extends ExternalInterface {
         return subject;
     }
 
+    saveEntity(entity:EntityDataSet, type:string, id:number):Observable<EntityDataSet> {
+        let request:XMLHttpRequest = new XMLHttpRequest();
+        request.open("PATCH", <string>this.configuration.apiUrl + type + "/" + id, true);
+
+        let subject:ReplaySubject<CollectionDataSet> = new ReplaySubject<EntityDataSet>(1);
+
+        request.onreadystatechange = () => {
+            if (request.readyState === XMLHttpRequest.DONE) {
+                if (request.status === 200) {
+                    subject.next(this.extractEntity(type, request.responseText));
+                } else {
+                    subject.error("Error saving entity " + type + " with id " + id);
+                }
+            }
+        };
+
+        request.send(JSON.stringify(entity));
+
+        return subject;
+    }
+
     createEntity(type:string, data:{[key:string]:any}):Observable<EntityDataSet> {
-        return null;
+        let request:XMLHttpRequest = new XMLHttpRequest();
+        request.open("POST", <string>this.configuration.apiUrl + type, true);
+
+        let subject:ReplaySubject<CollectionDataSet> = new ReplaySubject<EntityDataSet>(1);
+
+        request.onreadystatechange = () => {
+            if (request.readyState === XMLHttpRequest.DONE) {
+                if (request.status === 200) {
+                    subject.next(this.extractEntity(type, request.responseText));
+                } else {
+                    subject.error("Error creating entity " + type);
+                }
+            }
+        };
+
+        request.send(JSON.stringify(data));
+
+        return subject;
+    }
+
+    deleteEntity(type:string, id:number):Observable<boolean> {
+        let request:XMLHttpRequest = new XMLHttpRequest();
+        request.open("DELETE", <string>this.configuration.apiUrl + type + "/" + id, true);
+
+        let subject:ReplaySubject<boolean> = new ReplaySubject<boolean>(1);
+
+        request.onreadystatechange = () => {
+            if (request.readyState === XMLHttpRequest.DONE) {
+                if (request.status === 200) {
+                    subject.next(true);
+                } else {
+                    subject.error("Error deleting entity " + type);
+                }
+            }
+        };
+
+        request.send();
+
+        return subject;
     }
 
     authenticate(login:string, password:string):Observable<boolean> {

@@ -6,6 +6,7 @@ import {LocalStorageConfiguration} from "./local-storage-configuration.interface
 import {DataConnector} from "../../data-connector.class";
 import {ExternalInterface} from "../abstract-external-interface.class";
 import {CollectionDataSet, EntityDataSet} from "../../types";
+import {DataEntity} from "../../data-structures/data-entity.class";
 
 export class LocalStorage extends ExternalInterface {
 
@@ -16,6 +17,7 @@ export class LocalStorage extends ExternalInterface {
         private connector:DataConnector
     ) {
         super();
+        this.useDiff = false;
     }
 
     private getPrefixedType(type:string):string {
@@ -53,6 +55,18 @@ export class LocalStorage extends ExternalInterface {
         let pointName:string = this.getPrefixedType(type);
         this.loadPointFromStorageIfEmpty(type);
         return this.dataStore[pointName][id];
+    }
+
+    private deleteEntityFromStore(type:string, id:number):boolean {
+        let pointName:string = this.getPrefixedType(type);
+        this.loadPointFromStorageIfEmpty(type);
+
+        if (this.dataStore[pointName][id]) {
+            delete this.dataStore[pointName][id];
+            return true;
+        }
+
+        return false;
     }
 
     private getCollectionFromStore(type:string, filter:{[key:string]:any} = {}):CollectionDataSet {
@@ -120,8 +134,11 @@ export class LocalStorage extends ExternalInterface {
         return data ? data : null;
     }
 
-    saveEntity():Observable<EntityDataSet> {
-        return Observable.create();
+    saveEntity(entity:EntityDataSet, type:string, id:number):EntityDataSet {
+        this.loadPointFromStorageIfEmpty(type);
+        this.setEntityInStore(type, id, entity);
+
+        return entity;
     }
 
     createEntity(type:string, data:EntityDataSet):EntityDataSet {
@@ -129,5 +146,10 @@ export class LocalStorage extends ExternalInterface {
         data.id = newId;
         this.setEntityInStore(type, newId, data);
         return data;
+    }
+
+    deleteEntity(type:string, id:number):boolean {
+        this.loadPointFromStorageIfEmpty(type);
+        return this.deleteEntityFromStore(type, id);
     }
 }

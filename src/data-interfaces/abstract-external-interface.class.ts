@@ -8,6 +8,8 @@ import {BehaviorSubject} from "rxjs/BehaviorSubject";
 import {CollectionDataSet, EntityDataSet} from "../types";
 
 export abstract class ExternalInterface {
+
+    useDiff:boolean = false;
     
     loadEntity(type:string, id:number, fields:string[] = []):EntityDataSet|Observable<EntityDataSet> {
         console.warn("LoadEntity not implemented in interface");
@@ -24,8 +26,13 @@ export abstract class ExternalInterface {
         return null;
     }
 
-    deleteEntity(type:string, id:number):Observable<boolean> {
+    deleteEntity(type:string, id:number):boolean|Observable<boolean> {
         console.warn("DeleteEntity not implemented in interface");
+        return null;
+    }
+
+    saveEntity(data:EntityDataSet, type:string, id:number):EntityDataSet|Observable<EntityDataSet> {
+        console.warn("SaveEntity not implemented in interface");
         return null;
     }
 
