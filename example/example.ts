@@ -27,9 +27,9 @@ let connector:DataConnector = new DataConnector({
     }
 });
 
-connector.createEntity("endpoint2", {key1: "val1", key2: "val2"}).subscribe((data:DataEntity) => {
+/*connector.createEntity("endpoint2", {key1: "val1", key2: "val2"}).subscribe((data:DataEntity) => {
     console.log(data);
-});
+});*/
 
 /*connector.loadEntity("lesson_light", 6).subscribe((data:DataEntity) => {
     console.log(data);
@@ -39,6 +39,6 @@ connector.createEntity("endpoint2", {key1: "val1", key2: "val2"}).subscribe((dat
     console.log(collection);
 });*/
 
-/*connector.loadCollection("endpoint1").subscribe((data:DataCollection) => {
+connector.loadCollection("endpoint1").subscribe((data:DataCollection) => {
     console.log(data);
-});*/
+});

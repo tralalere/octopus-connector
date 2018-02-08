@@ -14,9 +14,5 @@ export interface DataConnectorConfig {
     };
     declarations?:any;
     map?:{[key:string]:string|EndpointConfig};
-    cached?:string[];
-
-    // ici déclaration des structures octopusModel
-    structures?:{[key:string]:string};
-    interfaces?:{[key:string]:ExternalInterface}
+    interfaces?:{[key:string]:ExternalInterface};
 }
