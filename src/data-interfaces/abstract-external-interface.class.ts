@@ -5,8 +5,11 @@ import {Observable} from "rxjs/Rx";
 import {DataEntity} from "../data-structures/data-entity.class";
 import {DataCollection} from "../data-structures/data-collection.class";
 import {BehaviorSubject} from "rxjs/BehaviorSubject";
-import {CollectionDataSet, EntityDataSet} from "../types";
+import {CollectionDataSet, EntityDataSet, FilterData} from "../types";
 
+/**
+ * Base external interface
+ */
 export abstract class ExternalInterface {
 
     /**
@@ -29,10 +32,10 @@ export abstract class ExternalInterface {
     /**
      * Load an entity collection from the service
      * @param {string} type Name of the endpoint
-     * @param {{[p: string]: any}} filter Collection filter object
+     * @param {FilterData} filter Collection filter object
      * @returns {CollectionDataSet | Observable<CollectionDataSet>} A collection set of data, or an observable
      */
-    loadCollection(type:string, filter:{[key:string]:any} = {}):CollectionDataSet|Observable<CollectionDataSet> {
+    loadCollection(type:string, filter:FilterData):CollectionDataSet|Observable<CollectionDataSet> {
         console.warn("LoadCollection not implemented in interface");
         return null;
     }
@@ -40,10 +43,10 @@ export abstract class ExternalInterface {
     /**
      * Create an entity on the service
      * @param {string} type Endpoint name
-     * @param {{[p: string]: any}} data Base data used to create the entity
+     * @param {EntityDataSet} data Base data used to create the entity
      * @returns {EntityDataSet | Observable<EntityDataSet>} A set of data, or an observable
      */
-    createEntity(type:string, data:{[key:string]:any}):EntityDataSet|Observable<EntityDataSet> {
+    createEntity(type:string, data:EntityDataSet):EntityDataSet|Observable<EntityDataSet> {
         console.warn("CreateEntity not implemented in interface");
         return null;
     }

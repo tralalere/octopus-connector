@@ -1,3 +1,6 @@
+/**
+ * Header object
+ */
 export interface HeaderObject {
 
     /**
@@ -11,6 +14,9 @@ export interface HeaderObject {
     value:string;
 }
 
+/**
+ * Http interface configuration
+ */
 export interface HttpConfiguration {
 
     /**

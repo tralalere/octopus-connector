@@ -4,16 +4,43 @@ import * as ObjectHash from "object-hash";
 import {BehaviorSubject} from "rxjs/Rx";
 import {ReplaySubject} from "rxjs/Rx";
 import {DataEntity} from "../data-structures/data-entity.class";
+import {FilterData} from "../types";
 
+/**
+ * Collection store: where the collections and the collection observables are stored for an endpoint
+ */
 export class CollectionStore {
 
+    /**
+     * Stored collection observables, indexed by filter hash
+     * @type {{}}
+     */
     private collectionObservables:{[key:string]:ReplaySubject<DataCollection>} = {};
-    private filters:{[key:string]:any} = {};
+
+    /**
+     * Filters indexed by their hash
+     * @type {{}}
+     */
+    private filters:FilterData = {};
+
+    /**
+     * Stored collections, indexed by filter hash
+     * @type {{}}
+     */
     private collections:{[key:string]:DataCollection} = {};
 
+    /**
+     * Creates the store
+     */
     constructor() {}
 
-    registerCollection(collection:DataCollection, filter:{[key:string]:any}):Observable<DataCollection> {
+    /**
+     * Registers the collection in store and update associated subject. If the subject does not exists, creates it
+     * @param {DataCollection} collection Collection to register
+     * @param {FilterData} filter Collection filter
+     * @returns {Observable<DataCollection>} Observable associated to the collection
+     */
+    registerCollection(collection:DataCollection, filter:FilterData):Observable<DataCollection> {
 
         let hash:string = ObjectHash(filter);
         this.filters[hash] = filter;
@@ -30,6 +57,7 @@ export class CollectionStore {
         }
     }
 
+    // TODO: à terminer
     registerEntityInCollections(entity:DataEntity) {
         let collectionKeys:string[] = Object.keys(this.collections);
 
@@ -43,7 +71,13 @@ export class CollectionStore {
         });
     }
 
-    matchFilter(entity:DataEntity, filter:{[key:string]:any}):boolean {
+    /**
+     * Test if the entity matches the filter
+     * @param {DataEntity} entity Entity to test
+     * @param {FilterData} filter Filter object
+     * @returns {boolean} True if the entity matches the filter
+     */
+    matchFilter(entity:DataEntity, filter:FilterData):boolean {
         let filterKeys:string[] = Object.keys(filter);
 
         for (let key of filterKeys) {
@@ -55,7 +89,12 @@ export class CollectionStore {
         return true;
     }
 
-    getCollectionObservable(filter:{[key:string]:any}):Observable<DataCollection> {
+    /**
+     * Returns the observable associated to the specified filter
+     * @param {FilterData} filter Filter object
+     * @returns {Observable<DataCollection>} The observable associated to the filter object
+     */
+    getCollectionObservable(filter:FilterData):Observable<DataCollection> {
 
         let hash:string = ObjectHash(filter);
 

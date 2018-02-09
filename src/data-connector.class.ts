@@ -3,11 +3,11 @@
  */
 import {DataConnectorConfig} from "./data-connector-config.interface";
 import {DataEntity} from "./data-structures/data-entity.class";
-import {Observable, BehaviorSubject} from "rxjs/Rx";
+import {Observable} from "rxjs/Rx";
 import {DataCollection} from "./data-structures/data-collection.class";
 import {ExternalInterface} from "./data-interfaces/abstract-external-interface.class";
 import {LocalStorage} from "./data-interfaces/local-storage/local-storage.class";
-import {CollectionDataSet, EntityDataSet, NumberDictionary, StringDictionary} from "./types";
+import {CollectionDataSet, EntityDataSet, FilterData} from "./types";
 import {Http} from "./data-interfaces/http/http.class";
 import {Nodejs} from "./data-interfaces/nodejs/nodejs.class";
 import {CollectionStore} from "./stores/collection-store.class";
@@ -16,19 +16,43 @@ import {ReplaySubject} from "rxjs/Rx";
 import {EndpointConfig} from "./endpoint-config.interface";
 import {ModelSchema} from "octopus-model";
 
+/**
+ * Data connector class
+ */
 export class DataConnector {
 
+    /**
+     * Available interfaces
+     * @type {{}} External interfaces, indexed by name
+     */
     private interfaces:{[key:string]:ExternalInterface} = {};
 
+    /**
+     * Entities store
+     * @type {{}} Entities stores, indexed by endpoint name
+     */
     private entitiesLiveStore:{[key:string]:EntityStore} = {};
+
+    /**
+     * Collections store
+     * @type {{}} Collections stores, indexed by endpoint name
+     */
     private collectionsLiveStore:{[key:string]:CollectionStore} = {};
 
+    /**
+     * Built-in external interfaces
+     * @type {{}}
+     */
     private builtInFactories:{[key:string]:any} = {
         localstorage: LocalStorage,
         http: Http,
         nodejs: Nodejs
     };
 
+    /**
+     * Create a dataConnector
+     * @param {DataConnectorConfig} configuration Data connector configuration
+     */
     constructor(
         private configuration:DataConnectorConfig
     ) {
@@ -39,6 +63,11 @@ export class DataConnector {
         }
     }
 
+    /**
+     * Get data interface by endpoint name
+     * @param {string} type Endpoint name
+     * @returns {ExternalInterface} External interface
+     */
     private getInterface(type:string):ExternalInterface {
         let conf:string|EndpointConfig = this.getEndpointConfiguration(type);
 
@@ -51,10 +80,20 @@ export class DataConnector {
         }
     }
 
+    /**
+     * Get endpoint configuration
+     * @param {string} type Endpoint name
+     * @returns {string | EndpointConfig} Type of the endpoint, or endpoint configuration object
+     */
     private getEndpointConfiguration(type:string):string|EndpointConfig {
         return this.configuration.map[type];
     }
 
+    /**
+     * Get model schema used by the endpoint
+     * @param {string} type Endpoint name
+     * @returns {ModelSchema} The model schema
+     */
     private getEndpointStructureModel(type:string):ModelSchema {
         let conf:string|EndpointConfig = this.getEndpointConfiguration(type);
 
@@ -63,6 +102,11 @@ export class DataConnector {
         }
     }
 
+    /**
+     * Is this endpoint using connector cache
+     * @param {string} type Name of the endpoint
+     * @returns {boolean} True if the endpoint use cache
+     */
     private useCache(type:string):boolean {
         let conf:string|EndpointConfig = this.getEndpointConfiguration(type);
 
@@ -73,6 +117,11 @@ export class DataConnector {
         return false;
     }
 
+    /**
+     * Get optional keys excluded for saving entities in this endpoint
+     * @param {string} type Endpoint name
+     * @returns {string[]} A list of string keys
+     */
     private getExclusions(type:string):string[] {
         let conf:string|EndpointConfig = this.getEndpointConfiguration(type);
 
@@ -83,6 +132,12 @@ export class DataConnector {
         return [];
     }
 
+    /**
+     * Get the observable associated to an entity from the store
+     * @param {string} type Endpoint name
+     * @param {number} id Id of the entity
+     * @returns {Observable<DataEntity>} The observable associated to the entity
+     */
     private getEntityObservableInStore(type:string, id:number):Observable<DataEntity> {
 
         if (this.entitiesLiveStore[type]) {
@@ -92,7 +147,13 @@ export class DataConnector {
         return null;
     }
 
-    private getCollectionObservableInStore(type:string, filter:{[key:string]:any}):Observable<DataCollection> {
+    /**
+     * Get the observable associated to the collection from the store
+     * @param {string} type Endpoint name
+     * @param {FilterData} filter Filter object
+     * @returns {Observable<DataCollection>} The observable associated to the collection
+     */
+    private getCollectionObservableInStore(type:string, filter:FilterData):Observable<DataCollection> {
         if (this.collectionsLiveStore[type]) {
             return this.collectionsLiveStore[type].getCollectionObservable(filter);
         }
@@ -100,6 +161,12 @@ export class DataConnector {
         return null;
     }
 
+    /**
+     * Get the observable associated to an entity from the store, if the store is undefined, create it
+     * @param {string} type Endpoint name
+     * @param {number} id Id of the entity
+     * @returns {Observable<DataEntity>} The observable associated to the entity
+     */
     private getEntityObservable(type:string, id:number):Observable<DataEntity> {
 
         if (!this.entitiesLiveStore[type]) {
@@ -109,6 +176,13 @@ export class DataConnector {
         return this.entitiesLiveStore[type].getEntityObservable(id);
     }
 
+    /**
+     * Register entity in the stores
+     * @param {string} type Endpoint name
+     * @param {number} id Id of the entity
+     * @param {DataEntity} entity Entity
+     * @returns {Observable<DataEntity>} The observable associated to the entity
+     */
     private registerEntity(type:string, id:number, entity:DataEntity):Observable<DataEntity> {
 
         if (!this.entitiesLiveStore[type]) {
@@ -125,6 +199,12 @@ export class DataConnector {
         return this.entitiesLiveStore[type].registerEntity(entity, id);
     }
 
+    /**
+     * Associate an entity suject the the entity in the entity store
+     * @param {string} type Endpoint name
+     * @param {number} id Id of the entity
+     * @param {ReplaySubject<DataEntity>} subject Subject to associate
+     */
     private registerEntitySubject(type:string, id:number, subject:ReplaySubject<DataEntity>) {
 
         if (!this.entitiesLiveStore[type]) {
@@ -134,7 +214,13 @@ export class DataConnector {
         this.entitiesLiveStore[type].registerEntitySubject(id, subject);
     }
 
-    private getCollectionObservable(type:string, filter:{[key:string]:any}):Observable<DataCollection> {
+    /**
+     * Get observable associated to the collection from the store. If store is undefined, create it
+     * @param {string} type Endpoint name
+     * @param {FilterData} filter Filter object
+     * @returns {Observable<DataCollection>} Observable associated to the collection
+     */
+    private getCollectionObservable(type:string, filter:FilterData):Observable<DataCollection> {
 
         if (!this.collectionsLiveStore[type]) {
             this.collectionsLiveStore[type] = new CollectionStore();
@@ -143,7 +229,14 @@ export class DataConnector {
         return this.collectionsLiveStore[type].getCollectionObservable(filter);
     }
 
-    private registerCollection(type:string, filter:{[key:string]:any}, collection:DataCollection):Observable<DataCollection> {
+    /**
+     * Register the collection and collection entities in the store
+     * @param {string} type Endpoint name
+     * @param {FilterData} filter Filter object
+     * @param {DataCollection} collection Collection to register
+     * @returns {Observable<DataCollection>} The observable associated to the collection
+     */
+    private registerCollection(type:string, filter:FilterData, collection:DataCollection):Observable<DataCollection> {
 
         if (!this.collectionsLiveStore[type]) {
             this.collectionsLiveStore[type] = new CollectionStore();
@@ -161,14 +254,29 @@ export class DataConnector {
         return this.collectionsLiveStore[type].registerCollection(collection, filter);
     }
 
+    /**
+     * Authenticate to the service
+     * @param {string} login User login
+     * @param {string} password User password
+     */
     authenticate(login:string, password:string) {
 
     }
 
-    release() {
+    /**
+     * Release endpoint if not used
+     * @param {string} type Endpoint name
+     */
+    release(type:string) {
 
     }
 
+    /**
+     * Load entity in specified endpoint
+     * @param {string} type Endpoint name
+     * @param {number} id Entity id
+     * @returns {Observable<DataEntity>} DataEntity observable associated to this entity
+     */
     loadEntity(type:string, id:number):Observable<DataEntity> {
 
         if (this.useCache(type)) {
@@ -219,7 +327,13 @@ export class DataConnector {
 
     }
 
-    loadCollection(type:string, filter:{[key:string]:any} = {}):Observable<DataCollection> {
+    /**
+     * Load collection from specified endpoint
+     * @param {string} type Endpoint name
+     * @param {FilterData} filter Filter object
+     * @returns {Observable<DataCollection>} Observable associated to this collection
+     */
+    loadCollection(type:string, filter:FilterData = {}):Observable<DataCollection> {
 
         if (this.useCache(type)) {
             let obs:Observable<DataCollection> = this.getCollectionObservableInStore(type, filter);
@@ -250,12 +364,15 @@ export class DataConnector {
         return null;
     }
 
+    /**
+     * Save entity
+     * @param {DataEntity} entity Entity to save
+     * @returns {Observable<DataEntity>} Observable associated to the entity
+     */
     saveEntity(entity:DataEntity):Observable<DataEntity> {
 
         let selectedInterface:ExternalInterface = this.getInterface(entity.type);
         let structure:ModelSchema = this.getEndpointStructureModel(entity.type);
-
-        // TODO: c'est ici qu'on doit générer le diff (ou pas) et les exclusions (ou pas)
 
         let dataToSave:EntityDataSet;
 
@@ -298,7 +415,13 @@ export class DataConnector {
         return entityObservable;
     }
 
-    createEntity(type:string, data:{[key:string]:any} = {}):Observable<DataEntity> {
+    /**
+     * Create entity to the specified endpoint service
+     * @param {string} type Endpoint name
+     * @param {EntityDataSet} data Data used to create the entity
+     * @returns {Observable<DataEntity>} The observable associated to this entity
+     */
+    createEntity(type:string, data:EntityDataSet = {}):Observable<DataEntity> {
         let selectedInterface:ExternalInterface = this.getInterface(type);
 
         let structure:ModelSchema = this.getEndpointStructureModel(type);
@@ -332,6 +455,11 @@ export class DataConnector {
         return entitySubject;
     }
 
+    /**
+     * Delete an entity
+     * @param {DataEntity} entity Entity to delete
+     * @returns {Observable<boolean>} True if deletion success
+     */
     deleteEntity(entity:DataEntity):Observable<boolean> {
         let selectedInterface:ExternalInterface = this.getInterface(entity.type);
 

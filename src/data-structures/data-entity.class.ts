@@ -3,15 +3,34 @@
  */
 import {DataConnector} from "../data-connector.class";
 import {Observable} from "rxjs/Rx";
+import {EntityDataSet} from "../types";
 
+/**
+ * Data entity unit object
+ */
 export class DataEntity {
 
+    /**
+     * Entity attributes
+     * @type {{}}
+     */
     attributes:{[key:string]:any} = {};
+
+    /**
+     * Reference object for diff
+     */
     private attributesRef:{[key:string]:any};
 
+    /**
+     * Create the data entity
+     * @param {string} type Type of the entity
+     * @param {EntityDataSet} data Entity data
+     * @param {DataConnector} connector Reference to the connector
+     * @param {number} id Entity id
+     */
     constructor(
         public type:string,
-        data:{[key:string]:any},
+        data:EntityDataSet,
         private connector:DataConnector = null,
         public id:number = null
     ) {
@@ -28,14 +47,28 @@ export class DataEntity {
         this.generateReferenceObject();
     }
 
+    /**
+     * Set an attribute by key
+     * @param {string} key Key name
+     * @param value New value
+     */
     set(key:string, value:any) {
         this.attributes[key] = value;
     }
 
+    /**
+     * Get an attribute by key
+     * @param {string} key Key name
+     * @returns {any} Value
+     */
     get(key:string):any {
         return this.attributes[key];
     }
-    
+
+    /**
+     * Save the entity
+     * @returns {Observable<DataEntity>} The observable associated to the entity in connector stores
+     */
     save():Observable<DataEntity> {
         let obs:Observable<DataEntity> = this.connector.saveEntity(this);
 
@@ -46,10 +79,17 @@ export class DataEntity {
         return obs;
     }
 
+    /**
+     * Delete the entity
+     * @returns {Observable<boolean>} True if deletion success
+     */
     remove():Observable<boolean> {
         return this.connector.deleteEntity(this);
     }
 
+    /**
+     * Copy the attributes to generate the new reference object (for diff)
+     */
     private generateReferenceObject() {
         let ref:{[key:string]:any} = {};
 
@@ -62,8 +102,12 @@ export class DataEntity {
         this.attributesRef = ref;
     }
 
-    getClone():{[key:string]:any} {
-        let clone:{[key:string]:any} = {};
+    /**
+     * Get an attributes cloned object
+     * @returns {EntityDataSet} The cloned attributes object
+     */
+    getClone():EntityDataSet {
+        let clone:EntityDataSet = {};
 
         let keys:string[] = Object.keys(this.attributes);
 
@@ -74,8 +118,12 @@ export class DataEntity {
         return clone;
     }
 
-    getDiff():{[key:string]:any} {
-        let diff:{[key:string]:any} = {};
+    /**
+     * Return the diff (only updated properties since last save action)
+     * @returns {EntityDataSet} Diff object
+     */
+    getDiff():EntityDataSet {
+        let diff:EntityDataSet = {};
 
         let keys:string[] = Object.keys(this.attributes);
 

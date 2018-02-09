@@ -7,11 +7,30 @@ import {CollectionDataSet, EntityDataSet} from "../types";
 import {Observable} from "rxjs/Observable";
 import {ModelSchema} from "octopus-model";
 
+/**
+ * Data collection object
+ */
 export class DataCollection {
 
+    /**
+     * Entities contained by collection
+     * @type {any[]}
+     */
     entities:DataEntity[] = [];
+
+    /**
+     * Observables of entities contained by collection
+     * @type {any[]}
+     */
     entitiesObservables:Observable<DataEntity>[] = [];
 
+    /**
+     * Creates the collection
+     * @param {string} type
+     * @param {CollectionDataSet | EntityDataSet[]} data
+     * @param {DataConnector} connector
+     * @param {ModelSchema} structure
+     */
     constructor(
         public type:string,
         data:CollectionDataSet|EntityDataSet[],

@@ -1,25 +1,41 @@
 /**
  * Created by Christophe on 20/11/2017.
  */
-import {DataEntity} from "./data-structures/data-entity.class";
 
-export interface EntitiesDictionary {
-    [key:number]:DataEntity;
-}
-
-export interface NumberDictionary<T> {
-    [key:number]:T;
-}
-
-export interface StringDictionary<T> {
-    [key:string]:T;
-}
-
+/**
+ * Entity raw data
+ */
 export interface EntityDataSet {
+
+    /**
+     * Entity attributes, indexed by string
+     */
     [key:number]:any;
+
+    /**
+     * Optional entity id
+     */
     id?:number;
 }
 
+/**
+ * Collection raw data
+ */
 export interface CollectionDataSet {
+
+    /**
+     * Entities data, indexed by id
+     */
     [key:number]:EntityDataSet;
+}
+
+/**
+ * Filter object
+ */
+export interface FilterData {
+
+    /**
+     * Filter properties, indexed by string key name
+     */
+    [key:string]:any;
 }
