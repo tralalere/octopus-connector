@@ -60,4 +60,32 @@ export class DataCollection {
         }
 
     }
+
+    /**
+     * Remove entity from collection
+     * @param {number} id Id of the entity to delete
+     */
+    deleteEntity(id:number) {
+        this.entities.forEach((entity:DataEntity, index:number) => {
+            if (entity.id === id) {
+                this.entities.splice(index, 1);
+                this.entitiesObservables.splice(index, 1);
+            }
+        });
+    }
+
+    /**
+     * Register entity in collection, if not already contained by the collection
+     * @param {DataEntity} entity Entity to register
+     */
+    registerEntity(entity:DataEntity, entityObservable:Observable<DataEntity>) {
+        for (let collectionEntity of this.entities) {
+            if (entity.id === collectionEntity.id) {
+                return;
+            }
+        }
+
+        this.entities.push(entity);
+        this.entitiesObservables.push(entityObservable);
+    }
 }

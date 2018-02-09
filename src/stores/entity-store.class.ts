@@ -12,7 +12,7 @@ export class EntityStore {
      * Stores entities subjects, indexed by entity id
      * @type {{}}
      */
-    private entities:{[key:number]:ReplaySubject<DataEntity>} = {};
+    private entitiesObservables:{[key:number]:ReplaySubject<DataEntity>} = {};
 
     /**
      * Creates the store
@@ -27,13 +27,13 @@ export class EntityStore {
      */
     registerEntity(entity:DataEntity, id:number):Observable<DataEntity> {
 
-        if (this.entities[id]) {
-            this.entities[id].next(entity);
-            return this.entities[id];
+        if (this.entitiesObservables[id]) {
+            this.entitiesObservables[id].next(entity);
+            return this.entitiesObservables[id];
         } else {
             let subject:ReplaySubject<DataEntity> = new ReplaySubject<DataEntity>(1);
             subject.next(entity);
-            this.entities[id] = subject;
+            this.entitiesObservables[id] = subject;
             return subject;
         }
 
@@ -45,7 +45,15 @@ export class EntityStore {
      * @param {ReplaySubject<DataEntity>} subject Subject to register
      */
     registerEntitySubject(id:number, subject:ReplaySubject<DataEntity>) {
-        this.entities[id] = subject;
+        this.entitiesObservables[id] = subject;
+    }
+
+    /**
+     * Delete entity from store
+     * @param {DataEntity} entity Entity to delete
+     */
+    unregisterEntity(entity:DataEntity) {
+        delete this.entitiesObservables[entity.id];
     }
 
     /**
@@ -55,11 +63,11 @@ export class EntityStore {
      */
     getEntityObservable(id:number):Observable<DataEntity> {
 
-        if (this.entities[id]) {
-            return this.entities[id];
+        if (this.entitiesObservables[id]) {
+            return this.entitiesObservables[id];
         } else {
             let subject:ReplaySubject<DataEntity> = new ReplaySubject<DataEntity>(1);
-            this.entities[id] = subject;
+            this.entitiesObservables[id] = subject;
             return subject;
         }
     }

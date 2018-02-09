@@ -183,7 +183,7 @@ export class DataConnector {
      * @param {DataEntity} entity Entity
      * @returns {Observable<DataEntity>} The observable associated to the entity
      */
-    private registerEntity(type:string, id:number, entity:DataEntity):Observable<DataEntity> {
+    private registerEntity(type:string, id:number, entity:DataEntity, entityObservable:Observable<DataEntity>):Observable<DataEntity> {
 
         if (!this.entitiesLiveStore[type]) {
             this.entitiesLiveStore[type] = new EntityStore();
@@ -193,11 +193,13 @@ export class DataConnector {
             this.collectionsLiveStore[type] = new CollectionStore();
         }
 
-        // TODO: on met à jour toutes les collections pouvant accepter l'entité
-        this.collectionsLiveStore[type].registerEntityInCollections(entity);
-
+        this.collectionsLiveStore[entity.type].registerEntityInCollections(entity, entityObservable);
         return this.entitiesLiveStore[type].registerEntity(entity, id);
     }
+
+    /*private registerEntityInCollection(entity:DataEntity) {
+
+    }*/
 
     /**
      * Associate an entity suject the the entity in the entity store
@@ -242,11 +244,14 @@ export class DataConnector {
             this.collectionsLiveStore[type] = new CollectionStore();
         }
 
+
+
         // registering entities
         let entitiesObservables:Observable<DataEntity>[] = [];
 
         collection.entities.forEach((entity:DataEntity) => {
-            entitiesObservables.push(this.registerEntity(type, entity.id, entity));
+            let entityObservable:Observable<DataEntity> = this.getEntityObservable(type, entity.id);
+            entitiesObservables.push(this.registerEntity(type, entity.id, entity, entityObservable));
         });
 
         collection.entitiesObservables = entitiesObservables;
@@ -303,7 +308,7 @@ export class DataConnector {
                             entity = structure.filterModel(entity);
                         }
 
-                        this.registerEntity(type, id, new DataEntity(type, entity, this, id));
+                        this.registerEntity(type, id, new DataEntity(type, entity, this, id), entityObservable);
                     }
 
                 });
@@ -314,17 +319,13 @@ export class DataConnector {
                         entityData = structure.filterModel(entityData);
                     }
 
-                    this.registerEntity(type, id, new DataEntity(type, entityData, this, id));
+                    this.registerEntity(type, id, new DataEntity(type, entityData, this, id), entityObservable);
                 }
 
             }
 
             return entityObservable;
         }
-    }
-
-    loadEntities() {
-
     }
 
     /**
@@ -401,7 +402,7 @@ export class DataConnector {
                     saveEntity = structure.filterModel(saveEntity);
                 }
 
-                this.registerEntity(entity.type, entity.id, new DataEntity(entity.type, saveEntity, this, entity.id));
+                this.registerEntity(entity.type, entity.id, new DataEntity(entity.type, saveEntity, this, entity.id), entityObservable);
             });
         } else {
 
@@ -409,7 +410,7 @@ export class DataConnector {
                 entityData = structure.filterModel(entityData);
             }
 
-            this.registerEntity(entity.type, entity.id, new DataEntity(entity.type, entityData, this, entity.id));
+            this.registerEntity(entity.type, entity.id, new DataEntity(entity.type, entityData, this, entity.id), entityObservable);
         }
 
         return entityObservable;
@@ -421,7 +422,7 @@ export class DataConnector {
      * @param {EntityDataSet} data Data used to create the entity
      * @returns {Observable<DataEntity>} The observable associated to this entity
      */
-    createEntity(type:string, data:EntityDataSet = {}):Observable<DataEntity> {
+    createEntity(type:string, data:{[key:string]:any} = {}):Observable<DataEntity> {
         let selectedInterface:ExternalInterface = this.getInterface(type);
 
         let structure:ModelSchema = this.getEndpointStructureModel(type);
@@ -445,11 +446,11 @@ export class DataConnector {
         if (entity instanceof Observable) {
             entity.take(1).subscribe((createdEntity:EntityDataSet) => {
                 this.registerEntitySubject(type, createdEntity.id, entitySubject);
-                this.registerEntity(type, createdEntity.id, new DataEntity(type, createdEntity, this, createdEntity.id));
+                this.registerEntity(type, createdEntity.id, new DataEntity(type, createdEntity, this, createdEntity.id), entitySubject);
             });
         } else {
             this.registerEntitySubject(type, entity.id, entitySubject);
-            this.registerEntity(type, entity.id, new DataEntity(type, entity, this, entity.id));
+            this.registerEntity(type, entity.id, new DataEntity(type, entity, this, entity.id), entitySubject);
         }
 
         return entitySubject;
@@ -469,12 +470,24 @@ export class DataConnector {
 
         if (result instanceof Observable) {
             result.take(1).subscribe((res:boolean) => {
+                this.unregisterEntity(entity);
                 subject.next(res);
             });
         } else {
+            this.unregisterEntity(entity);
             subject.next(result);
         }
 
         return subject;
+    }
+
+
+    /**
+     * Delete entity from store
+     * @param {DataEntity} entity Entity to delete
+     */
+    private unregisterEntity(entity:DataEntity) {
+        this.collectionsLiveStore[entity.type].deleteEntityFromCollection(entity);
+        this.entitiesLiveStore[entity.type].unregisterEntity(entity);
     }
 }

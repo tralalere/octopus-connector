@@ -17,47 +17,54 @@ let connector:DataConnector = new DataConnector({
         }
     },
     map: {
-        "endpoint1": {
+        "test-endpoint": {
             type: "localstorage",
             structure: ObjectsStructures.endpoint1
-        },
-        "endpoint2": {
-            type: "localstorage",
-            structure: ObjectsStructures.endpoint1
-        },
-        "lesson_light": {
-            type: "http"
         }
     }
 });
 
 let count:HTMLElement = document.getElementById("count");
-let button:HTMLElement = document.getElementById("test-button");
+count.remove();
 
-button.addEventListener("click", () => {
-    connector.createEntity("endpoint2").subscribe((data:DataEntity) => {
-        console.log("au click", data);
+let button1:HTMLElement = document.getElementById("test-button1");
+let button2:HTMLElement = document.getElementById("test-button2");
+
+let displayer1:HTMLElement = document.getElementById("displayer1");
+let displayer2:HTMLElement = document.getElementById("displayer2");
+
+let key2Elem:HTMLInputElement = <HTMLInputElement>document.getElementById("key2");
+
+button1.addEventListener("click", () => {
+    connector.createEntity("test-endpoint", { key1: "val1", key2: key2Elem.value });
+});
+
+button2.addEventListener("click", () => {
+    connector.createEntity("test-endpoint", { key1: "val2", key2: key2Elem.value });
+});
+
+connector.loadCollection("test-endpoint", { key1: "val1" }).subscribe((data:DataCollection) => {
+    displayer1.innerHTML = "";
+    data.entities.forEach((entity:DataEntity) => {
+        let counter:Node = count.cloneNode(true);
+        (<HTMLElement>counter).innerHTML = entity.id.toString() + "<br>" + entity.get("key2");
+        displayer1.appendChild(counter);
+
+        counter.addEventListener("click", () => {
+            entity.remove();
+        });
     });
 });
 
-/*connector.createEntity("endpoint2", {key1: "ok1", key2: "val2"}).subscribe((data:DataEntity) => {
-    console.log(data);
-});*/
+connector.loadCollection("test-endpoint").subscribe((data:DataCollection) => {
+    displayer2.innerHTML = "";
+    data.entities.forEach((entity:DataEntity) => {
+        let counter:Node = count.cloneNode(true);
+        (<HTMLElement>counter).innerHTML = entity.id.toString() + "<br>" + entity.get("key2");
+        displayer2.appendChild(counter);
 
-/*connector.loadEntity("lesson_light", 6).subscribe((data:DataEntity) => {
-    console.log(data);
-});*/
-
-connector.loadCollection("lesson_light").subscribe((collection:DataCollection) => {
-    console.log(collection);
-    count.innerText = collection.entities.length.toString();
+        counter.addEventListener("click", () => {
+            entity.remove();
+        });
+    });
 });
-
-/*connector.loadCollection("endpoint2", {key1: "ok1"}).subscribe((data:DataCollection) => {
-    console.log(data);
-});*/
-
-/*connector.loadEntity("endpoint2", 7).take(1).subscribe((data:DataEntity) => {
-    console.log(data);
-    data.remove();
-});*/

@@ -57,16 +57,29 @@ export class CollectionStore {
         }
     }
 
-    // TODO: à terminer
-    registerEntityInCollections(entity:DataEntity) {
+    registerEntityInCollections(entity:DataEntity, entityObservable:Observable<DataEntity>) {
         let collectionKeys:string[] = Object.keys(this.collections);
 
-        console.log("yep");
+        collectionKeys.forEach((key:string) => {
+            if (this.matchFilter(entity, this.filters[key])) {
+                this.collections[key].registerEntity(entity, entityObservable);
+                this.collectionObservables[key].next(this.collections[key]);
+            }
+        });
+    }
+
+    /**
+     * Delete entity from stored collections
+     * @param {DataEntity} entity Entity to delete
+     */
+    deleteEntityFromCollection(entity:DataEntity) {
+
+        let collectionKeys:string[] = Object.keys(this.collections);
 
         collectionKeys.forEach((key:string) => {
-            console.log("là");
             if (this.matchFilter(entity, this.filters[key])) {
-                console.log("ici");
+                this.collections[key].deleteEntity(entity.id);
+                this.collectionObservables[key].next(this.collections[key]);
             }
         });
     }

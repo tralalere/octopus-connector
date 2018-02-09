@@ -10,7 +10,7 @@ export interface EntityDataSet {
     /**
      * Entity attributes, indexed by string
      */
-    [key:number]:any;
+    [key:string]:any;
 
     /**
      * Optional entity id
