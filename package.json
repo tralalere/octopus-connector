@@ -7,7 +7,8 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "clean": "rimraf bundles coverage index.js.map src/**/*.map src/**/*.d.ts src/**/*.metadata.json src/**/*.js tests/**/*.d.ts tests/**/*.metadata.json tests/**/*.js settings/**/*.d.ts settings/**/*.metadata.json settings/**/*.js index.d.ts index.metadata.json index.js",
     "start": "tsc && tsc -w",
-    "compile": "tsc"
+    "compile": "tsc",
+    "doc": "typedoc --theme minimal --mode file --out ./doc ./src/data-connector.class.ts"
   },
   "repository": {
     "type": "git",
@@ -22,6 +23,7 @@
   "devDependencies": {
     "rimraf": "^2.6.2",
     "systemjs": "^0.20.19",
+    "typedoc": "^0.10.0",
     "typescript": "^2.5.3"
   },
   "dependencies": {

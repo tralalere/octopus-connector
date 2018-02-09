@@ -9,38 +9,83 @@ import {CollectionDataSet, EntityDataSet} from "../types";
 
 export abstract class ExternalInterface {
 
+    /**
+     * if true, the save method will only send the modified properties to the service
+     * @type {boolean}
+     */
     useDiff:boolean = false;
-    
-    loadEntity(type:string, id:number, fields:string[] = []):EntityDataSet|Observable<EntityDataSet> {
+
+    /**
+     * Load an entity from the service
+     * @param {string} type Name of the endpoint
+     * @param {number} id Id of the entity
+     * @returns {EntityDataSet | Observable<EntityDataSet>} A set of data, or an observable
+     */
+    loadEntity(type:string, id:number):EntityDataSet|Observable<EntityDataSet> {
         console.warn("LoadEntity not implemented in interface");
         return null;
     }
-    
+
+    /**
+     * Load an entity collection from the service
+     * @param {string} type Name of the endpoint
+     * @param {{[p: string]: any}} filter Collection filter object
+     * @returns {CollectionDataSet | Observable<CollectionDataSet>} A collection set of data, or an observable
+     */
     loadCollection(type:string, filter:{[key:string]:any} = {}):CollectionDataSet|Observable<CollectionDataSet> {
         console.warn("LoadCollection not implemented in interface");
         return null;
     }
-    
+
+    /**
+     * Create an entity on the service
+     * @param {string} type Endpoint name
+     * @param {{[p: string]: any}} data Base data used to create the entity
+     * @returns {EntityDataSet | Observable<EntityDataSet>} A set of data, or an observable
+     */
     createEntity(type:string, data:{[key:string]:any}):EntityDataSet|Observable<EntityDataSet> {
         console.warn("CreateEntity not implemented in interface");
         return null;
     }
 
+    /**
+     * Delete an entity from the service
+     * @param {string} type Name of the endpoint
+     * @param {number} id Id of the entity
+     * @returns {boolean | Observable<boolean>} True if deletion success
+     */
     deleteEntity(type:string, id:number):boolean|Observable<boolean> {
         console.warn("DeleteEntity not implemented in interface");
         return null;
     }
 
+    /**
+     * Save an entity on the service
+     * @param {EntityDataSet} data Data to Save
+     * @param {string} type Name of the endpoint
+     * @param {number} id Id of the entity
+     * @returns {EntityDataSet | Observable<EntityDataSet>} The saved data
+     */
     saveEntity(data:EntityDataSet, type:string, id:number):EntityDataSet|Observable<EntityDataSet> {
         console.warn("SaveEntity not implemented in interface");
         return null;
     }
 
+    /**
+     * Authenticating to the service
+     * @param {string} login User login
+     * @param {string} password User password
+     * @returns {Observable<boolean>}
+     */
     authenticate(login:string, password:string):Observable<boolean> {
         console.warn("Authenticate not implemented in interface");
         return null;
     }
 
+    /**
+     * Release an endpoint if not useful anymore
+     * @param {string} type Name of the endpoint
+     */
     release(type:string) {
         console.warn("Release not implemented in interface");
     }

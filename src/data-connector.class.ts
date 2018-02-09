@@ -161,6 +161,14 @@ export class DataConnector {
         return this.collectionsLiveStore[type].registerCollection(collection, filter);
     }
 
+    authenticate(login:string, password:string) {
+
+    }
+
+    release() {
+
+    }
+
     loadEntity(type:string, id:number):Observable<DataEntity> {
 
         if (this.useCache(type)) {
