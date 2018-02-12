@@ -182,6 +182,7 @@ export class DataConnector {
      * @param {string} type Endpoint name
      * @param {number} id Id of the entity
      * @param {DataEntity} entity Entity
+     * @param {Observable<DataEntity>} entityObservable Observable to register
      * @returns {Observable<DataEntity>} The observable associated to the entity
      */
     private registerEntity(type:string, id:number, entity:DataEntity, entityObservable:Observable<DataEntity>):Observable<DataEntity> {
