@@ -46,15 +46,17 @@ export class CollectionStore {
         this.filters[hash] = filter;
         this.collections[hash] = collection;
 
+        let collectionSubject:ReplaySubject<DataCollection>;
+
         if (this.collectionObservables[hash]) {
-            this.collectionObservables[hash].next(collection);
-            return this.collectionObservables[hash];
+            collectionSubject = this.collectionObservables[hash];
         } else {
-            let subject:ReplaySubject<DataCollection> = new ReplaySubject<DataCollection>(1);
-            subject.next(collection);
-            this.collectionObservables[hash] = subject;
-            return subject;
+            collectionSubject = new ReplaySubject<DataCollection>(1);
+            this.collectionObservables[hash] = collectionSubject;
         }
+
+        collectionSubject.next(collection);
+        return collectionSubject;
     }
 
     registerEntityInCollections(entity:DataEntity, entityObservable:Observable<DataEntity>) {
@@ -118,5 +120,15 @@ export class CollectionStore {
             this.collectionObservables[hash] = subject;
             return subject;
         }
+    }
+
+    /**
+     * Returns true if collection is defined in store
+     * @param {FilterData} filter Collection filter object
+     * @returns {boolean}
+     */
+    isInStore(filter:FilterData):boolean {
+        let hash:string = ObjectHash(filter);
+        return !!this.collections[hash];
     }
 }

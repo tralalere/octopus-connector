@@ -71,4 +71,13 @@ export class EntityStore {
             return subject;
         }
     }
+
+    /**
+     * Returns true if entity is defined in store
+     * @param {number} entityId Entity id
+     * @returns {boolean}
+     */
+    isInStore(entityId:number):boolean {
+        return !!this.entitiesObservables[entityId];
+    }
 }

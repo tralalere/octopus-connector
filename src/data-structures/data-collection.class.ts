@@ -13,13 +13,13 @@ import {ModelSchema} from "octopus-model";
 export class DataCollection {
 
     /**
-     * Entities contained by collection
+     * Entities contained by the collection
      * @type {any[]}
      */
     entities:DataEntity[] = [];
 
     /**
-     * Observables of entities contained by collection
+     * Observables of entities contained by the collection
      * @type {any[]}
      */
     entitiesObservables:Observable<DataEntity>[] = [];
@@ -77,6 +77,7 @@ export class DataCollection {
     /**
      * Register entity in collection, if not already contained by the collection
      * @param {DataEntity} entity Entity to register
+     * @param {Observable<DataEntity>} entityObservable Entity observable to register
      */
     registerEntity(entity:DataEntity, entityObservable:Observable<DataEntity>) {
         for (let collectionEntity of this.entities) {

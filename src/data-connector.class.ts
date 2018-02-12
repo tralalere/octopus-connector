@@ -490,4 +490,30 @@ export class DataConnector {
         this.collectionsLiveStore[entity.type].deleteEntityFromCollection(entity);
         this.entitiesLiveStore[entity.type].unregisterEntity(entity);
     }
+
+    /**
+     * Refresh entity (from refresh service)
+     * @param {string} type Endpoint name
+     * @param {number} id Entity id
+     */
+    refreshEntity(type:string, id:number) {
+        let selectedInterface:ExternalInterface = this.getInterface(type);
+
+        if (this.entitiesLiveStore[type] && this.entitiesLiveStore[type].isInStore(id)) {
+            this.loadEntity(type, id);
+        }
+    }
+
+    /**
+     * Refresh collection (from refresh service)
+     * @param {string} type Endpoint name
+     * @param {FilterData} filter Collection filter object
+     */
+    refreshCollection(type:string, filter:FilterData) {
+        let selectedInterface:ExternalInterface = this.getInterface(type);
+
+        if (this.collectionsLiveStore[type] && this.collectionsLiveStore[type].isInStore(filter)) {
+            this.loadCollection(type, filter);
+        }
+    }
 }

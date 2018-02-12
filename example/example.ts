@@ -43,7 +43,16 @@ button2.addEventListener("click", () => {
     connector.createEntity("test-endpoint", { key1: "val2", key2: key2Elem.value });
 });
 
+document.getElementById("refresh-button1").addEventListener("click", () => {
+    connector.refreshCollection("test-endpoint", { key1: "val1" });
+});
+
+document.getElementById("refresh-button2").addEventListener("click", () => {
+    connector.refreshCollection("test-endpoint", {});
+});
+
 connector.loadCollection("test-endpoint", { key1: "val1" }).subscribe((data:DataCollection) => {
+    console.log("collection 1");
     displayer1.innerHTML = "";
     data.entities.forEach((entity:DataEntity) => {
         let counter:Node = count.cloneNode(true);
@@ -57,6 +66,7 @@ connector.loadCollection("test-endpoint", { key1: "val1" }).subscribe((data:Data
 });
 
 connector.loadCollection("test-endpoint").subscribe((data:DataCollection) => {
+    console.log("collection 2");
     displayer2.innerHTML = "";
     data.entities.forEach((entity:DataEntity) => {
         let counter:Node = count.cloneNode(true);
