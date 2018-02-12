@@ -5,6 +5,7 @@ import {DataConnector} from "../src/data-connector.class";
 import {DataEntity} from "../src/data-structures/data-entity.class";
 import {DataCollection} from "../src/data-structures/data-collection.class";
 import {ObjectsStructures} from "./objects-structures.class";
+import {InterfaceError} from "../src/data-interfaces/interface-error.class";
 
 let connector:DataConnector = new DataConnector({
     defaultInterface: "localstorage",
@@ -20,6 +21,9 @@ let connector:DataConnector = new DataConnector({
         "test-endpoint": {
             type: "localstorage",
             structure: ObjectsStructures.endpoint1
+        },
+        "lesson_light": {
+            type: "http"
         }
     }
 });
@@ -27,19 +31,16 @@ let connector:DataConnector = new DataConnector({
 let count:HTMLElement = document.getElementById("count");
 count.remove();
 
-let button1:HTMLElement = document.getElementById("test-button1");
-let button2:HTMLElement = document.getElementById("test-button2");
-
 let displayer1:HTMLElement = document.getElementById("displayer1");
 let displayer2:HTMLElement = document.getElementById("displayer2");
 
 let key2Elem:HTMLInputElement = <HTMLInputElement>document.getElementById("key2");
 
-button1.addEventListener("click", () => {
+document.getElementById("test-button1").addEventListener("click", () => {
     connector.createEntity("test-endpoint", { key1: "val1", key2: key2Elem.value });
 });
 
-button2.addEventListener("click", () => {
+document.getElementById("test-button2").addEventListener("click", () => {
     connector.createEntity("test-endpoint", { key1: "val2", key2: key2Elem.value });
 });
 
@@ -78,3 +79,17 @@ connector.loadCollection("test-endpoint").subscribe((data:DataCollection) => {
         });
     });
 });
+
+connector.loadCollection("lesson_light", {}).subscribe((coll:DataCollection) => {
+    console.log("collection", coll);
+}, (error:InterfaceError) => {
+    console.log("erreur from subs", error);
+});
+
+/*setTimeout(() => {
+    connector.loadCollection("lesson_light", {}).subscribe((coll:DataCollection) => {
+        console.log("collection", coll);
+    }, (error:InterfaceError) => {
+        console.log("erreur from subs", error);
+    });
+}, 5000);*/

@@ -22,9 +22,10 @@ export abstract class ExternalInterface {
      * Load an entity from the service
      * @param {string} type Name of the endpoint
      * @param {number} id Id of the entity
+     * @param {Function} errorHandler Function used to handle errors
      * @returns {EntityDataSet | Observable<EntityDataSet>} A set of data, or an observable
      */
-    loadEntity(type:string, id:number):EntityDataSet|Observable<EntityDataSet> {
+    loadEntity(type:string, id:number, errorHandler:Function = null):EntityDataSet|Observable<EntityDataSet> {
         console.warn("LoadEntity not implemented in interface");
         return null;
     }
@@ -33,9 +34,10 @@ export abstract class ExternalInterface {
      * Load an entity collection from the service
      * @param {string} type Name of the endpoint
      * @param {FilterData} filter Collection filter object
+     * @param {Function} errorHandler Function used to handle errors
      * @returns {CollectionDataSet | Observable<CollectionDataSet>} A collection set of data, or an observable
      */
-    loadCollection(type:string, filter:FilterData):CollectionDataSet|Observable<CollectionDataSet> {
+    loadCollection(type:string, filter:FilterData, errorHandler:Function = null):CollectionDataSet|Observable<CollectionDataSet> {
         console.warn("LoadCollection not implemented in interface");
         return null;
     }
@@ -44,9 +46,10 @@ export abstract class ExternalInterface {
      * Create an entity on the service
      * @param {string} type Endpoint name
      * @param {EntityDataSet} data Base data used to create the entity
+     * @param {Function} errorHandler Function used to handle errors
      * @returns {EntityDataSet | Observable<EntityDataSet>} A set of data, or an observable
      */
-    createEntity(type:string, data:EntityDataSet):EntityDataSet|Observable<EntityDataSet> {
+    createEntity(type:string, data:EntityDataSet, errorHandler:Function = null):EntityDataSet|Observable<EntityDataSet> {
         console.warn("CreateEntity not implemented in interface");
         return null;
     }
@@ -55,9 +58,10 @@ export abstract class ExternalInterface {
      * Delete an entity from the service
      * @param {string} type Name of the endpoint
      * @param {number} id Id of the entity
+     * @param {Function} errorHandler Function used to handle errors
      * @returns {boolean | Observable<boolean>} True if deletion success
      */
-    deleteEntity(type:string, id:number):boolean|Observable<boolean> {
+    deleteEntity(type:string, id:number, errorHandler:Function = null):boolean|Observable<boolean> {
         console.warn("DeleteEntity not implemented in interface");
         return null;
     }
@@ -67,9 +71,10 @@ export abstract class ExternalInterface {
      * @param {EntityDataSet} data Data to Save
      * @param {string} type Name of the endpoint
      * @param {number} id Id of the entity
+     * @param {Function} errorHandler Function used to handle errors
      * @returns {EntityDataSet | Observable<EntityDataSet>} The saved data
      */
-    saveEntity(data:EntityDataSet, type:string, id:number):EntityDataSet|Observable<EntityDataSet> {
+    saveEntity(data:EntityDataSet, type:string, id:number, errorHandler:Function = null):EntityDataSet|Observable<EntityDataSet> {
         console.warn("SaveEntity not implemented in interface");
         return null;
     }
@@ -78,9 +83,10 @@ export abstract class ExternalInterface {
      * Authenticating to the service
      * @param {string} login User login
      * @param {string} password User password
+     * @param {Function} errorHandler Function used to handle errors
      * @returns {Observable<boolean>}
      */
-    authenticate(login:string, password:string):Observable<boolean> {
+    authenticate(login:string, password:string, errorHandler:Function = null):Observable<boolean> {
         console.warn("Authenticate not implemented in interface");
         return null;
     }

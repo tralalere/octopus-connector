@@ -49,6 +49,16 @@ export class EntityStore {
     }
 
     /**
+     * Delete all data for a specific entity id
+     * @param {number} id Entity id
+     */
+    unregister(id:number) {
+        if (this.entitiesObservables[id]) {
+            delete this.entitiesObservables[id];
+        }
+    }
+
+    /**
      * Delete entity from store
      * @param {DataEntity} entity Entity to delete
      */
@@ -61,7 +71,7 @@ export class EntityStore {
      * @param {number} id Id used in registration
      * @returns {Observable<DataEntity>} Entity subject associated to the id
      */
-    getEntityObservable(id:number):Observable<DataEntity> {
+    getEntityObservable(id:number):ReplaySubject<DataEntity> {
 
         if (this.entitiesObservables[id]) {
             return this.entitiesObservables[id];

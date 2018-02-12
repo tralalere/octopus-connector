@@ -87,6 +87,27 @@ export class CollectionStore {
     }
 
     /**
+     * Delete all data for a specific filter
+     * @param {FilterData} filter The filter used to delete data
+     */
+    unregister(filter:FilterData) {
+
+        let hash:string = ObjectHash(filter);
+
+        if (this.collections[hash]) {
+            delete this.collections[hash];
+        }
+
+        if (this.collectionObservables[hash]) {
+            delete this.collectionObservables[hash];
+        }
+
+        if (this.filters[hash]) {
+            delete this.filters[hash];
+        }
+    }
+
+    /**
      * Test if the entity matches the filter
      * @param {DataEntity} entity Entity to test
      * @param {FilterData} filter Filter object
@@ -109,7 +130,7 @@ export class CollectionStore {
      * @param {FilterData} filter Filter object
      * @returns {Observable<DataCollection>} The observable associated to the filter object
      */
-    getCollectionObservable(filter:FilterData):Observable<DataCollection> {
+    getCollectionSubject(filter:FilterData):ReplaySubject<DataCollection> {
 
         let hash:string = ObjectHash(filter);
 

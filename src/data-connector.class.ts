@@ -15,6 +15,7 @@ import {EntityStore} from "./stores/entity-store.class";
 import {ReplaySubject} from "rxjs/Rx";
 import {EndpointConfig} from "./endpoint-config.interface";
 import {ModelSchema} from "octopus-model";
+import {InterfaceError} from "./data-interfaces/interface-error.class";
 
 /**
  * Data connector class
@@ -155,7 +156,7 @@ export class DataConnector {
      */
     private getCollectionObservableInStore(type:string, filter:FilterData):Observable<DataCollection> {
         if (this.collectionsLiveStore[type]) {
-            return this.collectionsLiveStore[type].getCollectionObservable(filter);
+            return this.collectionsLiveStore[type].getCollectionSubject(filter);
         }
 
         return null;
@@ -167,7 +168,7 @@ export class DataConnector {
      * @param {number} id Id of the entity
      * @returns {Observable<DataEntity>} The observable associated to the entity
      */
-    private getEntityObservable(type:string, id:number):Observable<DataEntity> {
+    private getEntitySubject(type:string, id:number):ReplaySubject<DataEntity> {
 
         if (!this.entitiesLiveStore[type]) {
             this.entitiesLiveStore[type] = new EntityStore();
@@ -222,13 +223,13 @@ export class DataConnector {
      * @param {FilterData} filter Filter object
      * @returns {Observable<DataCollection>} Observable associated to the collection
      */
-    private getCollectionObservable(type:string, filter:FilterData):Observable<DataCollection> {
+    private getCollectionObservable(type:string, filter:FilterData):ReplaySubject<DataCollection> {
 
         if (!this.collectionsLiveStore[type]) {
             this.collectionsLiveStore[type] = new CollectionStore();
         }
 
-        return this.collectionsLiveStore[type].getCollectionObservable(filter);
+        return this.collectionsLiveStore[type].getCollectionSubject(filter);
     }
 
     /**
@@ -250,7 +251,7 @@ export class DataConnector {
         let entitiesObservables:Observable<DataEntity>[] = [];
 
         collection.entities.forEach((entity:DataEntity) => {
-            let entityObservable:Observable<DataEntity> = this.getEntityObservable(type, entity.id);
+            let entityObservable:Observable<DataEntity> = this.getEntitySubject(type, entity.id);
             entitiesObservables.push(this.registerEntity(type, entity.id, entity, entityObservable));
         });
 
@@ -295,8 +296,15 @@ export class DataConnector {
         let selectedInterface:ExternalInterface = this.getInterface(type);
 
         if (selectedInterface) {
-            let entityData:EntityDataSet|Observable<EntityDataSet> = selectedInterface.loadEntity(type, id);
-            let entityObservable:Observable<DataEntity> = this.getEntityObservable(type, id);
+            let entitySubject:ReplaySubject<DataEntity> = this.getEntitySubject(type, id);
+
+            let entityData:EntityDataSet|Observable<EntityDataSet> = selectedInterface.loadEntity(type, id, (error:InterfaceError) => {
+                let msg:string = `Error loading entity of type '${type}' with id ${id}`;
+                console.warn(msg);
+                error.message = msg;
+                entitySubject.error(error);
+                this.entitiesLiveStore[type].unregister(id);
+            });
 
             let structure:ModelSchema = this.getEndpointStructureModel(type);
 
@@ -308,7 +316,7 @@ export class DataConnector {
                             entity = structure.filterModel(entity);
                         }
 
-                        this.registerEntity(type, id, new DataEntity(type, entity, this, id), entityObservable);
+                        this.registerEntity(type, id, new DataEntity(type, entity, this, id), entitySubject);
                     }
 
                 });
@@ -319,12 +327,12 @@ export class DataConnector {
                         entityData = structure.filterModel(entityData);
                     }
 
-                    this.registerEntity(type, id, new DataEntity(type, entityData, this, id), entityObservable);
+                    this.registerEntity(type, id, new DataEntity(type, entityData, this, id), entitySubject);
                 }
 
             }
 
-            return entityObservable;
+            return entitySubject;
         }
     }
 
@@ -348,8 +356,14 @@ export class DataConnector {
         let structure:ModelSchema = this.getEndpointStructureModel(type);
 
         if (selectedInterface) {
-            let collectionObservable:Observable<DataCollection> = this.getCollectionObservable(type, filter);
-            let collection:CollectionDataSet|Observable<CollectionDataSet> = selectedInterface.loadCollection(type, filter);
+            let collectionSubject:ReplaySubject<DataCollection> = this.getCollectionObservable(type, filter);
+            let collection:CollectionDataSet|Observable<CollectionDataSet> = selectedInterface.loadCollection(type, filter, (error:InterfaceError) => {
+                let msg:string = `Error loading collection of type '${type}'`;
+                console.warn(msg);
+                error.message = msg;
+                collectionSubject.error(error);
+                this.collectionsLiveStore[type].unregister(filter);
+            });
 
             if (collection instanceof Observable) {
                 collection.take(1).subscribe((newCollection:CollectionDataSet) => {
@@ -359,7 +373,7 @@ export class DataConnector {
                 this.registerCollection(type, filter, new DataCollection(type, collection, this, structure));
             }
 
-            return collectionObservable;
+            return collectionSubject;
         }
 
         return null;
@@ -368,9 +382,10 @@ export class DataConnector {
     /**
      * Save entity
      * @param {DataEntity} entity Entity to save
+     * @param {Function} errorHandler Function used to handle errors
      * @returns {Observable<DataEntity>} Observable associated to the entity
      */
-    saveEntity(entity:DataEntity):Observable<DataEntity> {
+    saveEntity(entity:DataEntity, errorHandler:Function = null):Observable<DataEntity> {
 
         let selectedInterface:ExternalInterface = this.getInterface(entity.type);
         let structure:ModelSchema = this.getEndpointStructureModel(entity.type);
@@ -391,9 +406,19 @@ export class DataConnector {
             }
         });
 
-        let entityData:EntityDataSet|Observable<EntityDataSet> = selectedInterface.saveEntity(dataToSave, entity.type, entity.id);
+        let entitySubject:ReplaySubject<DataEntity> = this.getEntitySubject(entity.type, entity.id);
 
-        let entityObservable:Observable<DataEntity> = this.getEntityObservable(entity.type, entity.id);
+        let entityData:EntityDataSet|Observable<EntityDataSet> = selectedInterface.saveEntity(dataToSave, entity.type, entity.id, (error:InterfaceError) => {
+            let msg:string = `Error saving entity of type '${entity.type}' with id ${entity.id}`;
+            console.warn(msg);
+
+            error.message = msg;
+            entitySubject.error(error);
+
+            this.entitiesLiveStore[entity.type].unregister(entity.id);
+        });
+
+
 
         if (entityData instanceof Observable) {
             entityData.take(1).subscribe((saveEntity:EntityDataSet) => {
@@ -402,7 +427,7 @@ export class DataConnector {
                     saveEntity = structure.filterModel(saveEntity);
                 }
 
-                this.registerEntity(entity.type, entity.id, new DataEntity(entity.type, saveEntity, this, entity.id), entityObservable);
+                this.registerEntity(entity.type, entity.id, new DataEntity(entity.type, saveEntity, this, entity.id), entitySubject);
             });
         } else {
 
@@ -410,19 +435,20 @@ export class DataConnector {
                 entityData = structure.filterModel(entityData);
             }
 
-            this.registerEntity(entity.type, entity.id, new DataEntity(entity.type, entityData, this, entity.id), entityObservable);
+            this.registerEntity(entity.type, entity.id, new DataEntity(entity.type, entityData, this, entity.id), entitySubject);
         }
 
-        return entityObservable;
+        return entitySubject;
     }
 
     /**
      * Create entity to the specified endpoint service
      * @param {string} type Endpoint name
      * @param {EntityDataSet} data Data used to create the entity
+     * @param {Function} errorHandler Function used to handle errors
      * @returns {Observable<DataEntity>} The observable associated to this entity
      */
-    createEntity(type:string, data:{[key:string]:any} = {}):Observable<DataEntity> {
+    createEntity(type:string, data:{[key:string]:any} = {}, errorHandler:Function = null):Observable<DataEntity> {
         let selectedInterface:ExternalInterface = this.getInterface(type);
 
         let structure:ModelSchema = this.getEndpointStructureModel(type);
@@ -439,9 +465,15 @@ export class DataConnector {
             }
         });
 
-        let entity:EntityDataSet|Observable<EntityDataSet> = selectedInterface.createEntity(type, data);
-
         let entitySubject:ReplaySubject<DataEntity> = new ReplaySubject<DataEntity>(1);
+
+        let entity:EntityDataSet|Observable<EntityDataSet> = selectedInterface.createEntity(type, data, (error:InterfaceError) => {
+            let msg = `Error creating entity of type '${type}'`;
+            console.warn(msg);
+
+            error.message = msg;
+            entitySubject.error(error);
+        });
 
         if (entity instanceof Observable) {
             entity.take(1).subscribe((createdEntity:EntityDataSet) => {
@@ -459,14 +491,23 @@ export class DataConnector {
     /**
      * Delete an entity
      * @param {DataEntity} entity Entity to delete
+     * @param {Function} errorHandler Function used to handle errors
      * @returns {Observable<boolean>} True if deletion success
      */
-    deleteEntity(entity:DataEntity):Observable<boolean> {
+    deleteEntity(entity:DataEntity, errorHandler:Function = null):Observable<boolean> {
         let selectedInterface:ExternalInterface = this.getInterface(entity.type);
 
         let subject:ReplaySubject<boolean> = new ReplaySubject<boolean>(1);
 
-        let result:boolean|Observable<boolean> = selectedInterface.deleteEntity(entity.type, entity.id);
+        let result:boolean|Observable<boolean> = selectedInterface.deleteEntity(entity.type, entity.id, (error:InterfaceError) => {
+            let msg:string = `Error deleting entity if type '${entity.type}' with id ${entity.id}`;
+            console.warn(msg);
+
+            error.message = msg;
+            subject.error(error);
+
+            this.entitiesLiveStore[entity.type].unregister(entity.id);
+        });
 
         if (result instanceof Observable) {
             result.take(1).subscribe((res:boolean) => {

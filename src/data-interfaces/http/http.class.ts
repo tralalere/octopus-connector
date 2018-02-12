@@ -4,6 +4,7 @@ import {HeaderObject, HttpConfiguration} from "./http-configuration.interface";
 import {BehaviorSubject, Observable, ReplaySubject} from "rxjs/Rx";
 import {CollectionDataSet, EntityDataSet} from "../../types";
 import {DataEntity} from "../../data-structures/data-entity.class";
+import {InterfaceError} from "../interface-error.class";
 
 /**
  * Http external interface
@@ -46,11 +47,13 @@ export class Http extends ExternalInterface {
      * Load entity in http service
      * @param {string} type Endpoint name
      * @param {number} id Id of the entity
+     * @param {Function} errorHandler Function used to handle errors
      * @returns {Observable<EntityDataSet>} Observable returning the data
      */
-    loadEntity(type:string, id:number):Observable<EntityDataSet> {
+    loadEntity(type:string, id:number, errorHandler:Function = null):Observable<EntityDataSet> {
         let request:XMLHttpRequest = new XMLHttpRequest();
-        request.open("GET", <string>this.configuration.apiUrl + type + "/" + id, true);
+        let url:string = `${<string>this.configuration.apiUrl}${type}/${id}`;
+        request.open("GET", url, true);
 
         let subject:ReplaySubject<EntityDataSet> = new ReplaySubject<EntityDataSet>(1);
 
@@ -61,7 +64,11 @@ export class Http extends ExternalInterface {
                 if (request.status === 200) {
                     subject.next(this.extractEntity(request.responseText));
                 } else {
-                    subject.error("Error loading entity " + type + " with id " + id);
+                    if (errorHandler) {
+                        let error:InterfaceError = new InterfaceError(0);
+                        error.originalMessage = request.statusText;
+                        errorHandler(error);
+                    }
                 }
             }
         };
@@ -75,12 +82,13 @@ export class Http extends ExternalInterface {
      * Load a collection in http service
      * @param {string} type Endpoint name
      * @param {{[p: string]: any}} filter Filter Object
+     * @param {Function} errorHandler Function used to handle errors
      * @returns {Observable<CollectionDataSet>} Observable returning the collection data
      */
-    loadCollection(type:string, filter:{[key:string]:any} = {}):Observable<CollectionDataSet> {
+    loadCollection(type:string, filter:{[key:string]:any} = {}, errorHandler:Function = null):Observable<CollectionDataSet> {
         let request:XMLHttpRequest = new XMLHttpRequest();
 
-        let url:string = <string>this.configuration.apiUrl + type;
+        let url:string = `${<string>this.configuration.apiUrl}${type}`;
 
         let filterKeys:string[] = Object.keys(filter);
 
@@ -90,7 +98,7 @@ export class Http extends ExternalInterface {
 
         filterKeys.forEach((key:string, index:number) => {
             let val:any = filter[key];
-            url += "filter[" + key + "]=" + val;
+            url += `filter[${key}]=${val}`;
 
             if (index < filterKeys.length - 1) {
                 url += "&";
@@ -108,7 +116,11 @@ export class Http extends ExternalInterface {
                 if (request.status === 200) {
                     subject.next(this.extractCollection(request.responseText));
                 } else {
-                    subject.error("Error loading collection " + type);
+                    if (errorHandler) {
+                        let error:InterfaceError = new InterfaceError(0);
+                        error.originalMessage = request.statusText;
+                        errorHandler(error);
+                    }
                 }
             }
         };
@@ -123,11 +135,13 @@ export class Http extends ExternalInterface {
      * @param {EntityDataSet} entity Entity data to save
      * @param {string} type Endpoint name
      * @param {number} id Id of the entity
+     * @param {Function} errorHandler Function used to handle errors
      * @returns {Observable<EntityDataSet>} Observable returning the entity data
      */
-    saveEntity(entity:EntityDataSet, type:string, id:number):Observable<EntityDataSet> {
+    saveEntity(entity:EntityDataSet, type:string, id:number, errorHandler:Function = null):Observable<EntityDataSet> {
         let request:XMLHttpRequest = new XMLHttpRequest();
-        request.open("PATCH", <string>this.configuration.apiUrl + type + "/" + id, true);
+        let url:string = `${<string>this.configuration.apiUrl}${type}/${id}`;
+        request.open("PATCH", url, true);
 
         this.addHeaders(request);
 
@@ -138,7 +152,11 @@ export class Http extends ExternalInterface {
                 if (request.status === 200) {
                     subject.next(this.extractEntity(request.responseText));
                 } else {
-                    subject.error("Error saving entity " + type + " with id " + id);
+                    if (errorHandler) {
+                        let error:InterfaceError = new InterfaceError(0);
+                        error.originalMessage = request.statusText;
+                        errorHandler(error);
+                    }
                 }
             }
         };
@@ -152,11 +170,13 @@ export class Http extends ExternalInterface {
      * Create entity in http service
      * @param {string} type Endpoint name
      * @param {EntityDataSet} data Data used to create the entity
+     * @param {Function} errorHandler Function used to handle errors
      * @returns {Observable<EntityDataSet>} Observable returning the entity data
      */
-    createEntity(type:string, data:EntityDataSet):Observable<EntityDataSet> {
+    createEntity(type:string, data:EntityDataSet, errorHandler:Function = null):Observable<EntityDataSet> {
         let request:XMLHttpRequest = new XMLHttpRequest();
-        request.open("POST", <string>this.configuration.apiUrl + type, true);
+        let url:string = `${<string>this.configuration.apiUrl}${type}`;
+        request.open("POST", url, true);
 
         this.addHeaders(request);
 
@@ -167,7 +187,11 @@ export class Http extends ExternalInterface {
                 if (request.status === 200) {
                     subject.next(this.extractEntity(request.responseText));
                 } else {
-                    subject.error("Error creating entity " + type);
+                    if (errorHandler) {
+                        let error:InterfaceError = new InterfaceError(0);
+                        error.originalMessage = request.statusText;
+                        errorHandler(error);
+                    }
                 }
             }
         };
@@ -181,11 +205,13 @@ export class Http extends ExternalInterface {
      * Delete entity from http service
      * @param {string} type Endpoint type
      * @param {number} id Entity id
+     * @param {Function} errorHandler Function used to handle errors
      * @returns {Observable<boolean>} True if deletion success
      */
-    deleteEntity(type:string, id:number):Observable<boolean> {
+    deleteEntity(type:string, id:number, errorHandler:Function = null):Observable<boolean> {
         let request:XMLHttpRequest = new XMLHttpRequest();
-        request.open("DELETE", <string>this.configuration.apiUrl + type + "/" + id, true);
+        let url:string = `${<string>this.configuration.apiUrl}${type}/${id}`;
+        request.open("DELETE", url,true);
 
         this.addHeaders(request);
 
@@ -196,7 +222,11 @@ export class Http extends ExternalInterface {
                 if (request.status === 200) {
                     subject.next(true);
                 } else {
-                    subject.error("Error deleting entity " + type);
+                    if (errorHandler) {
+                        let error:InterfaceError = new InterfaceError(0);
+                        error.originalMessage = request.statusText;
+                        errorHandler(error);
+                    }
                 }
             }
         };
@@ -210,9 +240,10 @@ export class Http extends ExternalInterface {
      * Authenticate in service
      * @param {string} login User login
      * @param {string} password User password
+     * @param {Function} errorHandler Function used to handle errors
      * @returns {Observable<boolean>} True if authentication success
      */
-    authenticate(login:string, password:string):Observable<boolean> {
+    authenticate(login:string, password:string, errorHandler:Function = null):Observable<boolean> {
         return null;
     }
 
