@@ -199,9 +199,34 @@ export class DataConnector {
         return this.entitiesLiveStore[type].registerEntity(entity, id);
     }
 
-    /*private registerEntityInCollection(entity:DataEntity) {
+    /**
+     *
+     * @param {string} type
+     * @param {DataCollection} collection
+     * @returns {Observable<DataEntity>[]}
+     */
+    private registerCollectionEntities(type:string, collection:DataCollection):Observable<DataEntity>[] {
 
-    }*/
+        if (!this.entitiesLiveStore[type]) {
+            this.entitiesLiveStore[type] = new EntityStore();
+        }
+
+        if (!this.collectionsLiveStore[type]) {
+            this.collectionsLiveStore[type] = new CollectionStore();
+        }
+
+        let entitiesObservables:Observable<DataEntity>[] = [];
+
+        collection.entities.forEach((entity:DataEntity) => {
+
+            let entityObservable:Observable<DataEntity> = this.getEntitySubject(type, entity.id);
+
+            this.collectionsLiveStore[entity.type].registerEntityInCollections(entity, entityObservable, false);
+            entitiesObservables.push(this.entitiesLiveStore[type].registerEntity(entity, entity.id));
+        });
+
+        return entitiesObservables;
+    }
 
     /**
      * Associate an entity suject the the entity in the entity store
@@ -238,25 +263,25 @@ export class DataConnector {
      * @param {string} type Endpoint name
      * @param {FilterData} filter Filter object
      * @param {DataCollection} collection Collection to register
+     * @param {boolean} refresh
      * @returns {Observable<DataCollection>} The observable associated to the collection
      */
-    private registerCollection(type:string, filter:FilterData, collection:DataCollection):Observable<DataCollection> {
+    private registerCollection(type:string, filter:FilterData, collection:DataCollection, refresh:boolean = true):Observable<DataCollection> {
 
         if (!this.collectionsLiveStore[type]) {
             this.collectionsLiveStore[type] = new CollectionStore();
         }
 
-        // registering entities
-        let entitiesObservables:Observable<DataEntity>[] = [];
+        collection.entitiesObservables = this.registerCollectionEntities(type, collection);
 
-        collection.entities.forEach((entity:DataEntity) => {
-            let entityObservable:Observable<DataEntity> = this.getEntitySubject(type, entity.id);
-            entitiesObservables.push(this.registerEntity(type, entity.id, entity, entityObservable));
-        });
+        let obs:Observable<DataCollection> = this.collectionsLiveStore[type].registerCollection(collection, filter);
 
-        collection.entitiesObservables = entitiesObservables;
+        // refresh de la collection
+        if (refresh) {
+            this.collectionsLiveStore[type].refreshCollections(filter);
+        }
 
-        return this.collectionsLiveStore[type].registerCollection(collection, filter);
+        return obs;
     }
 
     /**
@@ -416,8 +441,6 @@ export class DataConnector {
 
             this.entitiesLiveStore[entity.type].unregister(entity.id);
         });
-
-
 
         if (entityData instanceof Observable) {
             entityData.take(1).subscribe((saveEntity:EntityDataSet) => {

@@ -80,16 +80,16 @@ connector.loadCollection("test-endpoint").subscribe((data:DataCollection) => {
     });
 });
 
-connector.loadCollection("lesson_light", {}).subscribe((coll:DataCollection) => {
+/*connector.loadCollection("lesson_light", {}).subscribe((coll:DataCollection) => {
     console.log("collection", coll);
 }, (error:InterfaceError) => {
     console.log("erreur from subs", error);
-});
+});*/
 
-/*setTimeout(() => {
-    connector.loadCollection("lesson_light", {}).subscribe((coll:DataCollection) => {
-        console.log("collection", coll);
+setTimeout(() => {
+    connector.loadCollection("test-endpoint", {}).subscribe((coll:DataCollection) => {
+        console.log("collection test", coll);
     }, (error:InterfaceError) => {
         console.log("erreur from subs", error);
     });
-}, 5000);*/
+}, 5000);

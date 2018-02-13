@@ -1,7 +1,6 @@
 import {Observable} from "rxjs/Observable";
 import {DataCollection} from "../data-structures/data-collection.class";
 import * as ObjectHash from "object-hash";
-import {BehaviorSubject} from "rxjs/Rx";
 import {ReplaySubject} from "rxjs/Rx";
 import {DataEntity} from "../data-structures/data-entity.class";
 import {FilterData} from "../types";
@@ -55,17 +54,40 @@ export class CollectionStore {
             this.collectionObservables[hash] = collectionSubject;
         }
 
-        collectionSubject.next(collection);
+        //collectionSubject.next(collection);
         return collectionSubject;
     }
 
-    registerEntityInCollections(entity:DataEntity, entityObservable:Observable<DataEntity>) {
+    /**
+     * Register entity in collection in store if entity match collection filter
+     * @param {DataEntity} entity Entity to register
+     * @param {Observable<DataEntity>} entityObservable Entity observable to register
+     * @param {boolean} refreshCollection If true, the collection observable is refreshed
+     */
+    registerEntityInCollections(entity:DataEntity, entityObservable:Observable<DataEntity>, refreshCollection:boolean = true) {
         let collectionKeys:string[] = Object.keys(this.collections);
 
         collectionKeys.forEach((key:string) => {
-            if (this.matchFilter(entity, this.filters[key])) {
+            if (this.entityMatchFilter(entity, this.filters[key])) {
                 this.collections[key].registerEntity(entity, entityObservable);
-                this.collectionObservables[key].next(this.collections[key]);
+
+                if (refreshCollection) {
+                    this.collectionObservables[key].next(this.collections[key]);
+                }
+            }
+        });
+    }
+
+    /**
+     * Refresh collection observable by filter
+     * @param {FilterData} filter Filter object
+     */
+    refreshCollections(filter:FilterData) {
+        let filterKeys:string[] = Object.keys(this.collectionObservables);
+
+        filterKeys.forEach((hash:string) => {
+            if (this.filterMatching(filter, this.filters[hash])) {
+                this.collectionObservables[hash].next(this.collections[hash]);
             }
         });
     }
@@ -79,7 +101,7 @@ export class CollectionStore {
         let collectionKeys:string[] = Object.keys(this.collections);
 
         collectionKeys.forEach((key:string) => {
-            if (this.matchFilter(entity, this.filters[key])) {
+            if (this.entityMatchFilter(entity, this.filters[key])) {
                 this.collections[key].deleteEntity(entity.id);
                 this.collectionObservables[key].next(this.collections[key]);
             }
@@ -113,7 +135,7 @@ export class CollectionStore {
      * @param {FilterData} filter Filter object
      * @returns {boolean} True if the entity matches the filter
      */
-    matchFilter(entity:DataEntity, filter:FilterData):boolean {
+    entityMatchFilter(entity:DataEntity, filter:FilterData):boolean {
         let filterKeys:string[] = Object.keys(filter);
 
         for (let key of filterKeys) {
@@ -121,6 +143,25 @@ export class CollectionStore {
                 return false;
             }
         }
+
+        return true;
+    }
+
+    /**
+     *
+     * @param {FilterData} filter1
+     * @param {FilterData} filter2
+     * @returns {boolean}
+     */
+    filterMatching(filter1:FilterData, filter2:FilterData):boolean {
+
+        let filter1Keys:string[] = Object.keys(filter1);
+
+        filter1Keys.forEach((key:string) => {
+            if (filter2[key] === undefined || filter1[key] !== filter2[key]) {
+                return false;
+            }
+        });
 
         return true;
     }
