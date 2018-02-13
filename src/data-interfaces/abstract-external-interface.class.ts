@@ -6,6 +6,7 @@ import {DataEntity} from "../data-structures/data-entity.class";
 import {DataCollection} from "../data-structures/data-collection.class";
 import {BehaviorSubject} from "rxjs/BehaviorSubject";
 import {CollectionDataSet, EntityDataSet, FilterData} from "../types";
+import {InterfaceError} from "./interface-error.class";
 
 /**
  * Base external interface
@@ -97,6 +98,17 @@ export abstract class ExternalInterface {
      */
     release(type:string) {
         console.warn("Release not implemented in interface");
+    }
+
+    /**
+     * Sends an error message
+     * @param {number} code Error code
+     * @param {string} originalMessage Error original text message
+     * @param {Function} errorHandler Error handler Function
+     */
+    sendError(code:number, originalMessage:string, errorHandler:Function) {
+        let error:InterfaceError = new InterfaceError(code, "", originalMessage);
+        errorHandler(error);
     }
 
 }

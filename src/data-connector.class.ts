@@ -246,8 +246,6 @@ export class DataConnector {
             this.collectionsLiveStore[type] = new CollectionStore();
         }
 
-
-
         // registering entities
         let entitiesObservables:Observable<DataEntity>[] = [];
 

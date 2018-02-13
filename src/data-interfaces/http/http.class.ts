@@ -64,11 +64,7 @@ export class Http extends ExternalInterface {
                 if (request.status === 200) {
                     subject.next(this.extractEntity(request.responseText));
                 } else {
-                    if (errorHandler) {
-                        let error:InterfaceError = new InterfaceError(0);
-                        error.originalMessage = request.statusText;
-                        errorHandler(error);
-                    }
+                    this.sendError(0, request.statusText, errorHandler);
                 }
             }
         };
@@ -116,11 +112,7 @@ export class Http extends ExternalInterface {
                 if (request.status === 200) {
                     subject.next(this.extractCollection(request.responseText));
                 } else {
-                    if (errorHandler) {
-                        let error:InterfaceError = new InterfaceError(0);
-                        error.originalMessage = request.statusText;
-                        errorHandler(error);
-                    }
+                    this.sendError(0, request.statusText, errorHandler);
                 }
             }
         };
@@ -152,11 +144,7 @@ export class Http extends ExternalInterface {
                 if (request.status === 200) {
                     subject.next(this.extractEntity(request.responseText));
                 } else {
-                    if (errorHandler) {
-                        let error:InterfaceError = new InterfaceError(0);
-                        error.originalMessage = request.statusText;
-                        errorHandler(error);
-                    }
+                    this.sendError(0, request.statusText, errorHandler);
                 }
             }
         };
@@ -187,11 +175,7 @@ export class Http extends ExternalInterface {
                 if (request.status === 200) {
                     subject.next(this.extractEntity(request.responseText));
                 } else {
-                    if (errorHandler) {
-                        let error:InterfaceError = new InterfaceError(0);
-                        error.originalMessage = request.statusText;
-                        errorHandler(error);
-                    }
+                    this.sendError(0, request.statusText, errorHandler);
                 }
             }
         };
@@ -222,11 +206,7 @@ export class Http extends ExternalInterface {
                 if (request.status === 200) {
                     subject.next(true);
                 } else {
-                    if (errorHandler) {
-                        let error:InterfaceError = new InterfaceError(0);
-                        error.originalMessage = request.statusText;
-                        errorHandler(error);
-                    }
+                    this.sendError(0, request.statusText, errorHandler);
                 }
             }
         };

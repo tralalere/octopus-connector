@@ -14,7 +14,7 @@ let connector:DataConnector = new DataConnector({
             prefix: "test"
         },
         http: {
-            apiUrl: "https://api.e-talmud.com/api/"
+            apiUrl: "https://api.e-talmud.com/aspi/"
         }
     },
     map: {
