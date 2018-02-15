@@ -10,11 +10,11 @@ npm-debug.log
 *.ts
 !*.d.ts
 tests
-examples
+example
 .github
 coverage
 !*.metadata.json
-!bundles/*.js
+!dist/*.js
 
 #################
 ## JetBrains

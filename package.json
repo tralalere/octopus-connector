@@ -1,6 +1,6 @@
 {
   "name": "octopus-connect",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -8,7 +8,8 @@
     "clean": "rimraf bundles coverage index.js.map src/**/*.map src/**/*.d.ts src/**/*.metadata.json src/**/*.js tests/**/*.d.ts tests/**/*.metadata.json tests/**/*.js settings/**/*.d.ts settings/**/*.metadata.json settings/**/*.js index.d.ts index.metadata.json index.js",
     "start": "tsc && tsc -w",
     "compile": "tsc",
-    "doc": "typedoc --theme minimal --mode file --out ./doc ./src/data-connector.class.ts"
+    "doc": "typedoc --theme minimal --mode file --out ./doc ./src/data-connector.class.ts",
+    "build": "webpack"
   },
   "repository": {
     "type": "git",
@@ -23,8 +24,10 @@
   "devDependencies": {
     "rimraf": "^2.6.2",
     "systemjs": "^0.20.19",
+    "ts-loader": "^3.5.0",
     "typedoc": "^0.10.0",
-    "typescript": "^2.5.3"
+    "typescript": "^2.5.3",
+    "webpack": "^3.11.0"
   },
   "dependencies": {
     "@types/object-hash": "^1.1.0",
