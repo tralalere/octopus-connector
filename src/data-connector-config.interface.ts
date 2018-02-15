@@ -17,6 +17,16 @@ export interface DataConnectorConfig {
     defaultInterface:string;
 
     /**
+     * Delay before action retry
+     */
+    retryTimeout?:number;
+
+    /**
+     * Max attempts number
+     */
+    maxRetry?:number;
+
+    /**
      * Base configurations for each service type
      */
     configuration: {

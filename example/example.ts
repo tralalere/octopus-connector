@@ -86,10 +86,14 @@ connector.loadCollection("test-endpoint").subscribe((data:DataCollection) => {
     console.log("erreur from subs", error);
 });*/
 
-setTimeout(() => {
+connector.loadEntity("lesson_light", 20).subscribe((data:DataEntity) => {
+    console.log(data);
+});
+
+/*setTimeout(() => {
     connector.loadCollection("test-endpoint", {}).subscribe((coll:DataCollection) => {
         console.log("collection test", coll);
     }, (error:InterfaceError) => {
         console.log("erreur from subs", error);
     });
-}, 5000);
+}, 5000);*/

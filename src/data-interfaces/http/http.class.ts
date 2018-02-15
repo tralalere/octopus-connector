@@ -64,7 +64,7 @@ export class Http extends ExternalInterface {
                 if (request.status === 200) {
                     subject.next(this.extractEntity(request.responseText));
                 } else {
-                    this.sendError(0, request.statusText, errorHandler);
+                    this.sendError(request.status, request.statusText, errorHandler);
                 }
             }
         };
@@ -112,7 +112,7 @@ export class Http extends ExternalInterface {
                 if (request.status === 200) {
                     subject.next(this.extractCollection(request.responseText));
                 } else {
-                    this.sendError(0, request.statusText, errorHandler);
+                    this.sendError(request.status, request.statusText, errorHandler);
                 }
             }
         };
@@ -144,7 +144,7 @@ export class Http extends ExternalInterface {
                 if (request.status === 200) {
                     subject.next(this.extractEntity(request.responseText));
                 } else {
-                    this.sendError(0, request.statusText, errorHandler);
+                    this.sendError(request.status, request.statusText, errorHandler);
                 }
             }
         };
@@ -175,7 +175,7 @@ export class Http extends ExternalInterface {
                 if (request.status === 200) {
                     subject.next(this.extractEntity(request.responseText));
                 } else {
-                    this.sendError(0, request.statusText, errorHandler);
+                    this.sendError(request.status, request.statusText, errorHandler);
                 }
             }
         };
@@ -206,7 +206,7 @@ export class Http extends ExternalInterface {
                 if (request.status === 200) {
                     subject.next(true);
                 } else {
-                    this.sendError(0, request.statusText, errorHandler);
+                    this.sendError(request.status, request.statusText, errorHandler);
                 }
             }
         };
