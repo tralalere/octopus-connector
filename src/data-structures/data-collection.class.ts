@@ -81,7 +81,7 @@ export class DataCollection {
      */
     registerEntity(entity:DataEntity, entityObservable:Observable<DataEntity>) {
         for (let collectionEntity of this.entities) {
-            if (entity.id === collectionEntity.id) {
+            if (entity.id && entity.id === collectionEntity.id) {
                 return;
             }
         }

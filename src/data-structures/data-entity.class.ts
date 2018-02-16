@@ -70,7 +70,16 @@ export class DataEntity {
      * @returns {Observable<DataEntity>} The observable associated to the entity in connector stores
      */
     save():Observable<DataEntity> {
-        let obs:Observable<DataEntity> = this.connector.saveEntity(this);
+
+        let obs:Observable<DataEntity>;
+
+        if (this.id !== -1) {
+            obs = this.connector.saveEntity(this);
+        } else {
+            // temporary entity deletion
+            this.remove();
+            obs = this.connector.createEntity(this.type, this.attributes);
+        }
 
         obs.take(1).subscribe(() => {
             this.generateReferenceObject();

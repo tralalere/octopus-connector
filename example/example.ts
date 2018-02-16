@@ -40,6 +40,13 @@ document.getElementById("test-button1").addEventListener("click", () => {
     connector.createEntity("test-endpoint", { key1: "val1", key2: key2Elem.value });
 });
 
+document.getElementById("test-temp-button1").addEventListener("click", () => {
+    connector.createTemporaryEntity("test-endpoint", { key1: "val1", key2: key2Elem.value }).subscribe((data:DataEntity) => {
+        console.log(data);
+        data.save();
+    });
+});
+
 document.getElementById("test-button2").addEventListener("click", () => {
     connector.createEntity("test-endpoint", { key1: "val2", key2: key2Elem.value });
 });

@@ -27,13 +27,17 @@ export class EntityStore {
      */
     registerEntity(entity:DataEntity, id:number):Observable<DataEntity> {
 
-        if (this.entitiesObservables[id]) {
+        if (id !== -1 && this.entitiesObservables[id]) {
             this.entitiesObservables[id].next(entity);
             return this.entitiesObservables[id];
         } else {
             let subject:ReplaySubject<DataEntity> = new ReplaySubject<DataEntity>(1);
             subject.next(entity);
-            this.entitiesObservables[id] = subject;
+
+            if (id !== -1) {
+                this.entitiesObservables[id] = subject;
+            }
+
             return subject;
         }
 
@@ -45,7 +49,9 @@ export class EntityStore {
      * @param {ReplaySubject<DataEntity>} subject Subject to register
      */
     registerEntitySubject(id:number, subject:ReplaySubject<DataEntity>) {
-        this.entitiesObservables[id] = subject;
+        if (id !== -1) {
+            this.entitiesObservables[id] = subject;
+        }
     }
 
     /**

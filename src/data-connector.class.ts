@@ -618,6 +618,33 @@ export class DataConnector {
     }
 
     /**
+     * Creates an entity on the front only (will be saved on the server later)
+     * @param {string} type Endpoint type
+     * @param {{[p: string]: any}} data Data used to create the entity
+     * @returns {Observable<DataEntity>} The observable associated to this entity
+     */
+    createTemporaryEntity(type:string, data:{[key:string]:any} = {}):Observable<DataEntity> {
+        let structure:ModelSchema = this.getEndpointStructureModel(type);
+
+        if (structure) {
+            data = structure.generateModel(null, data);
+        }
+
+        let entitySubject:ReplaySubject<DataEntity> = new ReplaySubject<DataEntity>(1);
+
+        let entity:DataEntity = new DataEntity(type, data, this, -1);
+
+        // pas utile
+        //entitySubject.next(entity);
+
+        // attention, pas d'id, car pas de retour du serveur
+        this.registerEntitySubject(type, null, entitySubject);
+        this.registerEntity(type, null, entity, entitySubject);
+
+        return entitySubject;
+    }
+
+    /**
      * Delete an entity
      * @param {DataEntity} entity Entity to delete
      * @returns {Observable<boolean>} True if deletion success
