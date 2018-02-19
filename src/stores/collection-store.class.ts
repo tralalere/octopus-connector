@@ -71,8 +71,6 @@ export class CollectionStore {
             if (this.entityMatchFilter(entity, this.filters[key])) {
                 this.collections[key].registerEntity(entity, entityObservable);
 
-                console.log("ok", this.collections[key]);
-
                 if (refreshCollection) {
                     this.collectionObservables[key].next(this.collections[key]);
                 }

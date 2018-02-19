@@ -17,6 +17,12 @@ export class DataEntity {
     attributes:{[key:string]:any} = {};
 
     /**
+     * Nested entities
+     * @type {{}}
+     */
+    nesting:{[key:string]:any} = {};
+
+    /**
      * Reference object for diff
      */
     private attributesRef:{[key:string]:any};

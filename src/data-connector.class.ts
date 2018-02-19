@@ -117,6 +117,19 @@ export class DataConnector {
     }
 
     /**
+     * Get nesting attributes types
+     * @param {string} type Endpoint name
+     * @returns {{[p: string]: string}} The nested attributes types
+     */
+    private getNesting(type:string):{[key:string]:string} {
+        let conf:string|EndpointConfig = this.getEndpointConfiguration(type);
+
+        if (conf && typeof conf === "object") {
+            return conf.nesting || null;
+        }
+    }
+
+    /**
      * Is this endpoint using connector cache
      * @param {string} type Name of the endpoint
      * @returns {boolean} True if the endpoint use cache
@@ -343,12 +356,15 @@ export class DataConnector {
 
             let checkResponse:Function = () => {
                 if (entityData instanceof Observable) {
-                    entityData.take(1).subscribe((entity:EntityDataSet) => {
+                    entityData.subscribe((entity:EntityDataSet) => {
 
                         if (entity) {
                             if (structure) {
                                 entity = structure.filterModel(entity);
                             }
+
+                            // hasNesting ?
+                            let nested:{[key:string]:string} = this.getNesting(type);
 
                             this.registerEntity(type, id, new DataEntity(type, entity, this, id), entitySubject);
                         }
@@ -361,7 +377,32 @@ export class DataConnector {
                             entityData = structure.filterModel(entityData);
                         }
 
-                        this.registerEntity(type, id, new DataEntity(type, entityData, this, id), entitySubject);
+                        let newEntity:DataEntity = new DataEntity(type, entityData, this, id);
+
+                        // hasNesting ?
+                        let nested:{[key:string]:string} = this.getNesting(type);
+
+                        if (nested) {
+                            let nestedKeys:string[] = Object.keys(nested);
+
+                            nestedKeys.forEach((key:string) => {
+                                let nestedObservables:Observable<DataEntity>[] = [];
+
+                                if (entityData[key] !== undefined && typeof entityData[key] === "number") {
+                                    this.loadEntity(nested[key], entityData[key]).subscribe((loadedEntity:DataEntity) => {
+                                        newEntity.nesting[key] = loadedEntity;
+                                    });
+                                }
+
+                                if (entityData[key] !== undefined && Array.isArray(entityData[key])) {
+                                    this.loadEntities(nested[key], entityData[key]).subscribe((loadedEntities:DataEntity[]) => {
+                                        newEntity.nesting[key] = loadedEntities;
+                                    });
+                                }
+                            });
+                        }
+
+                        this.registerEntity(type, id, newEntity, entitySubject);
                     }
 
                 }
@@ -400,6 +441,25 @@ export class DataConnector {
     }
 
     /**
+     * Load many entities
+     * @param {string} type Endpoint name
+     * @param {number[]} ids Entities ids array
+     * @returns {Observable<DataEntity[]>} The data entities
+     */
+    loadEntities(type:string, ids:number[]):Observable<DataEntity[]> {
+
+        // TODO: check si une méthode loadEntities optimisée existe dans l'interface
+
+        let observables:Observable<DataEntity>[] = [];
+
+        ids.forEach((id:number) => {
+           observables.push(this.loadEntity(type, id));
+        });
+
+        return Observable.combineLatest(...observables);
+    }
+
+    /**
      * Load collection from specified endpoint
      * @param {string} type Endpoint name
      * @param {FilterData} filter Filter object
@@ -426,7 +486,9 @@ export class DataConnector {
 
             let checkResponse:Function = () => {
                 if (collection instanceof Observable) {
-                    collection.take(1).subscribe((newCollection:CollectionDataSet) => {
+
+                    // attention, dans le cas de nodeJs, on ne doit pas faire de take(1)
+                    collection.subscribe((newCollection:CollectionDataSet) => {
                         this.registerCollection(type, filter, new DataCollection(type, newCollection, this, structure));
                     });
                 } else {
@@ -500,7 +562,7 @@ export class DataConnector {
 
         let checkResponse:Function = () => {
             if (entityData instanceof Observable) {
-                entityData.take(1).subscribe((saveEntity:EntityDataSet) => {
+                entityData.subscribe((saveEntity:EntityDataSet) => {
 
                     if (structure) {
                         saveEntity = structure.filterModel(saveEntity);
@@ -579,7 +641,7 @@ export class DataConnector {
 
         let checkResponse:Function = () => {
             if (entity instanceof Observable) {
-                entity.take(1).subscribe((createdEntity:EntityDataSet) => {
+                entity.subscribe((createdEntity:EntityDataSet) => {
                     this.registerEntitySubject(type, createdEntity.id, entitySubject);
                     this.registerEntity(type, createdEntity.id, new DataEntity(type, createdEntity, this, createdEntity.id), entitySubject);
                 });
@@ -657,7 +719,7 @@ export class DataConnector {
 
         let checkResponse:Function = () => {
             if (result instanceof Observable) {
-                result.take(1).subscribe((res:boolean) => {
+                result.subscribe((res:boolean) => {
                     this.unregisterEntity(entity);
                     subject.next(res);
                 });

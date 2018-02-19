@@ -24,4 +24,9 @@ export interface EndpointConfig {
      * List of data attributes keys excluded in save and create actions, used in some services
      */
     exclusions?:string[];
+
+    /**
+     * List of nested attributes: key is attributeName, value is endpoint name
+     */
+    nesting?:{[key:string]:string};
 }

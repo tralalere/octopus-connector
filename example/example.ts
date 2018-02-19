@@ -20,7 +20,10 @@ let connector:DataConnector = new DataConnector({
     map: {
         "test-endpoint": {
             type: "localstorage",
-            structure: ObjectsStructures.endpoint1
+            structure: ObjectsStructures.endpoint1,
+            nesting: {
+                "key3": "lesson_light"
+            }
         },
         "lesson_light": {
             type: "http"
@@ -42,7 +45,6 @@ document.getElementById("test-button1").addEventListener("click", () => {
 
 document.getElementById("test-temp-button1").addEventListener("click", () => {
     connector.createTemporaryEntity("test-endpoint", { key1: "val1", key2: key2Elem.value }).subscribe((data:DataEntity) => {
-        console.log(data);
         data.save();
     });
 });
@@ -60,7 +62,6 @@ document.getElementById("refresh-button2").addEventListener("click", () => {
 });
 
 connector.loadCollection("test-endpoint", { key1: "val1" }).subscribe((data:DataCollection) => {
-    console.log("collection 1");
     displayer1.innerHTML = "";
     data.entities.forEach((entity:DataEntity) => {
         let counter:Node = count.cloneNode(true);
@@ -74,7 +75,6 @@ connector.loadCollection("test-endpoint", { key1: "val1" }).subscribe((data:Data
 });
 
 connector.loadCollection("test-endpoint").subscribe((data:DataCollection) => {
-    console.log("collection 2");
     displayer2.innerHTML = "";
     data.entities.forEach((entity:DataEntity) => {
         let counter:Node = count.cloneNode(true);
@@ -93,8 +93,8 @@ connector.loadCollection("test-endpoint").subscribe((data:DataCollection) => {
     console.log("erreur from subs", error);
 });*/
 
-connector.loadEntity("lesson_light", 20).subscribe((data:DataEntity) => {
-    console.log(data);
+connector.loadEntity("test-endpoint", 158).subscribe((data:DataEntity) => {
+    console.log(data.nesting.toString());
 });
 
 /*setTimeout(() => {
