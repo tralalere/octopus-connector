@@ -312,11 +312,13 @@ export class DataConnector {
 
     /**
      * Authenticate to the service
+     * @param {string} serviceName Name of service on which we authenticate
      * @param {string} login User login
      * @param {string} password User password
      */
-    authenticate(login:string, password:string) {
-
+    authenticate(serviceName:string, login:string, password:string) {
+        let selectedInterface:ExternalInterface = this.interfaces[serviceName];
+        selectedInterface.authenticate(login, password);
     }
 
     /**

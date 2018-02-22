@@ -11,6 +11,13 @@ import {InterfaceError} from "../interface-error.class";
  */
 export class Http extends ExternalInterface {
 
+    /**
+     *
+     */
+    private dataStore: {
+        user
+    };
+
     /*
     Headers sent with each request
      */
@@ -29,7 +36,22 @@ export class Http extends ExternalInterface {
         this.useDiff = true;
 
         if (configuration.headers) {
-            this.headers = configuration.headers;
+            for (let header of configuration.headers) {
+                this.headers.push(header);
+            }
+        }
+
+        this.dataStore = {
+            user: undefined
+        };
+
+        this.dataStore.user = JSON.parse(localStorage.getItem('currentUser'));
+        let expire:number =  JSON.parse(localStorage.getItem('expires_in'));
+        if(expire > Date.now()) {
+            this.dataStore.user = JSON.parse(localStorage.getItem('currentUser'));
+            this.setToken(JSON.parse(localStorage.getItem('accessToken')));
+        } else if(expire && expire < Date.now()) {
+            this.logOut();
         }
     }
 
@@ -224,7 +246,166 @@ export class Http extends ExternalInterface {
      * @returns {Observable<boolean>} True if authentication success
      */
     authenticate(login:string, password:string, errorHandler:Function = null):Observable<boolean> {
-        return null;
+
+        let subject:ReplaySubject<boolean> = new ReplaySubject<boolean>(1);
+
+        let request:XMLHttpRequest = new XMLHttpRequest();
+
+        let url:string = `${<string>this.configuration.apiUrl}login-token`;
+        request.open("GET", url,true);
+
+        request.setRequestHeader("Authorization", 'Basic ' + btoa(login.trim() + ':' + password));
+
+        request.onreadystatechange = () => {
+            if (request.readyState === XMLHttpRequest.DONE) {
+                if (request.status === 200) {
+                    subject.next(true);
+                    let userData:Object = JSON.parse(request.responseText);
+                    console.log("resp", JSON.parse(request.responseText));
+                    let expire:number = +userData["expires_in"] - 3600;
+                    if(expire < 3600){
+                        if(localStorage.getItem('accessToken')){
+                            this.setToken(userData["access_token"], errorHandler);
+                            this.setExpireDate(expire);
+                            this.setRefreshToken(userData["refreshToken"]);
+                        }
+                        this.refreshToken(userData["refresh_token"], errorHandler);
+                    } else {
+                        this.setToken(userData["access_token"], errorHandler);
+                        this.setExpireDate(expire);
+                        this.setRefreshToken(userData["refreshToken"]);
+                    }
+                } else {
+                    subject.next(false);
+                    this.sendError(request.status, request.statusText, errorHandler);
+                }
+            }
+        };
+
+        request.send();
+
+        return subject;
+    }
+
+    logOut() {
+        this.headers.forEach((object:HeaderObject, index:number) => {
+            if (object.key !== "access-token") {
+                this.headers.splice(index, 1);
+            }
+        });
+
+        localStorage.removeItem('currentUser');
+        localStorage.removeItem('accessToken');
+        localStorage.removeItem('expires_in');
+        localStorage.removeItem('refreshToken');
+        this.dataStore.user = null;
+    }
+
+
+    /**
+     *
+     * @param {string} accessToken
+     * @param {Function} errorHandler
+     */
+    private setToken(accessToken:string, errorHandler:Function = null) {
+        if(accessToken && accessToken !="") {
+            localStorage.setItem('accessToken', JSON.stringify(accessToken));
+            this.headers.push({key: "access-token", value: accessToken});
+
+            this.getMe(true, errorHandler);
+        }
+    }
+
+    /**
+     *
+     * @param {number} expire
+     */
+    private setExpireDate(expire:number) {
+        let date:number = Date.now();
+        localStorage.setItem('expires_in', JSON.stringify(date + (expire*1000)));
+    }
+
+    /**
+     *
+     * @param {string} refreshToken
+     * @param {Function} errorHandler
+     */
+    private refreshToken(refreshToken:string, errorHandler:Function) {
+
+        let request:XMLHttpRequest = new XMLHttpRequest();
+
+        let url:string = `${<string>this.configuration.apiUrl}refresh-token`;
+        request.open("GET", url,true);
+
+        request.onreadystatechange = () => {
+            if (request.readyState === XMLHttpRequest.DONE) {
+                if (request.status === 200) {
+                    let userData:Object = JSON.parse(request.responseText);
+                    this.setToken(userData["access_token"], errorHandler);
+                    this.setExpireDate(+userData["expires_in"] - 3600);
+                    this.setRefreshToken(userData["refreshToken"]);
+                } else {
+                    this.sendError(request.status, request.statusText, errorHandler);
+                }
+            }
+        };
+    }
+
+    /**
+     *
+     * @param {string} refreshToken
+     */
+    private setRefreshToken(refreshToken:string) {
+        localStorage.setItem('refreshToken', JSON.stringify(refreshToken));
+    }
+
+
+    getMe(complete:boolean = true, errorHandler:Function = null):Observable<EntityDataSet> {
+
+        let subject:ReplaySubject<EntityDataSet> = new ReplaySubject<EntityDataSet>(1);
+
+        let request:XMLHttpRequest = new XMLHttpRequest();
+
+        let url:string = `${<string>this.configuration.apiUrl}users`;
+        request.open("GET", url,true);
+
+        request.onreadystatechange = () => {
+            if (request.readyState === XMLHttpRequest.DONE) {
+                if (request.status === 200) {
+                    let userData:Object = JSON.parse(request.responseText);
+                    subject.next(userData);
+                    this.setMe(userData, complete);
+                } else {
+                    if (errorHandler) {
+                        this.sendError(request.status, request.statusText, errorHandler);
+                    }
+                }
+            }
+        };
+
+        /*let obs:Observable<DataEntity> = this.dataManager.loadEntity("users", 'me', true);
+
+        obs.subscribe(
+            (userData:DataEntity) => {
+                this.setMe(userData, complete);
+            },
+            (error:Object) => {
+                console.log("not success getMe -- not supposed to come here");
+            }
+        );*/
+
+        return subject;
+    }
+
+    setMe(userData:EntityDataSet, complete:boolean = true){
+
+        if (complete) {
+            this.dataStore.user = userData;
+            //this.data.next(this.dataStore.user);
+            localStorage.setItem('currentUser', JSON.stringify(userData));
+        }
+
+        //this.currentUserData = userData;
     }
 
     /**

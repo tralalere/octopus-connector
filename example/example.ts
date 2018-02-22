@@ -14,7 +14,7 @@ let connector:DataConnector = new DataConnector({
             prefix: "test"
         },
         http: {
-            apiUrl: "https://api.e-talmud.com/api/"
+            apiUrl: "http://preprod.savanturiers.api.tralalere.com/api/"
         }
     },
     map: {
@@ -24,12 +24,11 @@ let connector:DataConnector = new DataConnector({
             nesting: {
                 "key3": "lesson_light"
             }
-        },
-        "lesson_light": {
-            type: "http"
         }
     }
 });
+
+connector.authenticate("http", "christophe", "tralalere2017");
 
 let count:HTMLElement = document.getElementById("count");
 count.remove();
