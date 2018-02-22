@@ -45,8 +45,8 @@ connector.authenticated("http").subscribe((user:DataEntity) => {
 
     connector.loadEntity("projets", 1289).subscribe((data:DataEntity) => {
         console.log(data);
-        data.set("label", "okokok1");
-        data.save();
+        //data.set("label", "okokok1");
+        data.remove();
     });
 
 
