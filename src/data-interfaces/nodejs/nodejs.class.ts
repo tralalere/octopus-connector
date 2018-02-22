@@ -1,11 +1,11 @@
 import {ExternalInterface} from "../abstract-external-interface.class";
 import {DataConnector} from "../../data-connector.class";
 import {NodejsConfiguration} from "./nodejs-configuration.interface";
-import {Observable} from "rxjs/Observable";
+import {Observable} from "rxjs/Rx";
 import {CollectionDataSet, EntityDataSet, FilterData} from "../../types";
 import * as ObjectHash from "object-hash";
 import * as io from 'socket.io-client';
-import {ReplaySubject} from "rxjs/ReplaySubject";
+import {ReplaySubject} from "rxjs/Rx";
 
 /**
  * Nodejs interface

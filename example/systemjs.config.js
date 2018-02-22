@@ -10,7 +10,8 @@
             "rxjs": "../node_modules/rxjs",
             "object-hash": "../node_modules/object-hash",
             "example": ".",
-            "octopus-model": "../node_modules/octopus-model"
+            "octopus-model": "../node_modules/octopus-model",
+            "socket.io-client": "../node_modules/socket.io-client"
         },
         packages: {
             'src': {
@@ -35,7 +36,8 @@
         map: {
             "rxjs": "rxjs/bundles/",
             "object-hash": "object-hash/dist/object_hash.js",
-            "octopus-model": "octopus-model/dist/bundle.js"
+            "octopus-model": "octopus-model/dist/bundle.js",
+            "socket.io-client": "socket.io-client/dist/socket.io.js"
         }
     })
 })(this);
