@@ -316,9 +316,33 @@ export class DataConnector {
      * @param {string} login User login
      * @param {string} password User password
      */
-    authenticate(serviceName:string, login:string, password:string) {
+    authenticate(serviceName:string, login:string, password:string):Observable<DataEntity> {
         let selectedInterface:ExternalInterface = this.interfaces[serviceName];
-        selectedInterface.authenticate(login, password);
+
+        return selectedInterface.authenticate(login, password).map((data:EntityDataSet) => {
+            return new DataEntity("users", data, this, data.id);
+        });
+    }
+
+    /**
+     *
+     * @param {string} serviceName
+     * @returns {Observable<DataEntity>}
+     */
+    authenticated(serviceName:string):Observable<DataEntity> {
+        let selectedInterface:ExternalInterface = this.interfaces[serviceName];
+        return selectedInterface.authenticated = selectedInterface.authenticated.map((data:EntityDataSet) => {
+            return new DataEntity("users", data, this, data.id);
+        });
+    }
+
+    /**
+     *
+     * @returns {Observable<boolean>}
+     */
+    logout(serviceName:string):Observable<boolean> {
+        let selectedInterface:ExternalInterface = this.interfaces[serviceName];
+        return selectedInterface.logout();
     }
 
     /**

@@ -13,6 +13,12 @@ export class Http extends ExternalInterface {
 
     /**
      *
+     * @type {boolean}
+     */
+    authenticated:ReplaySubject<EntityDataSet>;
+
+    /**
+     *
      */
     private dataStore: {
         user
@@ -45,13 +51,20 @@ export class Http extends ExternalInterface {
             user: undefined
         };
 
+        this.authenticated = new ReplaySubject<DataEntity>(1);
+
         this.dataStore.user = JSON.parse(localStorage.getItem('currentUser'));
         let expire:number =  JSON.parse(localStorage.getItem('expires_in'));
         if(expire > Date.now()) {
             this.dataStore.user = JSON.parse(localStorage.getItem('currentUser'));
-            this.setToken(JSON.parse(localStorage.getItem('accessToken')));
+            this.setToken(JSON.parse(localStorage.getItem('accessToken'))).subscribe((data:EntityDataSet) => {
+                this.authenticated.next(data);
+            });
         } else if(expire && expire < Date.now()) {
+            this.authenticated.error(null);
             this.logOut();
+        } else {
+            this.authenticated.error(null);
         }
     }
 
@@ -245,9 +258,9 @@ export class Http extends ExternalInterface {
      * @param {Function} errorHandler Function used to handle errors
      * @returns {Observable<boolean>} True if authentication success
      */
-    authenticate(login:string, password:string, errorHandler:Function = null):Observable<boolean> {
+    authenticate(login:string, password:string, errorHandler:Function = null):Observable<EntityDataSet> {
 
-        let subject:ReplaySubject<boolean> = new ReplaySubject<boolean>(1);
+        //let subject:ReplaySubject<EntityDataSet> = new ReplaySubject<EntityDataSet>(1);
 
         let request:XMLHttpRequest = new XMLHttpRequest();
 
@@ -256,27 +269,29 @@ export class Http extends ExternalInterface {
 
         request.setRequestHeader("Authorization", 'Basic ' + btoa(login.trim() + ':' + password));
 
+        let observables:Observable<any>[] = [];
+
         request.onreadystatechange = () => {
             if (request.readyState === XMLHttpRequest.DONE) {
                 if (request.status === 200) {
-                    subject.next(true);
-                    let userData:Object = JSON.parse(request.responseText);
+                    let loginData:Object = JSON.parse(request.responseText);
                     console.log("resp", JSON.parse(request.responseText));
-                    let expire:number = +userData["expires_in"] - 3600;
+                    let expire:number = +loginData["expires_in"] - 3600;
                     if(expire < 3600){
                         if(localStorage.getItem('accessToken')){
-                            this.setToken(userData["access_token"], errorHandler);
+                            console.log("ici");
+                            observables.push(this.setToken(loginData["access_token"], errorHandler));
                             this.setExpireDate(expire);
-                            this.setRefreshToken(userData["refreshToken"]);
+                            this.setRefreshToken(loginData["refreshToken"]);
                         }
-                        this.refreshToken(userData["refresh_token"], errorHandler);
+                        observables.push(this.refreshToken(loginData["refresh_token"], errorHandler));
                     } else {
-                        this.setToken(userData["access_token"], errorHandler);
+                        console.log("là");
+                        observables.push(this.setToken(loginData["access_token"], errorHandler));
                         this.setExpireDate(expire);
-                        this.setRefreshToken(userData["refreshToken"]);
+                        this.setRefreshToken(loginData["refreshToken"]);
                     }
                 } else {
-                    subject.next(false);
                     this.sendError(request.status, request.statusText, errorHandler);
                 }
             }
@@ -284,7 +299,9 @@ export class Http extends ExternalInterface {
 
         request.send();
 
-        return subject;
+        return Observable.combineLatest(...observables).map((values:any[]) => {
+            return values[0];
+        });
     }
 
     logOut() {
@@ -307,12 +324,12 @@ export class Http extends ExternalInterface {
      * @param {string} accessToken
      * @param {Function} errorHandler
      */
-    private setToken(accessToken:string, errorHandler:Function = null) {
+    private setToken(accessToken:string, errorHandler:Function = null):Observable<EntityDataSet> {
         if(accessToken && accessToken !="") {
             localStorage.setItem('accessToken', JSON.stringify(accessToken));
             this.headers.push({key: "access-token", value: accessToken});
 
-            this.getMe(true, errorHandler);
+            return this.getMe(true, errorHandler);
         }
     }
 
@@ -330,7 +347,9 @@ export class Http extends ExternalInterface {
      * @param {string} refreshToken
      * @param {Function} errorHandler
      */
-    private refreshToken(refreshToken:string, errorHandler:Function) {
+    private refreshToken(refreshToken:string, errorHandler:Function):Observable<Object> {
+
+        let subject:ReplaySubject<Object> = new ReplaySubject<Object>(1);
 
         let request:XMLHttpRequest = new XMLHttpRequest();
 
@@ -344,11 +363,14 @@ export class Http extends ExternalInterface {
                     this.setToken(userData["access_token"], errorHandler);
                     this.setExpireDate(+userData["expires_in"] - 3600);
                     this.setRefreshToken(userData["refreshToken"]);
+                    subject.next(userData);
                 } else {
                     this.sendError(request.status, request.statusText, errorHandler);
                 }
             }
         };
+
+        return subject;
     }
 
     /**
@@ -366,33 +388,27 @@ export class Http extends ExternalInterface {
 
         let request:XMLHttpRequest = new XMLHttpRequest();
 
-        let url:string = `${<string>this.configuration.apiUrl}users`;
+        let url:string = `${<string>this.configuration.apiUrl}users/me`;
         request.open("GET", url,true);
+        this.addHeaders(request);
 
         request.onreadystatechange = () => {
             if (request.readyState === XMLHttpRequest.DONE) {
                 if (request.status === 200) {
-                    let userData:Object = JSON.parse(request.responseText);
+                    let userData:Object = JSON.parse(request.responseText)["data"][0];
                     subject.next(userData);
                     this.setMe(userData, complete);
                 } else {
                     if (errorHandler) {
                         this.sendError(request.status, request.statusText, errorHandler);
                     }
+
+                    subject.error(null);
                 }
             }
         };
 
-        /*let obs:Observable<DataEntity> = this.dataManager.loadEntity("users", 'me', true);
-
-        obs.subscribe(
-            (userData:DataEntity) => {
-                this.setMe(userData, complete);
-            },
-            (error:Object) => {
-                console.log("not success getMe -- not supposed to come here");
-            }
-        );*/
+        request.send();
 
         return subject;
     }

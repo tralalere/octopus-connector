@@ -13,6 +13,8 @@ import {InterfaceError} from "./interface-error.class";
  */
 export abstract class ExternalInterface {
 
+    authenticated:Observable<EntityDataSet>;
+
     /**
      * if true, the save method will only send the modified properties to the service
      * @type {boolean}
@@ -87,8 +89,12 @@ export abstract class ExternalInterface {
      * @param {Function} errorHandler Function used to handle errors
      * @returns {Observable<boolean>}
      */
-    authenticate(login:string, password:string, errorHandler:Function = null):Observable<boolean> {
+    authenticate(login:string, password:string, errorHandler:Function = null):Observable<EntityDataSet> {
         console.warn("Authenticate not implemented in interface");
+        return null;
+    }
+
+    logout():Observable<boolean> {
         return null;
     }
 
