@@ -2,6 +2,7 @@ import {DataConnector} from "../src/data-connector.class";
 import {ObjectsStructures} from "./objects-structures.class";
 import {DataEntity} from "../src/data-structures/data-entity.class";
 import {DataCollection} from "../src/data-structures/data-collection.class";
+import {InterfaceError} from "../src/data-interfaces/interface-error.class";
 
 let connector:DataConnector = new DataConnector({
     defaultInterface: "localstorage",
@@ -10,7 +11,13 @@ let connector:DataConnector = new DataConnector({
             prefix: "test"
         },
         http: {
-            apiUrl: "http://preprod.savanturiers.api.tralalere.com/api/"
+            apiUrl: "http://preprod.savanturiers.api.tralalere.com/api/",
+            headers: [
+                {
+                    key: "Content-type",
+                    value: "application/json"
+                }
+            ]
         }
     },
     map: {
@@ -25,9 +32,25 @@ connector.authenticated("http").subscribe((user:DataEntity) => {
     connector.loadCollection("projets").subscribe((coll:DataCollection) => {
         console.log(coll);
     });
-}, () => {
-    connector.authenticate("http", "christophe", "tralalere2017").subscribe(() => {
-        console.log("Authentification");
+
+    /*connector.createEntity("projets", {
+        classe: 207,
+        label: "un nouveau projet",
+        theme: 1
+    }).subscribe((data:DataEntity) => {
+        console.log("nouveau", data);
+    }, (err:InterfaceError) => {
+        console.log("pas bon", err);
+    });*/
+
+    connector.loadEntity("projets", 1289).subscribe((data:DataEntity) => {
+        console.log(data);
+        data.set("label", "okokok1");
+        data.save();
     });
+
+
+}, () => {
+        console.log("pas connecté");
 });
 

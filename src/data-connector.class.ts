@@ -618,8 +618,12 @@ export class DataConnector {
             } else {
                 if (count < this.maxRetry) {
                     setTimeout(() => {
-                        entityData = selectedInterface.saveEntity(dataToSave, entity.type, entity.id, errorHandler);
-                        checkResponse();
+
+                        if (Object.keys(dataToSave).length > 0) {
+                            entityData = selectedInterface.saveEntity(dataToSave, entity.type, entity.id, errorHandler);
+                            checkResponse();
+                        }
+
                     }, this.retryTimeout);
 
                     count++;
@@ -631,8 +635,10 @@ export class DataConnector {
 
         };
 
-        entityData = selectedInterface.saveEntity(dataToSave, entity.type, entity.id, errorHandler);
-        checkResponse();
+        if (Object.keys(dataToSave).length > 0) {
+            entityData = selectedInterface.saveEntity(dataToSave, entity.type, entity.id, errorHandler);
+            checkResponse();
+        }
 
         return entitySubject;
     }
