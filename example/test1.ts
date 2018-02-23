@@ -12,12 +12,9 @@ let connector:DataConnector = new DataConnector({
         },
         http: {
             apiUrl: "http://preprod.savanturiers.api.tralalere.com/api/",
-            headers: [
-                {
-                    key: "Content-type",
-                    value: "application/json"
-                }
-            ]
+            headers: {
+                "Content-type": "application/json"
+            }
         }
     },
     map: {
@@ -43,11 +40,11 @@ connector.authenticated("http").subscribe((user:DataEntity) => {
         console.log("pas bon", err);
     });*/
 
-    connector.loadEntity("projets", 1289).subscribe((data:DataEntity) => {
+    /*connector.loadEntity("projets", 1289).subscribe((data:DataEntity) => {
         console.log(data);
         //data.set("label", "okokok1");
         data.remove();
-    });
+    });*/
 
 
 }, () => {

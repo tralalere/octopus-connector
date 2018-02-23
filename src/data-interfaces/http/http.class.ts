@@ -27,7 +27,7 @@ export class Http extends ExternalInterface {
     /*
     Headers sent with each request
      */
-    private headers:HeaderObject[] = [];
+    private headers:{[key:string]:string} = {};
 
     /**
      * Creates the http interface
@@ -42,8 +42,10 @@ export class Http extends ExternalInterface {
         this.useDiff = true;
 
         if (configuration.headers) {
-            for (let header of configuration.headers) {
-                this.headers.push(header);
+            for (let header in configuration.headers) {
+                if (configuration.headers.hasOwnProperty(header)) {
+                    this.headers[header] = header;
+                }
             }
         }
 
@@ -73,9 +75,12 @@ export class Http extends ExternalInterface {
      * @param {XMLHttpRequest} request A xhr request
      */
     private addHeaders(request:XMLHttpRequest) {
-        this.headers.forEach((header:HeaderObject) => {
-            request.setRequestHeader(header.key, header.value);
-        });
+
+        for (let headerName in this.headers) {
+            if (this.headers.hasOwnProperty(headerName)) {
+                request.setRequestHeader(headerName, this.headers[headerName]);
+            }
+        }
     }
 
     /**
@@ -305,11 +310,15 @@ export class Http extends ExternalInterface {
     }
 
     logOut() {
-        this.headers.forEach((object:HeaderObject, index:number) => {
-            if (object.key !== "access-token") {
-                this.headers.splice(index, 1);
+
+        // TODO: revoir cette partie du logout
+        /*let keys:string[] = Object.keys(this.headers);
+
+        keys.forEach((headerName:string) => {
+            if (headerName !== "access-token") {
+                delete this.headers[headerName];
             }
-        });
+        });*/
 
         localStorage.removeItem('currentUser');
         localStorage.removeItem('accessToken');
@@ -327,7 +336,7 @@ export class Http extends ExternalInterface {
     private setToken(accessToken:string, errorHandler:Function = null):Observable<EntityDataSet> {
         if(accessToken && accessToken !="") {
             localStorage.setItem('accessToken', JSON.stringify(accessToken));
-            this.headers.push({key: "access-token", value: accessToken});
+            this.headers["access-token"] = accessToken;
 
             return this.getMe(true, errorHandler);
         }

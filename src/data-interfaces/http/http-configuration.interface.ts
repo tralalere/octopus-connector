@@ -27,5 +27,5 @@ export interface HttpConfiguration {
     /**
      * List of header which will be sent with the requests
      */
-    headers?:HeaderObject[];
+    headers?:{[key:string]:string};
 }
