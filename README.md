@@ -1,8 +1,18 @@
 # OctopusConnect
 Un connecteur de données universel.
 
-* [Concept](#ok)
-* [Installation](#ok)
+* [Concept](#quel-est-le-concept-?)
+* [Installation](#comment-installer-octopusconnect-dans-un-projet-?)
+* [Usage basique](#usage-basique)
+  * [Instanciation et configuration](#instanciation-et-configuration)
+    * [Un premier exemple très basique](#un-premier-exemple-très-basique)
+    * [Une dissection de la configuration](#une-dissection-de-la-configuration)
+* [Le connecteur en lui-même, et son fonctionnement](#le-connecteur-en-lui-même,-et-son-fonctionnement)
+  * [DataEntity](#dataentity)
+  * [DataCollection](#datacollection)
+  * [Lien intrinsèque entre DataEntity et DataCollection](#lien-intrinsèque-entre-dataentity-et-datacollection)
+* [L'API du connecteur](#l'api-du-connecteur)
+  
 
 ## Quel est le concept ?
 
@@ -190,23 +200,31 @@ connector.loadCollection("endpoint1").subscribe((collection: DataCollection) => 
 
 ### Lien intrinsèque entre DataEntity et DataCollection
 
+Collections et entités sont intimement liés. Lors du chargement d'une entité via la commande loadEntity, si cette entité
+est susceptible d'entrer dans une collection parcequ'elle satisfait aux critères de tri d'une collection de même type, celle-ci
+sera insérée dans la collection si elle n'est y est pas déjà présente (dans ce cas elle sera mise à jour), et la collection est
+rafraichie.
+
+De la même façon, si une collection, chargée via un loadCollection, charge des entités déjà chargées ailleurs (via un loadEntity), 
+ces entités sont mises à jour. Si des entités chargées satisfont aux critères de filtre d'une collection déjà chargées, ces
+collections sont mises à jour avec les nouvelles entités, et les collections sont rafraichies.
 
 
 ## L'API du connecteur
 
 ### loadCollection
 
+Charge une collection, pour un endpoint spécifique, satisfaisant à des critères de filtres donnés.
+
+Arguments:
+
+**type:** nom du endpoint ciblé
+**filter:** 
+
 ```typescript
-import {DataConnector, DataCollection, DataEntity} from ".";
+connector.loadCollection("endpoint1").subscribe((collection: DataCollection) => {
     
-let connector: DataConnector = new DataConnector({
-    defaultInterface: "http",
-        configuration: {
-            http: {
-                apiUrl: "http://test-server.com/api/"
-            }
-        }
-    });
-
-
+    // extraction des entités de la collection
+    let entities: DataEntity[] = collection.entities;
+});
 ```
