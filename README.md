@@ -8,10 +8,18 @@ Un connecteur de données universel.
     * [Un premier exemple très basique](#un-premier-exemple-très-basique)
     * [Une dissection de la configuration](#une-dissection-de-la-configuration)
 * [Le connecteur en lui-même, et son fonctionnement](#le-connecteur-en-lui-même,-et-son-fonctionnement)
-  * [DataEntity](#dataentity)
-  * [DataCollection](#datacollection)
+  * [Le concept DataEntity](#le-concept-de-dataentity)
+  * [Le concept de DataCollection](#le-concept-de-datacollection)
+  * [L'objet InterfaceError](#l'objet-interfaceerror)
   * [Lien intrinsèque entre DataEntity et DataCollection](#lien-intrinsèque-entre-dataentity-et-datacollection)
 * [L'API du connecteur](#l'api-du-connecteur)
+  * [authenticated](#authenticated)
+  * [authenticate](#authenticate)
+  * [loadCollection](#loadcollection)
+  * [loadEntity](#loadentity)
+  * [loadEntities](#loadentities)
+  * [createEntity](#createentity)
+  * [createTemporaryEntity](#createtemporaryentity)
   
 
 ## Quel est le concept ?
@@ -133,7 +141,7 @@ Le détail de la configuration viendra plus tard.
 
 ## Le connecteur en lui-même, et son fonctionnement
 
-### DataEntity
+### Le concept de DataEntity
 Unité de donnée de base, englobant les données d'une entité de l'API.
 
 L'accès aux données d'une entité se fait via les méthodes **get()** et **set()**.
@@ -176,7 +184,7 @@ button.addEventListener("click", () => {
 ```
 
 
-### DataCollection
+### Le concept de DataCollection
 Collection d'entités, agglémérée suivant un filtre.
 
 Une propriété nous intéresse particulièrement dans la DataCollection : **entities**, qui est un array des entités englobée par
@@ -198,7 +206,7 @@ connector.loadCollection("endpoint1").subscribe((collection: DataCollection) => 
 });
 ```
 
-### InterfaceError
+### L'objet InterfaceError
 Objet retourné par le connecteur dans une souscription en cas d'erreur rencontrée sur l'interface.
 
 _Propriétés:_
