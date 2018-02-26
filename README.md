@@ -491,30 +491,64 @@ dans le cas où aucune configuration supplémentaire n'est nécessaire.
 
 **type** (string, obligatoire):
 
-Type du service à utiliser pour cet endpoint.
++ Type du service à utiliser pour cet endpoint.
 
 **structure** (ModelSchema, optionnel):
 
-ModelSchema de la bibliothèque OctopusModel. Dans le cas où la structure est spécifiée, permet la création d'entités à partir de données
++ ModelSchema de la bibliothèque OctopusModel. Dans le cas où la structure est spécifiée, permet la création d'entités à partir de données
 partielles. Voir plus bas.
 
 **cached** (boolean, valeur par défaut : false):
 
-Si **cached** est défini à true, une commande de chargement vers un endpoint qui a déjà été chargé plus tôt ne provoquera pas
++ Si **cached** est défini à true, une commande de chargement vers un endpoint qui a déjà été chargé plus tôt ne provoquera pas
 de nouvelle requête vers le serveur, mais retournera la valeur précédente (en d'autres termes, la commande ne retournera que l'observable, 
 sans mettre à jour la valeur).
 
-Valable pour loadEntity, loadEntities et loadCollection.
++ Valable pour loadEntity, loadEntities et loadCollection.
 
-Utile pour éviter un requêtes vers un endpoint dont les données sont pérènnes.
++ Utile pour éviter un requêtes vers un endpoint dont les données sont pérènnes.
 
 **exclusions** (string[], optionnel):
 
-Liste de clés qui ne seront pas envoyées au serveur lors d'un save() ou d'un createEntity().
++ Liste de clés qui ne seront pas envoyées au serveur lors d'un save() ou d'un createEntity().
 
-Utile pour les endpoint Drupal qui peuvent posséder des propriétés d'entité autogénérées.
++ Utile pour les endpoint Drupal qui peuvent posséder des propriétés d'entité autogénérées.
 
 
 **nesting**:
 
-Work in progress.
++ Work in progress.
+
+Exemple de configuration :
+
+```typescript
+let connector:DataConnector = new DataConnector({
+    defaultInterface: "localstorage",
+    configuration: {
+        localstorage: {
+            prefix: "app_"
+        },
+        http: {
+            apiUrl: "http://preprod.savanturiers.api.tralalere.com/api/",
+            headers: {
+                "Content-type": "application/json"
+            }
+        },
+    },
+    map: {
+        endpoint1: "http",
+        endpoint2: {
+            type: "http",
+            cached: true,
+            exclusions: [
+                "label",
+                "key-test"
+            ]
+        },
+        endpoint3: {
+            type: "localstorage",
+            structure: endpoint3Structure
+        }
+    }
+});
+```
