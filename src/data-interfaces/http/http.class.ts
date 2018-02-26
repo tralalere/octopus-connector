@@ -391,6 +391,12 @@ export class Http extends ExternalInterface {
     }
 
 
+    /**
+     *
+     * @param {boolean} complete
+     * @param {Function} errorHandler
+     * @returns {Observable<EntityDataSet>}
+     */
     getMe(complete:boolean = true, errorHandler:Function = null):Observable<EntityDataSet> {
 
         let subject:ReplaySubject<EntityDataSet> = new ReplaySubject<EntityDataSet>(1);
@@ -422,6 +428,11 @@ export class Http extends ExternalInterface {
         return subject;
     }
 
+    /**
+     *
+     * @param {EntityDataSet} userData
+     * @param {boolean} complete
+     */
     setMe(userData:EntityDataSet, complete:boolean = true){
 
         if (complete) {

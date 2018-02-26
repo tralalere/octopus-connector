@@ -198,6 +198,18 @@ connector.loadCollection("endpoint1").subscribe((collection: DataCollection) => 
 });
 ```
 
+### InterfaceError
+Objet retourné par le connecteur dans une souscription en cas d'erreur rencontrée sur l'interface.
+
+_Propriétés:_
+
+**code:** Code de l'erreur. Pour l'interface Http, correspond au code d'erreur HTTP
+
+**message:** Message d'erreur généré par le connecteur
+
+**originalMessage:** Message d'erreur original de l'interface
+
+
 ### Lien intrinsèque entre DataEntity et DataCollection
 
 Collections et entités sont intimement liés. Lors du chargement d'une entité via la commande loadEntity, si cette entité
@@ -212,19 +224,140 @@ collections sont mises à jour avec les nouvelles entités, et les collections s
 
 ## L'API du connecteur
 
+### authenticated
+
+Observable retournant les données de l'utilisateur courant (sous forme de dataEntity) si la session est toujours en cours.
+
+Sinon il retourne une erreur.
+
+```typescript
+connector.authenticated.subscribe((userData: DataEntity) => {
+    // exécuté si succès
+}, () => {
+    // exécuté si la session n'est plus valide
+});
+```
+
+### authenticate
+
+Méthode qui prend en paramètre un login et un mot de passe, et qui retourne un observable (de DataEntity) des données de l'utilisateur
+courant, ou une erreur en cas de problème d'authentification.
+
+```typescript
+connector.authenticate("login", "password").subscribe((userData: DataEntity) => {
+    // succès de l'authentification
+}, (error: InterfaceError) => {
+    // erreur d'authentification
+});
+```
+
 ### loadCollection
 
 Charge une collection, pour un endpoint spécifique, satisfaisant à des critères de filtres donnés.
 
-Arguments:
+**_Arguments_**:
 
-**type:** nom du endpoint ciblé
-**filter:** 
+**type:** Nom du endpoint ciblé
+
+**filter:** Objet clé / valeur
+
+**Retourne:** L'observable correspondant à la collection
 
 ```typescript
 connector.loadCollection("endpoint1").subscribe((collection: DataCollection) => {
     
-    // extraction des entités de la collection
+    // extraction des entités de la collection en cas de succès
     let entities: DataEntity[] = collection.entities;
+}, (error: InterfaceError) => {
+    // code éxécuté en cas d'erreur
+});
+```
+
+### loadEntity
+
+Charge l'entité dont l'id est celui passé en paramètre, sur un endpoint spécifié.
+
+_**Arguments**_
+
+**type:** Nom du endpoint ciblé
+
+**id:** Id de l'entité
+
+**Retourne:** L'observable correspondant à l'entité
+
+```typescript
+connector.loadEntity("endpoint1", 125).subscribe((entity: DataEntity) => {
+    // code éxécuté en cas de succès
+}, (error: InterfaceError)=> {
+    // code éxécuté en cas d'erreur de chargemement
+});
+```
+
+### loadEntities
+
+Même fonctionnement que loadEntities, exepté qu'il prend en argument une liste d'ids, et retourne une liste d'entités sous
+forme d'observable.
+
+**_Arguments:_**
+
+**type:** Nom du endpoint ciblé
+
+**ids:** Array d'ids
+
+**Retourne:** Un observable retournant un array des entités chargés
+
+```typescript
+connector.loadEntities("endpoint1", [25, 100, 212]).subscribe((entities: DataEntity[]) => {
+    // en cas de succès des chargements
+}, (error: InterfaceError) => {
+    // retourne la première erreur rencontrée
+});
+```
+
+### createEntity
+
+Crée une entité sur le service spécifié, à l'aide des données passées en argument.
+
+**_Arguments:_** 
+
+**type:** Nom du endpoint ciblé
+
+**data:** Données utilisées pour la création de l'objet
+
+**Retourne:** Un observable des données de l'entitée crée
+
+```typescript
+connector.createEntity("endpoint1", {
+    username: "chris",
+    role: 4
+}).subscribe((entity: DataEntity) => {
+    // succès de la création de l'entité
+}, (error: InterfaceError) => {
+    // échec de la création
+});
+```
+
+Attention: il est possible de créer une entité à partir d'un schéma de données spécifié dans la configuration du endpoint.
+Voir plus loin.
+
+### createTemporaryEntity
+
+Crée une entité temporaire (présente uniquement sur le front).
+
+Même fonctionnement que createEntity, excepté que l'entité ne sera crée sur le service que lorsqu'il sera fait appel à la
+méthode save de l'entité.
+
+```typescript
+connector.createTemporaryEntity("endpoint1", {
+    username: "chris",
+    role: 4
+}).subscribe((entity: DataEntity) => {
+    // succès de la création de l'entité
+    
+    // et si on veut la sauver sur le service
+    entity.save();
+    
+}, (error: InterfaceError) => {
+    // échec de la création
 });
 ```

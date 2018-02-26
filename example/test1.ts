@@ -26,28 +26,18 @@ let connector:DataConnector = new DataConnector({
 
 connector.authenticated("http").subscribe((user:DataEntity) => {
     console.log("Utilisateur courant", user);
-    connector.loadCollection("projets").subscribe((coll:DataCollection) => {
+    /*connector.loadCollection("projets").subscribe((coll:DataCollection) => {
         console.log(coll);
+    });*/
+
+    connector.loadEntities("projets", [25, 250]).subscribe((entities:DataEntity[]) => {
+
+    }, (err:any) => {
+        console.log(err);
     });
-
-    /*connector.createEntity("projets", {
-        classe: 207,
-        label: "un nouveau projet",
-        theme: 1
-    }).subscribe((data:DataEntity) => {
-        console.log("nouveau", data);
-    }, (err:InterfaceError) => {
-        console.log("pas bon", err);
-    });*/
-
-    /*connector.loadEntity("projets", 1289).subscribe((data:DataEntity) => {
-        console.log(data);
-        //data.set("label", "okokok1");
-        data.remove();
-    });*/
-
 
 }, () => {
         console.log("pas connecté");
 });
 
+//connector.authenticate("http", "christophe", "tralalere2017");

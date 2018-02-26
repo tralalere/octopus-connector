@@ -476,6 +476,8 @@ export class DataConnector {
 
         // TODO: check si une méthode loadEntities optimisée existe dans l'interface
 
+        // TODO: Pourrait retourner un objet indexé par id plutôt qu'un Array
+
         let observables:Observable<DataEntity>[] = [];
 
         ids.forEach((id:number) => {
