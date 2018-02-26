@@ -20,7 +20,8 @@ let connector:DataConnector = new DataConnector({
     map: {
         "projets": {
             type: "http"
-        }
+        },
+        "endpoint": "localstorage"
     }
 });
 

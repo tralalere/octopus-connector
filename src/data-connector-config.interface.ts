@@ -34,7 +34,7 @@ export interface DataConnectorConfig {
         http?:HttpConfiguration
     };
 
-    // not used
+    // currently not used
     declarations?:any;
 
     /**
@@ -42,6 +42,6 @@ export interface DataConnectorConfig {
      */
     map?:{[key:string]:string|EndpointConfig};
 
-    // not used
+    // currently not used
     interfaces?:{[key:string]:ExternalInterface};
 }

@@ -1,5 +1,5 @@
 # OctopusConnect
-Un connecteur de données universel.
+Un connecteur de données universel et extensible.
 
 * [Concept](#quel-est-le-concept-?)
 * [Installation](#comment-installer-octopusconnect-dans-un-projet-?)
@@ -20,6 +20,11 @@ Un connecteur de données universel.
   * [loadEntities](#loadentities)
   * [createEntity](#createentity)
   * [createTemporaryEntity](#createtemporaryentity)
+* [Configuration](#configuration)
+  * [Configuration générale du connecteur](#configuration-générale-du-connecteur)
+  * [Configuration des services](#configuration-des-services-(_configuration_))
+  * [Configuration par endpoint](#configuration-par-endpoint-(_map_))
+  
   
 
 ## Quel est le concept ?
@@ -369,3 +374,147 @@ connector.createTemporaryEntity("endpoint1", {
     // échec de la création
 });
 ```
+
+## Configuration
+
+Comme nous l'avons vu plus haut, la configuration de base du connecteur est faite dans un object qui doit satisfaire à 
+l'interface **DataConnectorConfig**. Nous allons voir une par une les propriétés qu'il est possible d'utiliser dans
+cette configuration, et l'influence de chacun de ces paramètres sur le fonctionnement du connecteur.
+
+Un exemple très basique :
+```typescript
+let connector: DataConnector = new DataConnector({
+    defaultInterface: "http",
+    configuration: {
+        
+    },
+    map: {
+        
+    }
+});
+```
+
+### Configuration générale du connecteur
+
+C'est le premier niveau de configuration.
+
+**_Propriétés :_**
+
+**defaultInterface** (string, obligatoire):
+
+Type de l'interface par défaut du connecteur. Si le type d'un endpoint n'est pas spécifié
+dans map, c'est cette interface-là qui sera utilisée.
+
+**retryTimeout** (number, valeur par défaut: 2000):
+
+En cas d'échec d'une action sur le connecteur (loadEntity, save, etc.) (avec un code d'erreur 0), c'est le temps qui
+s'écoulera avant une nouvelle tentative de cette action.
+
+**maxRetry** (number, valeur par défaut: 10):
+
+En cas d'échec d'une action sur le connecteur avec un code 0, c'est le nombre maximum de tentative de relancement de l'actions.
+Au delà de ce nombre de tentatives, l'action échoue.
+
+**configuration** (obligatoire):
+
+Configuration individuelle des services (voir ci-dessous)
+
+**map** (optionnel):
+
+Configuration individuelle des endpoints (voir ci-dessous)
+
+### Configuration des services (_configuration_)
+
+Configuration individuelle des services, par nom de service.
+
+#### http
+
+Interface à respecter : HttpConfiguration
+
+**_Propriétés :_**
+
+**apiUrl** (string, obligatoire): 
+
+Url de l'api du service
+
+**headers** ({[key:string]:string}, optionnel): 
+
+Liste clé / valeur de headers passés lors de chacune des requêtes
+
+**Exemple :**
+
+```typescript
+let connector:DataConnector = new DataConnector({
+    defaultInterface: "localstorage",
+    configuration: {
+        http: {
+            apiUrl: "http://preprod.savanturiers.api.tralalere.com/api/",
+            headers: {
+                "Content-type": "application/json"
+            }
+        }
+    }
+});
+```
+
+#### localstorage
+
+**_Propriétés :_**
+
+**prefix** (string, optionnel):
+
+Préfixe utilisé sur les clés d'endpoints pour le stockage des données en localStorage
+
+**Exemple :**
+
+```typescript
+let connector:DataConnector = new DataConnector({
+    defaultInterface: "localstorage",
+    configuration: {
+        localstorage: {
+            prefix: "app_"
+        }
+    }
+});
+```
+
+#### nodejs
+
+A venir.
+
+### Configuration par endpoint (_map_)
+
+Objet clé / valeur d'objets respectant l'interface EndpointConfig, ou une chaine de caractères indiquant le service à utiliser,
+dans le cas où aucune configuration supplémentaire n'est nécessaire.
+
+**_Propriétés :_**
+
+**type** (string, obligatoire):
+
+Type du service à utiliser pour cet endpoint.
+
+**structure** (ModelSchema, optionnel):
+
+ModelSchema de la bibliothèque OctopusModel. Dans le cas où la structure est spécifiée, permet la création d'entités à partir de données
+partielles. Voir plus bas.
+
+**cached** (boolean, valeur par défaut : false):
+
+Si **cached** est défini à true, une commande de chargement vers un endpoint qui a déjà été chargé plus tôt ne provoquera pas
+de nouvelle requête vers le serveur, mais retournera la valeur précédente (en d'autres termes, la commande ne retournera que l'observable, 
+sans mettre à jour la valeur).
+
+Valable pour loadEntity, loadEntities et loadCollection.
+
+Utile pour éviter un requêtes vers un endpoint dont les données sont pérènnes.
+
+**exclusions** (string[], optionnel):
+
+Liste de clés qui ne seront pas envoyées au serveur lors d'un save() ou d'un createEntity().
+
+Utile pour les endpoint Drupal qui peuvent posséder des propriétés d'entité autogénérées.
+
+
+**nesting**:
+
+Work in progress.
