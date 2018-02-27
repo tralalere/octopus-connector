@@ -1,4 +1,7 @@
 # OctopusConnect
+
+(English translation coming soon !)
+
 Un connecteur de données universel et extensible.
 
 * [Concept](#quel-est-le-concept-?)
@@ -519,9 +522,16 @@ sans mettre à jour la valeur).
 
 + Work in progress.
 
-Exemple de configuration :
+Exemple global de configuration :
 
 ```typescript
+let endpoint3Structure:ModelSchema = new ModelSchema({
+    key1: Structures.string("val key 1"),
+    key2: Structures.string("val key 2"),
+    key3: Structures.array([25, 26]),
+    key4: Structures.boolean(true)
+});
+
 let connector:DataConnector = new DataConnector({
     defaultInterface: "localstorage",
     configuration: {
