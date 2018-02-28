@@ -25,11 +25,8 @@ let connector:DataConnector = new DataConnector({
     }
 });
 
-connector.authenticated("http").subscribe((user:DataEntity) => {
+/*connector.authenticated("http").subscribe((user:DataEntity) => {
     console.log("Utilisateur courant", user);
-    /*connector.loadCollection("projets").subscribe((coll:DataCollection) => {
-        console.log(coll);
-    });*/
 
     connector.loadEntities("projets", [25, 250]).subscribe((entities:DataEntity[]) => {
 
@@ -39,6 +36,12 @@ connector.authenticated("http").subscribe((user:DataEntity) => {
 
 }, () => {
         console.log("pas connecté");
+});*/
+
+connector.authenticate("http", "christophe", "tralalere2017").subscribe((data:DataEntity) => {
+    console.log("c'est bon", data);
+}, (error: InterfaceError) => {
+    console.log(error);
 });
 
 //connector.authenticate("http", "christophe", "tralalere2017");

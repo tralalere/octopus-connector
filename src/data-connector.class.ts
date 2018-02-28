@@ -319,9 +319,19 @@ export class DataConnector {
     authenticate(serviceName:string, login:string, password:string):Observable<DataEntity> {
         let selectedInterface:ExternalInterface = this.interfaces[serviceName];
 
-        return selectedInterface.authenticate(login, password).map((data:EntityDataSet) => {
+        let subject:ReplaySubject<DataEntity> = new ReplaySubject<DataEntity>(1);
+
+        let errorHandler: Function = (error:InterfaceError) => {
+            subject.error(error);
+        };
+
+        selectedInterface.authenticate(login, password, errorHandler).map((data:EntityDataSet) => {
             return new DataEntity("users", data, this, data.id);
+        }).subscribe((entity:DataEntity) => {
+            subject.next(entity);
         });
+
+        return subject;
     }
 
     /**

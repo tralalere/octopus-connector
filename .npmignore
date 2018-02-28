@@ -13,6 +13,7 @@ tests
 example
 .github
 coverage
+doc
 !*.metadata.json
 !dist/*.js
 

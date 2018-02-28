@@ -265,7 +265,7 @@ export class Http extends ExternalInterface {
      */
     authenticate(login:string, password:string, errorHandler:Function = null):Observable<EntityDataSet> {
 
-        //let subject:ReplaySubject<EntityDataSet> = new ReplaySubject<EntityDataSet>(1);
+        let subject:ReplaySubject<EntityDataSet> = new ReplaySubject<EntityDataSet>(1);
 
         let request:XMLHttpRequest = new XMLHttpRequest();
 
@@ -280,18 +280,15 @@ export class Http extends ExternalInterface {
             if (request.readyState === XMLHttpRequest.DONE) {
                 if (request.status === 200) {
                     let loginData:Object = JSON.parse(request.responseText);
-                    console.log("resp", JSON.parse(request.responseText));
                     let expire:number = +loginData["expires_in"] - 3600;
                     if(expire < 3600){
                         if(localStorage.getItem('accessToken')){
-                            console.log("ici");
                             observables.push(this.setToken(loginData["access_token"], errorHandler));
                             this.setExpireDate(expire);
                             this.setRefreshToken(loginData["refreshToken"]);
                         }
                         observables.push(this.refreshToken(loginData["refresh_token"], errorHandler));
                     } else {
-                        console.log("là");
                         observables.push(this.setToken(loginData["access_token"], errorHandler));
                         this.setExpireDate(expire);
                         this.setRefreshToken(loginData["refreshToken"]);
@@ -299,14 +296,18 @@ export class Http extends ExternalInterface {
                 } else {
                     this.sendError(request.status, request.statusText, errorHandler);
                 }
+
+                Observable.combineLatest(...observables).map((values:any[]) => {
+                    return values[0];
+                }).subscribe((data:EntityDataSet) => {
+                    subject.next(data);
+                });
             }
         };
 
         request.send();
 
-        return Observable.combineLatest(...observables).map((values:any[]) => {
-            return values[0];
-        });
+        return subject;
     }
 
     logOut() {
