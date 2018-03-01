@@ -341,7 +341,7 @@ export class DataConnector {
      */
     authenticated(serviceName:string):Observable<DataEntity> {
         let selectedInterface:ExternalInterface = this.interfaces[serviceName];
-        return selectedInterface.authenticated = selectedInterface.authenticated.map((data:EntityDataSet) => {
+        return selectedInterface.authenticated.map((data:EntityDataSet) => {
             return new DataEntity("users", data, this, data.id);
         });
     }

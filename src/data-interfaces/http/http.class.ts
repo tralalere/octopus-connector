@@ -15,7 +15,7 @@ export class Http extends ExternalInterface {
      *
      * @type {boolean}
      */
-    authenticated:ReplaySubject<EntityDataSet>;
+    //authenticated:ReplaySubject<EntityDataSet>;
 
     /**
      *
@@ -53,21 +53,31 @@ export class Http extends ExternalInterface {
             user: undefined
         };
 
-        this.authenticated = new ReplaySubject<DataEntity>(1);
+
+    }
+
+    /**
+     * Is the user authenticated on this service ?
+     * @returns {Observable<EntityDataSet>}
+     */
+    get authenticated():Observable<EntityDataSet> {
+        let value:ReplaySubject<EntityDataSet> = new ReplaySubject<EntityDataSet>(1);
 
         this.dataStore.user = JSON.parse(localStorage.getItem('currentUser'));
         let expire:number =  JSON.parse(localStorage.getItem('expires_in'));
         if(expire > Date.now()) {
             this.dataStore.user = JSON.parse(localStorage.getItem('currentUser'));
             this.setToken(JSON.parse(localStorage.getItem('accessToken'))).subscribe((data:EntityDataSet) => {
-                this.authenticated.next(data);
+                value.next(data);
             });
         } else if(expire && expire < Date.now()) {
-            this.authenticated.error(null);
+            value.error(null);
             this.logOut();
         } else {
-            this.authenticated.error(null);
+            value.error(null);
         }
+
+        return value;
     }
 
     /**
