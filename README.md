@@ -451,7 +451,7 @@ let connector:DataConnector = new DataConnector({
     defaultInterface: "localstorage",
     configuration: {
         http: {
-            apiUrl: "http://preprod.savanturiers.api.tralalere.com/api/",
+            apiUrl: "http://test-server.com/api/",
             headers: {
                 "Content-type": "application/json"
             }
@@ -539,7 +539,7 @@ let connector:DataConnector = new DataConnector({
             prefix: "app_"
         },
         http: {
-            apiUrl: "http://preprod.savanturiers.api.tralalere.com/api/",
+            apiUrl: "http://test-server.com/api/",
             headers: {
                 "Content-type": "application/json"
             }
