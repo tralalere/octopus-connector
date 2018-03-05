@@ -28,7 +28,7 @@ export abstract class ExternalInterface {
      * @param {Function} errorHandler Function used to handle errors
      * @returns {EntityDataSet | Observable<EntityDataSet>} A set of data, or an observable
      */
-    loadEntity(type:string, id:number, errorHandler:Function = null):EntityDataSet|Observable<EntityDataSet> {
+    loadEntity(type:string, id:number|string, errorHandler:Function = null):EntityDataSet|Observable<EntityDataSet> {
         console.warn("LoadEntity not implemented in interface");
         return null;
     }
@@ -64,7 +64,7 @@ export abstract class ExternalInterface {
      * @param {Function} errorHandler Function used to handle errors
      * @returns {boolean | Observable<boolean>} True if deletion success
      */
-    deleteEntity(type:string, id:number, errorHandler:Function = null):boolean|Observable<boolean> {
+    deleteEntity(type:string, id:number|string, errorHandler:Function = null):boolean|Observable<boolean> {
         console.warn("DeleteEntity not implemented in interface");
         return null;
     }
@@ -77,7 +77,7 @@ export abstract class ExternalInterface {
      * @param {Function} errorHandler Function used to handle errors
      * @returns {EntityDataSet | Observable<EntityDataSet>} The saved data
      */
-    saveEntity(data:EntityDataSet, type:string, id:number, errorHandler:Function = null):EntityDataSet|Observable<EntityDataSet> {
+    saveEntity(data:EntityDataSet, type:string, id:number|string, errorHandler:Function = null):EntityDataSet|Observable<EntityDataSet> {
         console.warn("SaveEntity not implemented in interface");
         return null;
     }

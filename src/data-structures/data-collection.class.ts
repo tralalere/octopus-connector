@@ -65,7 +65,7 @@ export class DataCollection {
      * Remove entity from collection
      * @param {number} id Id of the entity to delete
      */
-    deleteEntity(id:number) {
+    deleteEntity(id:number|string) {
         this.entities.forEach((entity:DataEntity, index:number) => {
             if (entity.id === id) {
                 this.entities.splice(index, 1);

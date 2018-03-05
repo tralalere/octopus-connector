@@ -38,7 +38,7 @@ export class DataEntity {
         public type:string,
         data:EntityDataSet,
         private connector:DataConnector = null,
-        public id:number = null
+        public id:number|string = null
     ) {
         for (let key in data) {
             if (data.hasOwnProperty(key) && key !== "id") {
@@ -47,7 +47,7 @@ export class DataEntity {
         }
 
         if (data["id"]) {
-            this.id = +data["id"];
+            this.id = data["id"];
         }
 
         this.generateReferenceObject();

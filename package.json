@@ -22,6 +22,9 @@
   },
   "homepage": "https://github.com/tralalere/octopus-connect#readme",
   "devDependencies": {
+    "@types/flake-idgen": "^0.1.30",
+    "@types/object-hash": "^1.1.0",
+    "@types/uuid": "^3.4.3",
     "rimraf": "^2.6.2",
     "systemjs": "^0.20.19",
     "ts-loader": "^3.5.0",
@@ -30,11 +33,14 @@
     "webpack": "^3.11.0"
   },
   "dependencies": {
-    "@types/object-hash": "^1.1.0",
+    "biguint-format": "^1.0.0",
+    "buffer": "^5.1.0",
+    "flake-idgen": "^1.1.0",
     "object-hash": "^1.2.0",
     "octopus-model": "^1.0.3",
     "rxjs": "^5.4.3",
     "socket.io": "^2.0.4",
-    "socket.io-client": "^2.0.4"
+    "socket.io-client": "^2.0.4",
+    "uuid": "^3.2.1"
   }
 }

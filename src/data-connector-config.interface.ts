@@ -5,6 +5,7 @@ import {LocalStorageConfiguration} from "./data-interfaces/local-storage/local-s
 import {ExternalInterface} from "./data-interfaces/abstract-external-interface.class";
 import {EndpointConfig} from "./endpoint-config.interface";
 import {HttpConfiguration} from "./data-interfaces/http/http-configuration.interface";
+import {NodejsConfiguration} from "./data-interfaces/nodejs/nodejs-configuration.interface";
 
 /**
  * Connector main configuration
@@ -31,7 +32,8 @@ export interface DataConnectorConfig {
      */
     configuration: {
         localstorage?:LocalStorageConfiguration,
-        http?:HttpConfiguration
+        http?:HttpConfiguration,
+        nodejs?:NodejsConfiguration
     };
 
     // currently not used

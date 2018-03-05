@@ -25,7 +25,7 @@ export class EntityStore {
      * @param {number} id Entity id
      * @returns {Observable<DataEntity>} Observable associated to the entity
      */
-    registerEntity(entity:DataEntity, id:number):Observable<DataEntity> {
+    registerEntity(entity:DataEntity, id:number|string):Observable<DataEntity> {
 
         if (id !== -1 && this.entitiesObservables[id]) {
             this.entitiesObservables[id].next(entity);
@@ -58,7 +58,7 @@ export class EntityStore {
      * Delete all data for a specific entity id
      * @param {number} id Entity id
      */
-    unregister(id:number) {
+    unregister(id:number|string) {
         if (this.entitiesObservables[id]) {
             delete this.entitiesObservables[id];
         }
@@ -77,7 +77,7 @@ export class EntityStore {
      * @param {number} id Id used in registration
      * @returns {Observable<DataEntity>} Entity subject associated to the id
      */
-    getEntityObservable(id:number):ReplaySubject<DataEntity> {
+    getEntityObservable(id:number|string):ReplaySubject<DataEntity> {
 
         if (this.entitiesObservables[id]) {
             return this.entitiesObservables[id];

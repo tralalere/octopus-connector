@@ -17,6 +17,9 @@ export class Nodejs extends ExternalInterface {
     private connectionCommand:string;
     private socket:any;
 
+    private temporaryStore:{[key:number]:ReplaySubject<EntityDataSet>} = {};
+    private temporaryDeletionStore:{[key:number]:ReplaySubject<boolean>} = {};
+
     /**
      * Create the nodejs interface
      * @param {NodejsConfiguration} configuration Interface configuration object
@@ -27,9 +30,11 @@ export class Nodejs extends ExternalInterface {
         private connector:DataConnector
     ) {
         super();
-        this.messagePrefix = this.configuration.messagePrefix || "message_";
+        this.messagePrefix = this.configuration.messagePrefix || "message";
         this.retrieveEvent = this.configuration.retrievePrefix || "retrieve_";
         this.connectionCommand = this.configuration.connectionCommand || "connexion";
+
+        this.initializeSocket();
     }
 
     private initializeSocket(forced:boolean = false) {
@@ -66,38 +71,23 @@ export class Nodejs extends ExternalInterface {
             console.log('Disconnected');
         });
 
-        // l'erreur est à gérer au cas par cas
-        /*this.socket.on('error', function () {
-            console.log('Disconnected !!!');
-        });*/
-    }
+        this.socket.on(this.messagePrefix, (data:Object[]) => {
+            console.log("MESSAGE DATA: ", data);
 
-    /**
-     *
-     * @param {string} type
-     * @param {FilterData} filter
-     * @param {Function} errorHandler
-     */
-    private collectionConnectionAndRetrieve(type:string, filter:FilterData = {}, errorHandler:Function = null):Observable<CollectionDataSet> {
-        let hash:string = ObjectHash(filter);
+            let tmp: ReplaySubject<EntityDataSet> = this.temporaryStore[data[0]["cid"]];
 
-        this.socket.emit('connexion', type, filter);
+            if (tmp) {
+                tmp.next(data[0]["data"]);
+                delete this.temporaryStore[data[0]["cid"]];
+            }
 
-        let subject:ReplaySubject<CollectionDataSet> = new ReplaySubject<CollectionDataSet>(1);
+            let deletionTmp: ReplaySubject<boolean> = this.temporaryDeletionStore[data[0]["cid"]];
 
-        // les datas seront peut-être retournée dans une autre format que CollectionDataSet
-        this.socket.on(this.retrieveEvent + type + "_" + hash, (data:CollectionDataSet) => {
-            // récupération des datas de collection
-
-            // il y aura peut-être besoin de mapper les données reçues
-            subject.next(data);
+            if (deletionTmp) {
+                deletionTmp.next(true);
+                delete this.temporaryDeletionStore[data[0]["cid"]];
+            }
         });
-
-        this.socket.on("error", () => {
-            this.sendError(0, "", errorHandler);
-        });
-
-        return subject;
     }
 
     /**
@@ -108,7 +98,36 @@ export class Nodejs extends ExternalInterface {
      * @returns {Observable<EntityDataSet>} Observable returning the data
      */
     loadEntity(type:string, id:number, errorHandler:Function):Observable<EntityDataSet> {
-        return null;
+
+        console.log(String(id));
+
+        return this.loadCollection(type, {
+            id: id
+        }).map((data: CollectionDataSet) => {
+            return data[0];
+        })
+    }
+
+    saveEntity(data:EntityDataSet, type:string, id:number, errorHandler:Function = null):Observable<EntityDataSet> {
+
+        let subject: ReplaySubject<EntityDataSet> = new ReplaySubject<EntityDataSet>(1);
+
+        let cid: number = Math.floor(Math.random() * 1000000000000000);
+
+        this.temporaryStore[cid] = subject;
+
+        let requestData:Object = {
+            command: "update",
+            data: data,
+            type: type,
+            cid: cid
+        };
+
+        console.log("SAVE", requestData);
+
+        this.socket.emit("message", requestData);
+
+        return subject;
     }
 
     /**
@@ -121,6 +140,8 @@ export class Nodejs extends ExternalInterface {
     loadCollection(type:string, filter:{[key:string]:any} = {}, errorHandler:Function = null):Observable<CollectionDataSet> {
         this.initializeSocket();
 
+        console.log(filter);
+
         let hash:string = ObjectHash(filter);
 
         this.socket.emit('connexion', type, filter);
@@ -130,13 +151,15 @@ export class Nodejs extends ExternalInterface {
         this.socket.on(this.retrieveEvent + type + "_" + hash, (data:CollectionDataSet) => {
             // récupération des datas de collection
 
-            // il y aura peut-être besoin de mapper les données reçues
-            subject.next(data);
-        });
+            console.log(data);
 
-        this.socket.on("error", () => {
-            // attention, modifier le code erreur en fonction du cas actuel
-            this.sendError(0, "", errorHandler);
+            let res: CollectionDataSet = {};
+
+            for (let id in data) {
+                res[+id] = data[id]["data"];
+            }
+
+            subject.next(res);
         });
 
         return subject;
@@ -150,7 +173,25 @@ export class Nodejs extends ExternalInterface {
      * @returns {Observable<EntityDataSet>} Observable returning the entity data
      */
     createEntity(type:string, data:EntityDataSet, errorHandler:Function = null):Observable<EntityDataSet> {
-        return null;
+
+        let subject:ReplaySubject<EntityDataSet> = new ReplaySubject<EntityDataSet>(1);
+
+        let cid: number = Math.floor(Math.random() * 1000000000000000);
+
+        let requestData:Object = {
+            command: "put",
+            data: data,
+            type: type,
+            cid: cid
+        };
+
+        this.temporaryStore[cid] = subject;
+
+        let dataHash:string = ObjectHash(data);
+
+        this.socket.emit("message", requestData);
+
+        return subject;
     }
 
     /**
@@ -161,6 +202,24 @@ export class Nodejs extends ExternalInterface {
      * @returns {Observable<boolean>} True if deletion success
      */
     deleteEntity(type:string, id:number, errorHandler:Function = null):Observable<boolean> {
-        return null;
+
+        let subject:ReplaySubject<boolean> = new ReplaySubject<boolean>(1);
+
+        let cid: number = Math.floor(Math.random() * 1000000000000000);
+
+        this.temporaryDeletionStore[cid] = subject;
+
+        let requestData:Object = {
+            command: "delete",
+            id: id,
+            type: type,
+            cid: cid
+        };
+
+        console.log(requestData);
+
+        this.socket.emit("message", requestData);
+
+        return subject;
     }
 }

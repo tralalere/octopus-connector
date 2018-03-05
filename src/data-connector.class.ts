@@ -165,7 +165,7 @@ export class DataConnector {
      * @param {number} id Id of the entity
      * @returns {Observable<DataEntity>} The observable associated to the entity
      */
-    private getEntityObservableInStore(type:string, id:number):Observable<DataEntity> {
+    private getEntityObservableInStore(type:string, id:number|string):Observable<DataEntity> {
 
         if (this.entitiesLiveStore[type]) {
             return this.entitiesLiveStore[type].getEntityObservable(id);
@@ -194,7 +194,7 @@ export class DataConnector {
      * @param {number} id Id of the entity
      * @returns {Observable<DataEntity>} The observable associated to the entity
      */
-    private getEntitySubject(type:string, id:number):ReplaySubject<DataEntity> {
+    private getEntitySubject(type:string, id:number|string):ReplaySubject<DataEntity> {
 
         if (!this.entitiesLiveStore[type]) {
             this.entitiesLiveStore[type] = new EntityStore();
@@ -211,7 +211,7 @@ export class DataConnector {
      * @param {Observable<DataEntity>} entityObservable Observable to register
      * @returns {Observable<DataEntity>} The observable associated to the entity
      */
-    private registerEntity(type:string, id:number, entity:DataEntity, entityObservable:Observable<DataEntity>):Observable<DataEntity> {
+    private registerEntity(type:string, id:number|string, entity:DataEntity, entityObservable:Observable<DataEntity>):Observable<DataEntity> {
 
         if (!this.entitiesLiveStore[type]) {
             this.entitiesLiveStore[type] = new EntityStore();
@@ -369,7 +369,7 @@ export class DataConnector {
      * @param {number} id Entity id
      * @returns {Observable<DataEntity>} DataEntity observable associated to this entity
      */
-    loadEntity(type:string, id:number):Observable<DataEntity> {
+    loadEntity(type:string, id:number|string):Observable<DataEntity> {
 
         if (this.useCache(type)) {
             let obs:Observable<DataEntity> = this.getEntityObservableInStore(type, id);
