@@ -74,7 +74,15 @@ export class DataConnector {
         }
 
         this.retryTimeout = this.configuration.retryTimeout || 2000;
-        this.maxRetry = this.configuration.maxRetry || 10;
+        this.maxRetry = this.configuration.maxRetry || 80;
+    }
+
+    getRetryTimeout(type:string):number {
+        return this.interfaces[type].retryTimeout || this.retryTimeout;
+    }
+
+    getMaxRetry(type:string):number {
+        return this.interfaces[type].maxRetry || this.retryTimeout;
     }
 
     /**
@@ -454,11 +462,11 @@ export class DataConnector {
                     this.entitiesLiveStore[type].unregister(id);
                 } else {
 
-                    if (count < this.maxRetry) {
+                    if (count < this.getMaxRetry(type) || this.getMaxRetry(type) === -1) {
                         setTimeout(() => {
                             entityData = selectedInterface.loadEntity(type, id, errorHandler);
                             checkResponse();
-                        }, this.retryTimeout);
+                        }, this.getRetryTimeout(type));
 
                         count++;
                     } else {
@@ -543,11 +551,11 @@ export class DataConnector {
                     collectionSubject.error(error);
                     this.collectionsLiveStore[type].unregister(filter);
                 } else {
-                    if (count < this.maxRetry) {
+                    if (count < this.getMaxRetry(type) || this.getMaxRetry(type) === -1) {
                         setTimeout(() => {
                             collection = selectedInterface.loadCollection(type, filter, errorHandler);
                             checkResponse();
-                        }, this.retryTimeout);
+                        }, this.getRetryTimeout(type));
 
                         count++;
                     } else {
@@ -628,7 +636,7 @@ export class DataConnector {
                 entitySubject.error(error);
                 this.entitiesLiveStore[entity.type].unregister(entity.id);
             } else {
-                if (count < this.maxRetry) {
+                if (count < this.getMaxRetry(entity.type) || this.getMaxRetry(entity.type) === -1) {
                     setTimeout(() => {
 
                         if (!selectedInterface.useDiff || Object.keys(dataToSave).length > 0) {
@@ -638,7 +646,7 @@ export class DataConnector {
 
                         }
 
-                    }, this.retryTimeout);
+                    }, this.getRetryTimeout(entity.type));
 
                     count++;
                 } else {
@@ -706,11 +714,11 @@ export class DataConnector {
             if (error.code > 0) {
                 entitySubject.error(error);
             } else {
-                if (count < this.maxRetry) {
+                if (count < this.getMaxRetry(type) || this.getMaxRetry(type) === -1) {
                     setTimeout(() => {
                         entity = selectedInterface.createEntity(type, data, errorHandler);
                         checkResponse();
-                    }, this.retryTimeout);
+                    }, this.getRetryTimeout(type));
 
                     count++;
                 } else {
@@ -787,11 +795,11 @@ export class DataConnector {
                 subject.error(error);
                 this.entitiesLiveStore[entity.type].unregister(entity.id);
             } else {
-                if (count < this.maxRetry) {
+                if (count < this.getMaxRetry(entity.type) || this.getMaxRetry(entity.type) === -1) {
                     setTimeout(() => {
                         result = selectedInterface.deleteEntity(entity.type, entity.id, errorHandler);
                         checkResponse();
-                    }, this.retryTimeout);
+                    }, this.getRetryTimeout(entity.type));
 
                     count++;
                 } else {

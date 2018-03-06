@@ -41,6 +41,8 @@ export class Nodejs extends ExternalInterface {
         this.retrieveEvent = this.configuration.retrievePrefix || "retrieve_";
         this.connectionCommand = this.configuration.connectionCommand || "connexion";
 
+        this.maxRetry = 1000;
+
         this.initializeSocket();
     }
 
@@ -185,33 +187,35 @@ export class Nodejs extends ExternalInterface {
      */
     loadCollection(type:string, filter:{[key:string]:any} = {}, errorHandler:Function = null):Observable<CollectionDataSet> {
 
-        this.initializeSocket();
+        // à voir si il y a besoin d'initialiser
+        //this.initializeSocket();
 
         let hash:string = ObjectHash(filter);
 
-        this.socket.emit('connexion', type, filter);
-
         let subject:ReplaySubject<CollectionDataSet> = new ReplaySubject<CollectionDataSet>(1);
-
-        let evtName:string = this.retrieveEvent + type + "_" + hash;
-
-        let callback:Function = (data:CollectionDataSet) => {
-            let res: CollectionDataSet = {};
-
-            for (let id in data) {
-                res[+id] = data[id]["data"];
-            }
-
-            subject.next(res);
-
-            this.socket.off(evtName, callback);
-        };
-
-        this.socket.off(evtName, callback);
 
         if (!this.connected) {
             this.sendError(0, '', errorHandler);
         } else {
+
+            let evtName:string = this.retrieveEvent + type + "_" + hash;
+
+            this.socket.emit('connexion', type, filter);
+
+            let callback:Function = (data:CollectionDataSet) => {
+                let res: CollectionDataSet = {};
+
+                for (let id in data) {
+                    res[+id] = data[id]["data"];
+                }
+
+                subject.next(res);
+
+                this.socket.off(evtName, callback);
+            };
+
+            this.socket.off(evtName, callback);
+
             this.collectionsErrorStore[hash] = errorHandler;
             this.socket.on(evtName, callback);
         }

@@ -21,6 +21,10 @@ export abstract class ExternalInterface {
      */
     useDiff:boolean = false;
 
+    retryTimeout:number;
+
+    maxRetry:number;
+
     /**
      * Load an entity from the service
      * @param {string} type Name of the endpoint
