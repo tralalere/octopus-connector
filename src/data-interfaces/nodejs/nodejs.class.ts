@@ -20,6 +20,13 @@ export class Nodejs extends ExternalInterface {
     private temporaryStore:{[key:number]:ReplaySubject<EntityDataSet>} = {};
     private temporaryDeletionStore:{[key:number]:ReplaySubject<boolean>} = {};
 
+    private errorsStore:{[key:number]:Function} = {};
+    private collectionsErrorStore:{[key:string]:Function} = {};
+
+    private connected:boolean = true;
+
+    //private temporaryCollectionsStore:{[key:string]:ReplaySubject<CollectionDataSet>} = {};
+
     /**
      * Create the nodejs interface
      * @param {NodejsConfiguration} configuration Interface configuration object
@@ -50,7 +57,6 @@ export class Nodejs extends ExternalInterface {
 
         this.socket = io(this.configuration.socketUrl);
 
-        // Doit-on checker ici tous ces events, ou uniquement au loading (de collection ou d'entité) ?
         this.socket.on('connect_failed', function(){
             console.log('Connection Failed');
         });
@@ -61,6 +67,7 @@ export class Nodejs extends ExternalInterface {
 
         this.socket.on('connect', () => {
             console.log('Connected');
+            this.connected = true;
         });
 
         this.socket.on('reconnecting', () => {
@@ -69,29 +76,58 @@ export class Nodejs extends ExternalInterface {
 
         this.socket.on('disconnect', () => {
             console.log('Disconnected');
+            this.connected = false;
+            this.dispatchErrors();
         });
 
         this.socket.on(this.messagePrefix, (data:Object[]) => {
             console.log("MESSAGE DATA: ", data);
 
-            let tmp: ReplaySubject<EntityDataSet> = this.temporaryStore[data[0]["cid"]];
+            let cid:number = data[0]["cid"];
 
-            if (tmp) {
-                tmp.next(data[0]["data"]);
-                delete this.temporaryStore[data[0]["cid"]];
+            if (cid) {
+                let tmp: ReplaySubject<EntityDataSet> = this.temporaryStore[cid];
+
+                if (tmp) {
+                    tmp.next(data[0]["data"]);
+                    delete this.temporaryStore[cid];
+                    delete this.errorsStore[cid];
+                }
+
+                let deletionTmp: ReplaySubject<boolean> = this.temporaryDeletionStore[cid];
+
+                if (deletionTmp) {
+                    deletionTmp.next(true);
+                    delete this.temporaryDeletionStore[cid];
+                    delete this.errorsStore[cid];
+                }
             }
 
-            let deletionTmp: ReplaySubject<boolean> = this.temporaryDeletionStore[data[0]["cid"]];
-
-            if (deletionTmp) {
-                deletionTmp.next(true);
-                delete this.temporaryDeletionStore[data[0]["cid"]];
-            }
         });
     }
 
     /**
-     * Load entity in http service
+     * Send interface errors
+     */
+    private dispatchErrors() {
+        // error managing
+        for (let id in this.errorsStore) {
+            if (this.errorsStore.hasOwnProperty(id)) {
+                this.sendError(0, "", this.errorsStore[id]);
+                delete this.errorsStore[id];
+            }
+        }
+
+        for (let id in this.collectionsErrorStore) {
+            if (this.collectionsErrorStore.hasOwnProperty(id)) {
+                this.sendError(0, "", this.collectionsErrorStore[id]);
+                //delete this.collectionsErrorStore[id];
+            }
+        }
+    }
+
+    /**
+     * Load entity in nodejs service
      * @param {string} type Endpoint name
      * @param {number} id Id of the entity
      * @param {Function} errorHandler Function used to handle errors
@@ -100,6 +136,10 @@ export class Nodejs extends ExternalInterface {
     loadEntity(type:string, id:number, errorHandler:Function):Observable<EntityDataSet> {
 
         console.log(String(id));
+
+        if (!this.connected) {
+            this.sendError(0, '', errorHandler);
+        }
 
         return this.loadCollection(type, {
             id: id
@@ -112,35 +152,40 @@ export class Nodejs extends ExternalInterface {
 
         let subject: ReplaySubject<EntityDataSet> = new ReplaySubject<EntityDataSet>(1);
 
-        let cid: number = Math.floor(Math.random() * 1000000000000000);
+        let cid: number = Math.floor(Math.random() * Number.MAX_SAFE_INTEGER);
 
-        this.temporaryStore[cid] = subject;
+        if (!this.connected) {
+            this.sendError(0, '', errorHandler);
+        } else {
+            this.errorsStore[cid] = errorHandler;
 
-        let requestData:Object = {
-            command: "update",
-            data: data,
-            type: type,
-            cid: cid
-        };
+            this.temporaryStore[cid] = subject;
 
-        console.log("SAVE", requestData);
+            let requestData:Object = {
+                command: "update",
+                data: data,
+                type: type,
+                cid: cid
+            };
 
-        this.socket.emit("message", requestData);
+            console.log("SAVE", requestData);
+
+            this.socket.emit("message", requestData);
+        }
 
         return subject;
     }
 
     /**
-     * Load a collection in http service
+     * Load a collection in nodejs service
      * @param {string} type Endpoint name
      * @param {{[p: string]: any}} filter Filter Object
      * @param {Function} errorHandler Function used to handle errors
      * @returns {Observable<CollectionDataSet>} Observable returning the collection data
      */
     loadCollection(type:string, filter:{[key:string]:any} = {}, errorHandler:Function = null):Observable<CollectionDataSet> {
-        this.initializeSocket();
 
-        console.log(filter);
+        this.initializeSocket();
 
         let hash:string = ObjectHash(filter);
 
@@ -148,11 +193,9 @@ export class Nodejs extends ExternalInterface {
 
         let subject:ReplaySubject<CollectionDataSet> = new ReplaySubject<CollectionDataSet>(1);
 
-        this.socket.on(this.retrieveEvent + type + "_" + hash, (data:CollectionDataSet) => {
-            // récupération des datas de collection
+        let evtName:string = this.retrieveEvent + type + "_" + hash;
 
-            console.log(data);
-
+        let callback:Function = (data:CollectionDataSet) => {
             let res: CollectionDataSet = {};
 
             for (let id in data) {
@@ -160,13 +203,24 @@ export class Nodejs extends ExternalInterface {
             }
 
             subject.next(res);
-        });
+
+            this.socket.off(evtName, callback);
+        };
+
+        this.socket.off(evtName, callback);
+
+        if (!this.connected) {
+            this.sendError(0, '', errorHandler);
+        } else {
+            this.collectionsErrorStore[hash] = errorHandler;
+            this.socket.on(evtName, callback);
+        }
 
         return subject;
     }
 
     /**
-     * Create entity in http service
+     * Create entity in nodejs service
      * @param {string} type Endpoint name
      * @param {EntityDataSet} data Data used to create the entity
      * @param {Function} errorHandler Function used to handle errors
@@ -178,24 +232,30 @@ export class Nodejs extends ExternalInterface {
 
         let cid: number = Math.floor(Math.random() * 1000000000000000);
 
-        let requestData:Object = {
-            command: "put",
-            data: data,
-            type: type,
-            cid: cid
-        };
+        this.errorsStore[cid] = errorHandler;
 
-        this.temporaryStore[cid] = subject;
+        if (!this.connected) {
+            this.sendError(0, '', errorHandler);
+        } else {
+            let requestData:Object = {
+                command: "put",
+                data: data,
+                type: type,
+                cid: cid
+            };
 
-        let dataHash:string = ObjectHash(data);
+            this.temporaryStore[cid] = subject;
 
-        this.socket.emit("message", requestData);
+            let dataHash:string = ObjectHash(data);
+
+            this.socket.emit("message", requestData);
+        }
 
         return subject;
     }
 
     /**
-     * Delete entity from http service
+     * Delete entity from nodejs service
      * @param {string} type Endpoint type
      * @param {number} id Entity id
      * @param {Function} errorHandler Function used to handle errors
@@ -207,18 +267,24 @@ export class Nodejs extends ExternalInterface {
 
         let cid: number = Math.floor(Math.random() * 1000000000000000);
 
-        this.temporaryDeletionStore[cid] = subject;
+        this.errorsStore[cid] = errorHandler;
 
-        let requestData:Object = {
-            command: "delete",
-            id: id,
-            type: type,
-            cid: cid
-        };
+        if (!this.connected) {
+            this.sendError(0, '', errorHandler);
+        } else {
+            this.temporaryDeletionStore[cid] = subject;
 
-        console.log(requestData);
+            let requestData:Object = {
+                command: "delete",
+                id: id,
+                type: type,
+                cid: cid
+            };
 
-        this.socket.emit("message", requestData);
+            console.log(requestData);
+
+            this.socket.emit("message", requestData);
+        }
 
         return subject;
     }

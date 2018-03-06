@@ -22,12 +22,14 @@ let connector:DataConnector = new DataConnector({
     }
 });
 
-connector.loadCollection("idea").subscribe((collection:DataCollection) => {
+setTimeout(() => {
+    connector.loadCollection("idea").subscribe((collection:DataCollection) => {
+        console.log("coll", collection);
+    }, () => {
+        console.log("échec et mat");
+    });
+}, 10000);
 
-    console.log("coll", collection);
-}, () => {
-    console.log("échec et mat");
-});
 
 setTimeout(() => {
     /*connector.loadEntity("idea", "6376453095987085312").subscribe((data:DataEntity) => {
