@@ -219,7 +219,7 @@ export class DataConnector {
      * @param {Observable<DataEntity>} entityObservable Observable to register
      * @returns {Observable<DataEntity>} The observable associated to the entity
      */
-    private registerEntity(type:string, id:number|string, entity:DataEntity, entityObservable:Observable<DataEntity>):Observable<DataEntity> {
+    registerEntity(type:string, id:number|string, entity:DataEntity, entityObservable:Observable<DataEntity>):Observable<DataEntity> {
 
         if (!this.entitiesLiveStore[type]) {
             this.entitiesLiveStore[type] = new EntityStore();
@@ -231,6 +231,24 @@ export class DataConnector {
 
         this.collectionsLiveStore[entity.type].registerEntityInCollections(entity, entityObservable);
         return this.entitiesLiveStore[type].registerEntity(entity, id);
+    }
+
+
+    registerEntityByData(type:string, id:number|string, entityData:EntityDataSet) {
+
+        if (!this.entitiesLiveStore[type]) {
+            this.entitiesLiveStore[type] = new EntityStore();
+        }
+
+        if (!this.collectionsLiveStore[type]) {
+            this.collectionsLiveStore[type] = new CollectionStore();
+        }
+
+        let entity:DataEntity = new DataEntity(type, entityData, this, id);
+        let obs:Observable<DataEntity> = this.getEntitySubject(type, id);
+
+        this.collectionsLiveStore[entity.type].registerEntityInCollections(entity, obs);
+        this.entitiesLiveStore[type].registerEntity(entity, id);
     }
 
     /**
@@ -821,9 +839,22 @@ export class DataConnector {
      * Delete entity from store
      * @param {DataEntity} entity Entity to delete
      */
-    private unregisterEntity(entity:DataEntity) {
+    unregisterEntity(entity:DataEntity) {
         this.collectionsLiveStore[entity.type].deleteEntityFromCollection(entity);
         this.entitiesLiveStore[entity.type].unregisterEntity(entity);
+    }
+
+
+    /**
+     *
+     * @param {string} type
+     * @param {number | string} id
+     */
+    unregisterEntityTypeAndId(type:string, id:number|string) {
+
+        this.entitiesLiveStore[type].getEntityObservable(id).take(1).subscribe((entity:DataEntity) => {
+            this.unregisterEntity(entity);
+        });
     }
 
     /**

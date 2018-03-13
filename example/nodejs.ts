@@ -18,18 +18,20 @@ let connector:DataConnector = new DataConnector({
     map: {
         "idea": {
             type: "nodejs"
-        }
+        },
+        wall: "nodejs"
     }
 });
 
-setTimeout(() => {
+//setTimeout(() => {
     connector.loadCollection("idea").subscribe((collection:DataCollection) => {
         console.log("coll", collection);
     }, () => {
         console.log("échec et mat");
     });
-}, 10000);
+//}, 1);
 
+let setted:DataEntity;
 
 setTimeout(() => {
     /*connector.loadEntity("idea", "6376453095987085312").subscribe((data:DataEntity) => {
@@ -38,8 +40,20 @@ setTimeout(() => {
             console.log("deleted");
         });
     });*/
-}, 1000);
 
+    connector.createEntity("idea", {
+        okhh: 1,
+        dfd: 2
+    }).subscribe((entity:DataEntity) => {
+        setted = entity;
+    });
+
+}, 3000);
+
+setTimeout(() => {
+    //setted.set("dfd", 4);
+    setted.remove();
+}, 6000);
 
 /*setTimeout(() => {
     connector.createEntity("idea", {

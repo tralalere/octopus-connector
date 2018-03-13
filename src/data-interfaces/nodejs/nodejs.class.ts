@@ -6,6 +6,7 @@ import {CollectionDataSet, EntityDataSet, FilterData} from "../../types";
 import * as ObjectHash from "object-hash";
 import * as io from 'socket.io-client';
 import {ReplaySubject} from "rxjs/Rx";
+import {DataEntity} from "../../data-structures/data-entity.class";
 
 /**
  * Nodejs interface
@@ -21,9 +22,13 @@ export class Nodejs extends ExternalInterface {
     private temporaryDeletionStore:{[key:number]:ReplaySubject<boolean>} = {};
 
     private errorsStore:{[key:number]:Function} = {};
-    private collectionsErrorStore:{[key:string]:Function} = {};
+    private collectionsErrorStore:{[key:number]:Function} = {};
 
     private connected:boolean = true;
+
+    private collectionSubjects:{[key:string]:{[key:string]:ReplaySubject<CollectionDataSet>}} = {};
+    private dataCollections:{[key:string]:{[key:string]:CollectionDataSet}} = {};
+    private collectionFilters:{[key:string]:{[key:string]:FilterData}} = {};
 
     //private temporaryCollectionsStore:{[key:string]:ReplaySubject<CollectionDataSet>} = {};
 
@@ -94,6 +99,16 @@ export class Nodejs extends ExternalInterface {
                     tmp.next(data[0]["data"]);
                     delete this.temporaryStore[cid];
                     delete this.errorsStore[cid];
+                } else {
+                    if (data[0]['command'] === "put") {
+                        console.log("!!PUT", data[0]);
+                        this.connector.registerEntityByData(data[0]["type"], data[0]["data"]["id"], data[0]['data']);
+                    }
+
+                    if (data[0]['command'] === "update") {
+                        console.log("!!UPDATE", data[0]);
+                        this.connector.registerEntityByData(data[0]["type"], data[0]["id"], data[0]['data']);
+                    }
                 }
 
                 let deletionTmp: ReplaySubject<boolean> = this.temporaryDeletionStore[cid];
@@ -102,6 +117,11 @@ export class Nodejs extends ExternalInterface {
                     deletionTmp.next(true);
                     delete this.temporaryDeletionStore[cid];
                     delete this.errorsStore[cid];
+                } else {
+                    if (data[0]['command'] === "delete") {
+                        console.log("!!DELETE", data[0]);
+                        this.connector.unregisterEntityTypeAndId(data[0]["type"], data[0]["id"]);
+                    }
                 }
             }
 
@@ -166,6 +186,7 @@ export class Nodejs extends ExternalInterface {
             let requestData:Object = {
                 command: "update",
                 data: data,
+                id: id,
                 type: type,
                 cid: cid
             };
@@ -191,23 +212,44 @@ export class Nodejs extends ExternalInterface {
         //this.initializeSocket();
 
         let hash:string = ObjectHash(filter);
-
         let subject:ReplaySubject<CollectionDataSet> = new ReplaySubject<CollectionDataSet>(1);
+
+        if (!this.dataCollections[type]) {
+            this.dataCollections[type] = {};
+        }
+
+        if (!this.collectionFilters[type]) {
+            this.collectionFilters[type] = {};
+        }
+
+        if (!this.collectionSubjects[type]) {
+            this.collectionSubjects[type] = {};
+        }
+
+        this.collectionSubjects[type][hash] = subject;
+        this.collectionFilters[type][hash] = filter;
 
         if (!this.connected) {
             this.sendError(0, '', errorHandler);
         } else {
 
-            let evtName:string = this.retrieveEvent + type + "_" + hash;
+            let cid:number = Math.floor(Math.random() * Number.MAX_SAFE_INTEGER);
 
-            this.socket.emit('connexion', type, filter);
+            let evtName:string = this.retrieveEvent + type;
+
+            this.socket.emit('connexion', type, filter, cid);
 
             let callback:Function = (data:CollectionDataSet) => {
                 let res: CollectionDataSet = {};
 
+                console.log(data);
+
                 for (let id in data) {
-                    res[+id] = data[id]["data"];
+                    res[data[id]["data"]["id"]] = data[id]["data"];
                 }
+
+                this.dataCollections[type][hash] = res;
+                console.log("dtc", this.dataCollections);
 
                 subject.next(res);
 
@@ -216,7 +258,7 @@ export class Nodejs extends ExternalInterface {
 
             this.socket.off(evtName, callback);
 
-            this.collectionsErrorStore[hash] = errorHandler;
+            this.collectionsErrorStore[cid] = errorHandler;
             this.socket.on(evtName, callback);
         }
 
@@ -234,7 +276,7 @@ export class Nodejs extends ExternalInterface {
 
         let subject:ReplaySubject<EntityDataSet> = new ReplaySubject<EntityDataSet>(1);
 
-        let cid: number = Math.floor(Math.random() * 1000000000000000);
+        let cid: number = Math.floor(Math.random() * Number.MAX_SAFE_INTEGER);
 
         this.errorsStore[cid] = errorHandler;
 
@@ -249,9 +291,6 @@ export class Nodejs extends ExternalInterface {
             };
 
             this.temporaryStore[cid] = subject;
-
-            let dataHash:string = ObjectHash(data);
-
             this.socket.emit("message", requestData);
         }
 
@@ -269,7 +308,7 @@ export class Nodejs extends ExternalInterface {
 
         let subject:ReplaySubject<boolean> = new ReplaySubject<boolean>(1);
 
-        let cid: number = Math.floor(Math.random() * 1000000000000000);
+        let cid: number = Math.floor(Math.random() * Number.MAX_SAFE_INTEGER);
 
         this.errorsStore[cid] = errorHandler;
 
