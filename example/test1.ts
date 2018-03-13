@@ -10,8 +10,8 @@ let connector:DataConnector = new DataConnector({
         localstorage: {
             prefix: "test"
         },
-        http: {
-            apiUrl: "http://preprod.savanturiers.api.tralalere.com/api/",
+        drupal8: {
+            apiUrl: "https://preprod.lms.api.tralalere.com/",
             headers: {
                 "Content-type": "application/json"
             }
@@ -38,7 +38,7 @@ let connector:DataConnector = new DataConnector({
         console.log("pas connecté");
 });*/
 
-connector.authenticate("http", "christophe", "tralalere2017").subscribe((data:DataEntity) => {
+connector.authenticate("drupal8", "christophe", "tralalere").subscribe((data:DataEntity) => {
     console.log("c'est bon", data);
 }, (error: InterfaceError) => {
     console.log(error);

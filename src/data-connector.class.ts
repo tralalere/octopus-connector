@@ -16,6 +16,7 @@ import {ReplaySubject} from "rxjs/Rx";
 import {EndpointConfig} from "./endpoint-config.interface";
 import {ModelSchema} from "octopus-model";
 import {InterfaceError} from "./data-interfaces/interface-error.class";
+import {Drupal8} from "./data-interfaces/drupal8/drupal8.class";
 
 /**
  * Data connector class
@@ -47,7 +48,8 @@ export class DataConnector {
     private builtInFactories:{[key:string]:any} = {
         localstorage: LocalStorage,
         http: Http,
-        nodejs: Nodejs
+        nodejs: Nodejs,
+        drupal8: Drupal8
     };
 
     /**
@@ -74,15 +76,15 @@ export class DataConnector {
         }
 
         this.retryTimeout = this.configuration.retryTimeout || 2000;
-        this.maxRetry = this.configuration.maxRetry || 80;
+        this.maxRetry = this.configuration.maxRetry || 1000;
     }
 
     getRetryTimeout(type:string):number {
-        return this.interfaces[type].retryTimeout || this.retryTimeout;
+        return this.retryTimeout;
     }
 
     getMaxRetry(type:string):number {
-        return this.interfaces[type].maxRetry || this.retryTimeout;
+        return this.retryTimeout;
     }
 
     /**

@@ -33,7 +33,8 @@ export interface DataConnectorConfig {
     configuration: {
         localstorage?:LocalStorageConfiguration,
         http?:HttpConfiguration,
-        nodejs?:NodejsConfiguration
+        nodejs?:NodejsConfiguration,
+        drupal8?:HttpConfiguration
     };
 
     // currently not used
