@@ -6,12 +6,27 @@ import {InterfaceError} from "../src/data-interfaces/interface-error.class";
 
 let connector:DataConnector = new DataConnector({
     defaultInterface: "localstorage",
+    declarations: {
+        http2: "http"
+    },
     configuration: {
         localstorage: {
             prefix: "test"
         },
         drupal8: {
             apiUrl: "https://preprod.lms.api.tralalere.com/",
+            headers: {
+                "Content-type": "application/json"
+            }
+        },
+        http: {
+            apiUrl: "https://preprod.lms.api.tralalere.com/",
+            headers: {
+                "Content-type": "application/json"
+            }
+        },
+        http2: {
+            apiUrl: "http://preprod.savanturiers.api.tralalere.com/api/",
             headers: {
                 "Content-type": "application/json"
             }
@@ -38,7 +53,7 @@ let connector:DataConnector = new DataConnector({
         console.log("pas connecté");
 });*/
 
-connector.authenticate("drupal8", "christophe", "tralalere").subscribe((data:DataEntity) => {
+connector.authenticate("http2", "christophe", "tralalere2017").subscribe((data:DataEntity) => {
     console.log("c'est bon", data);
 }, (error: InterfaceError) => {
     console.log(error);

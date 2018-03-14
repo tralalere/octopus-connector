@@ -6,7 +6,6 @@ import {CollectionDataSet, EntityDataSet, FilterData} from "../../types";
 import * as ObjectHash from "object-hash";
 import * as io from 'socket.io-client';
 import {ReplaySubject} from "rxjs/Rx";
-import {DataEntity} from "../../data-structures/data-entity.class";
 
 /**
  * Nodejs interface

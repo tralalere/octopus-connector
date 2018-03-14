@@ -36,7 +36,8 @@ export class Http extends ExternalInterface {
      */
     constructor(
         private configuration:HttpConfiguration,
-        private connector:DataConnector
+        private connector:DataConnector,
+        private interfaceName:string
     ) {
         super();
         this.useDiff = true;
@@ -63,11 +64,11 @@ export class Http extends ExternalInterface {
     get authenticated():Observable<EntityDataSet> {
         let value:ReplaySubject<EntityDataSet> = new ReplaySubject<EntityDataSet>(1);
 
-        this.dataStore.user = JSON.parse(localStorage.getItem('currentUser'));
-        let expire:number =  JSON.parse(localStorage.getItem('expires_in'));
+        this.dataStore.user = JSON.parse(localStorage.getItem(`${this.interfaceName}_currentUser`));
+        let expire:number =  JSON.parse(localStorage.getItem(`${this.interfaceName}_expires_in`));
         if(expire > Date.now()) {
-            this.dataStore.user = JSON.parse(localStorage.getItem('currentUser'));
-            this.setToken(JSON.parse(localStorage.getItem('accessToken'))).subscribe((data:EntityDataSet) => {
+            this.dataStore.user = JSON.parse(localStorage.getItem(`${this.interfaceName}_currentUser`));
+            this.setToken(JSON.parse(localStorage.getItem(`${this.interfaceName}_accessToken`))).subscribe((data:EntityDataSet) => {
                 value.next(data);
             });
         } else if(expire && expire < Date.now()) {
@@ -292,7 +293,7 @@ export class Http extends ExternalInterface {
                     let loginData:Object = JSON.parse(request.responseText);
                     let expire:number = +loginData["expires_in"] - 3600;
                     if(expire < 3600){
-                        if(localStorage.getItem('accessToken')){
+                        if(localStorage.getItem(`${this.interfaceName}_accessToken`)){
                             observables.push(this.setToken(loginData["access_token"], errorHandler));
                             this.setExpireDate(expire);
                             this.setRefreshToken(loginData["refreshToken"]);
@@ -331,10 +332,10 @@ export class Http extends ExternalInterface {
             }
         });*/
 
-        localStorage.removeItem('currentUser');
-        localStorage.removeItem('accessToken');
-        localStorage.removeItem('expires_in');
-        localStorage.removeItem('refreshToken');
+        localStorage.removeItem(`${this.interfaceName}_currentUser`);
+        localStorage.removeItem(`${this.interfaceName}_accessToken`);
+        localStorage.removeItem(`${this.interfaceName}_expires_in`);
+        localStorage.removeItem(`${this.interfaceName}_refreshToken`);
         this.dataStore.user = null;
     }
 
@@ -346,7 +347,7 @@ export class Http extends ExternalInterface {
      */
     private setToken(accessToken:string, errorHandler:Function = null):Observable<EntityDataSet> {
         if(accessToken && accessToken !="") {
-            localStorage.setItem('accessToken', JSON.stringify(accessToken));
+            localStorage.setItem(`${this.interfaceName}_accessToken`, JSON.stringify(accessToken));
             this.headers["access-token"] = accessToken;
 
             return this.getMe(true, errorHandler);
@@ -359,7 +360,7 @@ export class Http extends ExternalInterface {
      */
     private setExpireDate(expire:number) {
         let date:number = Date.now();
-        localStorage.setItem('expires_in', JSON.stringify(date + (expire*1000)));
+        localStorage.setItem(`${this.interfaceName}_expires_in`, JSON.stringify(date + (expire*1000)));
     }
 
     /**
@@ -398,7 +399,7 @@ export class Http extends ExternalInterface {
      * @param {string} refreshToken
      */
     private setRefreshToken(refreshToken:string) {
-        localStorage.setItem('refreshToken', JSON.stringify(refreshToken));
+        localStorage.setItem(`${this.interfaceName}_refreshToken`, JSON.stringify(refreshToken));
     }
 
 
@@ -449,7 +450,7 @@ export class Http extends ExternalInterface {
         if (complete) {
             this.dataStore.user = userData;
             //this.data.next(this.dataStore.user);
-            localStorage.setItem('currentUser', JSON.stringify(userData));
+            localStorage.setItem(`${this.interfaceName}_currentUser`, JSON.stringify(userData));
         }
 
         //this.currentUserData = userData;

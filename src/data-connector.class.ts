@@ -69,9 +69,17 @@ export class DataConnector {
     constructor(
         private configuration:DataConnectorConfig
     ) {
+        if (this.configuration.declarations) {
+            for (let declarationKey in this.configuration.declarations) {
+                if (this.configuration.declarations.hasOwnProperty(declarationKey)) {
+                    this.builtInFactories[declarationKey] = this.builtInFactories[this.configuration.declarations[declarationKey]];
+                }
+            }
+        }
+
         for (let interfaceName in configuration.configuration) {
             if (configuration.configuration.hasOwnProperty(interfaceName)) {
-                this.interfaces[interfaceName] = new this.builtInFactories[interfaceName](configuration.configuration[interfaceName], this);
+                this.interfaces[interfaceName] = new this.builtInFactories[interfaceName](configuration.configuration[interfaceName], this, interfaceName);
             }
         }
 

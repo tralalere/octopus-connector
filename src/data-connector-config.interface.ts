@@ -31,20 +31,23 @@ export interface DataConnectorConfig {
      * Base configurations for each service type
      */
     configuration: {
-        localstorage?:LocalStorageConfiguration,
-        http?:HttpConfiguration,
-        nodejs?:NodejsConfiguration,
-        drupal8?:HttpConfiguration
+        [key:string]: HttpConfiguration | LocalStorageConfiguration | NodejsConfiguration
     };
 
     // currently not used
-    declarations?:any;
+    declarations?: {
+        [key:string]:string
+    };
 
     /**
      * Individual endpoint configuration
      */
-    map?:{[key:string]:string|EndpointConfig};
+    map?:{
+        [key:string]:string|EndpointConfig
+    };
 
     // currently not used
-    interfaces?:{[key:string]:ExternalInterface};
+    interfaces?:{
+        [key:string]:ExternalInterface
+    };
 }
