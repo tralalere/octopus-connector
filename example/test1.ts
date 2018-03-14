@@ -53,7 +53,7 @@ let connector:DataConnector = new DataConnector({
         console.log("pas connecté");
 });*/
 
-connector.authenticate("http2", "christophe", "tralalere2017").subscribe((data:DataEntity) => {
+connector.authenticate("http2", "christophe", "passwd").subscribe((data:DataEntity) => {
     console.log("c'est bon", data);
 }, (error: InterfaceError) => {
     console.log(error);
