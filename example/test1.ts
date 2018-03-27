@@ -20,7 +20,7 @@ let connector:DataConnector = new DataConnector({
             }
         },
         http: {
-            apiUrl: "https://preprod.lms.api.tralalere.com/",
+            apiUrl: "http://preprod.savanturiers.api.tralalere.com/api/",
             headers: {
                 "Content-type": "application/json"
             }
@@ -53,8 +53,12 @@ let connector:DataConnector = new DataConnector({
         console.log("pas connecté");
 });*/
 
-connector.authenticate("http2", "christophe", "passwd").subscribe((data:DataEntity) => {
+connector.authenticate("http", "christophe", "tralalere2017").subscribe((data:DataEntity) => {
     console.log("c'est bon", data);
+
+    connector.loadCollection("projets").subscribe((coll: DataCollection) => {
+        console.log(coll);
+    })
 }, (error: InterfaceError) => {
     console.log(error);
 });

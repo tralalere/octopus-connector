@@ -275,7 +275,6 @@ export class Http extends ExternalInterface {
      * @returns {Observable<boolean>} True if authentication success
      */
     authenticate(login:string, password:string, errorHandler:Function = null):Observable<EntityDataSet> {
-
         let subject:ReplaySubject<EntityDataSet> = new ReplaySubject<EntityDataSet>(1);
 
         let request:XMLHttpRequest = new XMLHttpRequest();
@@ -292,17 +291,18 @@ export class Http extends ExternalInterface {
                 if (request.status === 200) {
                     let loginData:Object = JSON.parse(request.responseText);
                     let expire:number = +loginData["expires_in"] - 3600;
+                    console.log(loginData);
                     if(expire < 3600){
                         if(localStorage.getItem(`${this.interfaceName}_accessToken`)){
                             observables.push(this.setToken(loginData["access_token"], errorHandler));
                             this.setExpireDate(expire);
-                            this.setRefreshToken(loginData["refreshToken"]);
+                            this.setRefreshToken(loginData["refresh_token"]);
                         }
                         observables.push(this.refreshToken(loginData["refresh_token"], errorHandler));
                     } else {
                         observables.push(this.setToken(loginData["access_token"], errorHandler));
                         this.setExpireDate(expire);
-                        this.setRefreshToken(loginData["refreshToken"]);
+                        this.setRefreshToken(loginData["refresh_token"]);
                     }
                 } else {
                     this.sendError(request.status, request.statusText, errorHandler);
@@ -374,22 +374,25 @@ export class Http extends ExternalInterface {
 
         let request:XMLHttpRequest = new XMLHttpRequest();
 
-        let url:string = `${<string>this.configuration.apiUrl}refresh-token`;
+        let url:string = `${<string>this.configuration.apiUrl}refresh-token/${refreshToken}`;
         request.open("GET", url,true);
 
         request.onreadystatechange = () => {
             if (request.readyState === XMLHttpRequest.DONE) {
                 if (request.status === 200) {
                     let userData:Object = JSON.parse(request.responseText);
+                    console.log(userData);
                     this.setToken(userData["access_token"], errorHandler);
                     this.setExpireDate(+userData["expires_in"] - 3600);
-                    this.setRefreshToken(userData["refreshToken"]);
+                    this.setRefreshToken(userData["refresh_token"]);
                     subject.next(userData);
                 } else {
                     this.sendError(request.status, request.statusText, errorHandler);
                 }
             }
         };
+
+        request.send();
 
         return subject;
     }

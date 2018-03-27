@@ -101,12 +101,12 @@ export class Nodejs extends ExternalInterface {
                 } else {
                     if (data[0]['command'] === "put") {
                         console.log("!!PUT", data[0]);
-                        this.connector.registerEntityByData(data[0]["type"], data[0]["data"]["id"], data[0]['data']);
+                        this.connector.registerEntityByData(data[0]["type"], data[0]["data"]["id"] , data[0]['data']);
                     }
 
                     if (data[0]['command'] === "update") {
                         console.log("!!UPDATE", data[0]);
-                        this.connector.registerEntityByData(data[0]["type"], data[0]["id"], data[0]['data']);
+                        this.connector.registerEntityByData(data[0]["type"], data[0]["id"] || data[0]["data"]["id"], data[0]['data']);
                     }
                 }
 
@@ -244,7 +244,8 @@ export class Nodejs extends ExternalInterface {
                 console.log(data);
 
                 for (let id in data) {
-                    res[data[id]["data"]["id"]] = data[id]["data"];
+                    let mid: number = data[id]["data"]["id"] || data[id]["id"];
+                    res[mid] = data[id]["data"];
                 }
 
                 this.dataCollections[type][hash] = res;
