@@ -6,6 +6,7 @@ import {ExternalInterface} from "./data-interfaces/abstract-external-interface.c
 import {EndpointConfig} from "./endpoint-config.interface";
 import {HttpConfiguration} from "./data-interfaces/http/http-configuration.interface";
 import {NodejsConfiguration} from "./data-interfaces/nodejs/nodejs-configuration.interface";
+import {Drupal8Configuration} from "./data-interfaces/drupal8/drupal8-configuration.interface";
 
 /**
  * Connector main configuration
@@ -31,7 +32,7 @@ export interface DataConnectorConfig {
      * Base configurations for each service type
      */
     configuration: {
-        [key:string]: HttpConfiguration | LocalStorageConfiguration | NodejsConfiguration
+        [key:string]: HttpConfiguration | LocalStorageConfiguration | NodejsConfiguration | Drupal8Configuration
     };
 
     // currently not used

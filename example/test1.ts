@@ -14,28 +14,16 @@ let connector:DataConnector = new DataConnector({
             prefix: "test"
         },
         drupal8: {
-            apiUrl: "https://preprod.lms.api.tralalere.com/",
+            apiUrl: "https://preprod.lms.api.tralalere.com/api/",
             headers: {
                 "Content-type": "application/json"
-            }
-        },
-        http: {
-            apiUrl: "http://preprod.savanturiers.api.tralalere.com/api/",
-            headers: {
-                "Content-type": "application/json"
-            }
-        },
-        http2: {
-            apiUrl: "http://preprod.savanturiers.api.tralalere.com/api/",
-            headers: {
-                "Content-type": "application/json"
-            }
+            },
+            clientId: "f7d33bbc-d79a-48ac-8473-e7b833561466",
+            clientSecret: "tralalere",
+            scope: "administrator angular"
         }
     },
     map: {
-        "projets": {
-            type: "http"
-        },
         "endpoint": "localstorage"
     }
 });
@@ -53,7 +41,7 @@ let connector:DataConnector = new DataConnector({
         console.log("pas connecté");
 });*/
 
-connector.authenticate("http", "christophe", "tralalere2017").subscribe((data:DataEntity) => {
+connector.authenticate("drupal8", "christophe", "tralalere2018").subscribe((data:DataEntity) => {
     console.log("c'est bon", data);
 
     connector.loadCollection("projets").subscribe((coll: DataCollection) => {

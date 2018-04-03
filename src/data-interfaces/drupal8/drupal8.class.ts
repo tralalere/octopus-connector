@@ -3,6 +3,7 @@ import {DataConnector} from "../../data-connector.class";
 import {HttpConfiguration} from "../http/http-configuration.interface";
 import {Observable, ReplaySubject} from "rxjs/Rx";
 import {CollectionDataSet, EntityDataSet} from "../../types";
+import {Drupal8Configuration} from "./drupal8-configuration.interface";
 
 /**
  * Http external interface
@@ -33,8 +34,9 @@ export class Drupal8 extends ExternalInterface {
      * @param {DataConnector} connector Reference to the connector
      */
     constructor(
-        private configuration:HttpConfiguration,
-        private connector:DataConnector
+        private configuration:Drupal8Configuration,
+        private connector:DataConnector,
+        private interfaceName:string
     ) {
         super();
         this.useDiff = true;
@@ -61,11 +63,11 @@ export class Drupal8 extends ExternalInterface {
     get authenticated():Observable<EntityDataSet> {
         let value:ReplaySubject<EntityDataSet> = new ReplaySubject<EntityDataSet>(1);
 
-        this.dataStore.user = JSON.parse(localStorage.getItem('currentUser'));
-        let expire:number =  JSON.parse(localStorage.getItem('expires_in'));
+        this.dataStore.user = JSON.parse(localStorage.getItem(`${this.interfaceName}_currentUser`));
+        let expire:number =  JSON.parse(localStorage.getItem(`${this.interfaceName}_expires_in`));
         if(expire > Date.now()) {
-            this.dataStore.user = JSON.parse(localStorage.getItem('currentUser'));
-            this.setToken(JSON.parse(localStorage.getItem('accessToken'))).subscribe((data:EntityDataSet) => {
+            this.dataStore.user = JSON.parse(localStorage.getItem(`${this.interfaceName}_currentUser`));
+            this.setToken(JSON.parse(localStorage.getItem(`${this.interfaceName}_accessToken`))).subscribe((data:EntityDataSet) => {
                 value.next(data);
             });
         } else if(expire && expire < Date.now()) {
@@ -82,12 +84,9 @@ export class Drupal8 extends ExternalInterface {
      * Add headers to the request
      * @param {XMLHttpRequest} request A xhr request
      */
-    private addHeaders(request:XMLHttpRequest) {
-
+    private addHeaders(request: XMLHttpRequest) {
         for (let headerName in this.headers) {
-            if (this.headers.hasOwnProperty(headerName)) {
-                request.setRequestHeader(headerName, this.headers[headerName]);
-            }
+            request.setRequestHeader(headerName, this.headers[headerName]);
         }
     }
 
@@ -264,6 +263,42 @@ export class Drupal8 extends ExternalInterface {
         return subject;
     }
 
+
+    getOauthToken(login: string, password: string): Observable<Object> {
+        let subject:ReplaySubject<Object> = new ReplaySubject<Object>(1);
+
+        let req: XMLHttpRequest = new XMLHttpRequest();
+        let url: string = `${<string>this.configuration.apiUrl}oauth/token`;
+
+        req.open("POST", url,true);
+
+        req.onreadystatechange = () => {
+            if (req.readyState === XMLHttpRequest.DONE) {
+                if (req.status === 200) {
+                    subject.next(JSON.parse(req.responseText));
+                } else {
+                    subject.error(req.responseText);
+                }
+            }
+        };
+
+        let data: Object = {
+            grant_type: "password",
+            client_id: this.configuration.clientId,
+            userName: login,
+            password: password,
+            scope: this.configuration.scope || "administrator angular"
+        };
+
+        if (this.configuration.clientSecret) {
+            data["client_secret"] = this.configuration.clientSecret;
+        }
+
+        req.send(data);
+
+        return subject;
+    }
+
     /**
      * Authenticate in service
      * @param {string} login User login
@@ -277,48 +312,68 @@ export class Drupal8 extends ExternalInterface {
 
         let request:XMLHttpRequest = new XMLHttpRequest();
 
-        let url:string = `${<string>this.configuration.apiUrl}user/login?_format=json`;
+        let url: string = `${<string>this.configuration.apiUrl}oauth/token`;
         request.open("POST", url,true);
 
-        //request.setRequestHeader("Authorization", 'Basic ' + btoa(login.trim() + ':' + password));
-        request.setRequestHeader("Content-Type", "application/json");
+        request.setRequestHeader("content-type", "application/x-www-form-urlencoded");
 
-        //let observables:Observable<any>[] = [];
+
+        //request.setRequestHeader("Authorization", 'Basic ' + btoa(login.trim() + ':' + password));
+
+        let observables:Observable<any>[] = [];
 
         request.onreadystatechange = () => {
             if (request.readyState === XMLHttpRequest.DONE) {
                 if (request.status === 200) {
-                    /*let loginData:Object = JSON.parse(request.responseText);
+
+                    localStorage[`${this.interfaceName}_userName`] = login;
+
+                    let loginData:Object = JSON.parse(request.responseText);
                     let expire:number = +loginData["expires_in"] - 3600;
+                    console.log(loginData);
                     if(expire < 3600){
-                        if(localStorage.getItem('accessToken')){
+                        if(localStorage.getItem(`${this.interfaceName}_accessToken`)){
                             observables.push(this.setToken(loginData["access_token"], errorHandler));
                             this.setExpireDate(expire);
-                            this.setRefreshToken(loginData["refreshToken"]);
+                            this.setRefreshToken(loginData["refresh_token"]);
                         }
-                        observables.push(this.refreshToken(loginData["refresh_token"], errorHandler));*/
-                    console.log(request.responseText);
+                        observables.push(this.refreshToken(loginData["refresh_token"], errorHandler));
                     } else {
-                        /*observables.push(this.setToken(loginData["access_token"], errorHandler));
+                        observables.push(this.setToken(loginData["access_token"], errorHandler));
                         this.setExpireDate(expire);
-                        this.setRefreshToken(loginData["refreshToken"]);*/
+                        this.setRefreshToken(loginData["refresh_token"]);
                     }
                 } else {
                     this.sendError(request.status, request.statusText, errorHandler);
                 }
 
-                /*Observable.combineLatest(...observables).map((values:any[]) => {
+                Observable.combineLatest(...observables).map((values:any[]) => {
                     return values[0];
                 }).subscribe((data:EntityDataSet) => {
                     subject.next(data);
-                });*/
+                });
             }
-        //};
+        };
 
-        request.send({
-            "name": login,
-            "pass": password
-        });
+        let data: Object = {
+            grant_type: "password",
+            client_id: this.configuration.clientId,
+            username: login,
+            password: password,
+            scope: this.configuration.scope || "administrator angular"
+        };
+
+        if (this.configuration.clientSecret) {
+            data["client_secret"] = this.configuration.clientSecret;
+        }
+
+        let dataStr: string = "";
+
+        for (let id in data) {
+            dataStr += id + "=" + data[id] + "&";
+        }
+
+        request.send(dataStr);
 
         return subject;
     }
@@ -334,10 +389,10 @@ export class Drupal8 extends ExternalInterface {
             }
         });*/
 
-        localStorage.removeItem('currentUser');
-        localStorage.removeItem('accessToken');
-        localStorage.removeItem('expires_in');
-        localStorage.removeItem('refreshToken');
+        localStorage.removeItem(`${this.interfaceName}_currentUser`);
+        localStorage.removeItem(`${this.interfaceName}_accessToken`);
+        localStorage.removeItem(`${this.interfaceName}_expires_in`);
+        localStorage.removeItem(`${this.interfaceName}_refreshToken`);
         this.dataStore.user = null;
     }
 
@@ -349,8 +404,8 @@ export class Drupal8 extends ExternalInterface {
      */
     private setToken(accessToken:string, errorHandler:Function = null):Observable<EntityDataSet> {
         if(accessToken && accessToken !="") {
-            localStorage.setItem('accessToken', JSON.stringify(accessToken));
-            this.headers["access-token"] = accessToken;
+            localStorage.setItem(`${this.interfaceName}_accessToken`, JSON.stringify(accessToken));
+            this.headers["Authorization"] = "Bearer " + accessToken;
 
             return this.getMe(true, errorHandler);
         }
@@ -362,7 +417,7 @@ export class Drupal8 extends ExternalInterface {
      */
     private setExpireDate(expire:number) {
         let date:number = Date.now();
-        localStorage.setItem('expires_in', JSON.stringify(date + (expire*1000)));
+        localStorage.setItem(`${this.interfaceName}_expires_in`, JSON.stringify(date + (expire*1000)));
     }
 
     /**
@@ -376,7 +431,7 @@ export class Drupal8 extends ExternalInterface {
 
         let request:XMLHttpRequest = new XMLHttpRequest();
 
-        let url:string = `${<string>this.configuration.apiUrl}refresh-token`;
+        let url:string = `${<string>this.configuration.apiUrl}refresh-token/${refreshToken}`;
         request.open("GET", url,true);
 
         request.onreadystatechange = () => {
@@ -385,13 +440,15 @@ export class Drupal8 extends ExternalInterface {
                     let userData:Object = JSON.parse(request.responseText);
                     this.setToken(userData["access_token"], errorHandler);
                     this.setExpireDate(+userData["expires_in"] - 3600);
-                    this.setRefreshToken(userData["refreshToken"]);
+                    this.setRefreshToken(userData["refresh_token"]);
                     subject.next(userData);
                 } else {
                     this.sendError(request.status, request.statusText, errorHandler);
                 }
             }
         };
+
+        request.send();
 
         return subject;
     }
@@ -401,7 +458,7 @@ export class Drupal8 extends ExternalInterface {
      * @param {string} refreshToken
      */
     private setRefreshToken(refreshToken:string) {
-        localStorage.setItem('refreshToken', JSON.stringify(refreshToken));
+        localStorage.setItem(`${this.interfaceName}_refreshToken`, JSON.stringify(refreshToken));
     }
 
 
@@ -417,14 +474,16 @@ export class Drupal8 extends ExternalInterface {
 
         let request:XMLHttpRequest = new XMLHttpRequest();
 
-        let url:string = `${<string>this.configuration.apiUrl}users/me`;
+        let url:string = `${<string>this.configuration.apiUrl}user?filter[name][value]=${localStorage[`${this.interfaceName}_userName`]}`;
         request.open("GET", url,true);
         this.addHeaders(request);
 
         request.onreadystatechange = () => {
             if (request.readyState === XMLHttpRequest.DONE) {
                 if (request.status === 200) {
-                    let userData:Object = JSON.parse(request.responseText)["data"][0];
+                    let userData:Object = JSON.parse(request.responseText)["data"][0]["attributes"];
+                    userData["id"] = userData["uuid"];
+                    console.log(userData);
                     subject.next(userData);
                     this.setMe(userData, complete);
                 } else {
@@ -452,7 +511,7 @@ export class Drupal8 extends ExternalInterface {
         if (complete) {
             this.dataStore.user = userData;
             //this.data.next(this.dataStore.user);
-            localStorage.setItem('currentUser', JSON.stringify(userData));
+            localStorage.setItem(`${this.interfaceName}_currentUser`, JSON.stringify(userData));
         }
 
         //this.currentUserData = userData;
@@ -465,6 +524,7 @@ export class Drupal8 extends ExternalInterface {
      */
     protected extractEntity(responseText:string):EntityDataSet {
         let data:Object = JSON.parse(responseText);
+        console.log(data);
         return data["data"][0];
     }
 
