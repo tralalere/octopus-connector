@@ -621,6 +621,8 @@ export class DataConnector {
             dataToSave = entity.getClone();
         }
 
+        console.log("dataToSave", dataToSave);
+
         let exclusions:string[] = this.getExclusions(entity.type);
 
         exclusions.forEach((key:string) => {

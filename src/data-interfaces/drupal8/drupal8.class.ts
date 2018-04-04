@@ -180,11 +180,20 @@ export class Drupal8 extends ExternalInterface {
     saveEntity(entity:EntityDataSet, type:string, id:number, errorHandler:Function = null):Observable<EntityDataSet> {
         let request:XMLHttpRequest = new XMLHttpRequest();
         let url:string = `${<string>this.configuration.apiUrl}${type}/${id}`;
+        console.log(url);
         request.open("PATCH", url, true);
 
         this.addHeaders(request);
 
         let subject:ReplaySubject<CollectionDataSet> = new ReplaySubject<EntityDataSet>(1);
+
+        let saveObject: Object = {
+            data: {
+                id: id,
+                type: type,
+                attributes: entity
+            }
+        };
 
         request.onreadystatechange = () => {
             if (request.readyState === XMLHttpRequest.DONE) {
@@ -196,7 +205,7 @@ export class Drupal8 extends ExternalInterface {
             }
         };
 
-        request.send(JSON.stringify(entity));
+        request.send(JSON.stringify(saveObject));
 
         return subject;
     }
@@ -215,11 +224,18 @@ export class Drupal8 extends ExternalInterface {
 
         this.addHeaders(request);
 
+        let addObject: Object = {
+            data: {
+                attributes: data,
+                type: type
+            }
+        };
+
         let subject:ReplaySubject<CollectionDataSet> = new ReplaySubject<EntityDataSet>(1);
 
         request.onreadystatechange = () => {
             if (request.readyState === XMLHttpRequest.DONE) {
-                if (request.status === 200) {
+                if (request.status === 201) {
                     subject.next(this.extractEntity(request.responseText));
                 } else {
                     this.sendError(request.status, request.statusText, errorHandler);
@@ -227,7 +243,7 @@ export class Drupal8 extends ExternalInterface {
             }
         };
 
-        request.send(JSON.stringify(data));
+        request.send(JSON.stringify(addObject));
 
         return subject;
     }
@@ -250,7 +266,7 @@ export class Drupal8 extends ExternalInterface {
 
         request.onreadystatechange = () => {
             if (request.readyState === XMLHttpRequest.DONE) {
-                if (request.status === 200) {
+                if (request.status === 204) {
                     subject.next(true);
                 } else {
                     this.sendError(request.status, request.statusText, errorHandler);
@@ -523,9 +539,10 @@ export class Drupal8 extends ExternalInterface {
      * @returns {EntityDataSet} Entity data
      */
     protected extractEntity(responseText:string):EntityDataSet {
-        let data:Object = JSON.parse(responseText);
+        let data:Object = JSON.parse(responseText)["data"]["attributes"];
+        data["id"] = data["uuid"];
         console.log(data);
-        return data["data"][0];
+        return data;
     }
 
     /**
@@ -536,12 +553,16 @@ export class Drupal8 extends ExternalInterface {
     protected extractCollection(responseText:string):CollectionDataSet {
         let data:Object = JSON.parse(responseText);
 
+        console.log("coll data", data);
+
         let collectionData:CollectionDataSet = {};
 
         data["data"].forEach((entityData:EntityDataSet) => {
-            collectionData[entityData["id"]] = entityData;
+            entityData["attributes"]["id"] = entityData["attributes"]["uuid"];
+            collectionData[entityData["attributes"]["uuid"]] = entityData["attributes"];
         });
 
+        //console.log("coll data2", collectionData);
         return collectionData;
     }
 }

@@ -22,10 +22,13 @@ export class DataEntity {
      */
     nesting:{[key:string]:any} = {};
 
+    relationship: {[key: string]: DataEntity} = {};
+
     /**
      * Reference object for diff
      */
     private attributesRef:{[key:string]:any};
+
 
     /**
      * Create the data entity
