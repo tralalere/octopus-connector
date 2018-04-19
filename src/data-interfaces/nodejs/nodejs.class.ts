@@ -156,8 +156,6 @@ export class Nodejs extends ExternalInterface {
      */
     loadEntity(type:string, id:number, errorHandler:Function):Observable<EntityDataSet> {
 
-        console.log(String(id));
-
         if (!this.connected) {
             this.sendError(0, '', errorHandler);
         }
@@ -241,15 +239,12 @@ export class Nodejs extends ExternalInterface {
             let callback:Function = (data:CollectionDataSet) => {
                 let res: CollectionDataSet = {};
 
-                console.log(data);
-
                 for (let id in data) {
                     let mid: number = data[id]["data"]["id"] || data[id]["id"];
                     res[mid] = data[id]["data"];
                 }
 
                 this.dataCollections[type][hash] = res;
-                console.log("dtc", this.dataCollections);
 
                 subject.next(res);
 
@@ -323,8 +318,6 @@ export class Nodejs extends ExternalInterface {
                 type: type,
                 cid: cid
             };
-
-            console.log(requestData);
 
             this.socket.emit("message", requestData);
         }

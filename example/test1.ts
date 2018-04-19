@@ -13,6 +13,9 @@ let connector:DataConnector = new DataConnector({
         localstorage: {
             prefix: "test"
         },
+        nodejs: {
+            socketUrl: "https://jmdall.fr:8087/"
+        },
         drupal8: {
             apiUrl: "https://preprod.lms.api.tralalere.com/api/",
             headers: {
@@ -24,31 +27,15 @@ let connector:DataConnector = new DataConnector({
         }
     },
     map: {
-        "endpoint": "localstorage"
+        "endpoint": "localstorage",
+        idea: "nodejs",
+        category: "nodejs",
+        wall: "nodejs",
     }
 });
 
-/*connector.authenticated("http").subscribe((user:DataEntity) => {
-    console.log("Utilisateur courant", user);
-
-    connector.loadEntities("projets", [25, 250]).subscribe((entities:DataEntity[]) => {
-
-    }, (err:any) => {
-        console.log(err);
-    });
-
-}, () => {
-        console.log("pas connecté");
-});*/
-
-connector.authenticate("drupal8", "christophe", "tralalere2018").subscribe((data:DataEntity) => {
-    console.log("c'est bon", data);
-
-    connector.loadCollection("projets").subscribe((coll: DataCollection) => {
+setTimeout(() => {
+    connector.loadCollection("wall").subscribe((coll: DataCollection) => {
         console.log(coll);
-    })
-}, (error: InterfaceError) => {
-    console.log(error);
-});
-
-//connector.authenticate("http", "christophe", "tralalere2017");
+    });
+}, 2000);

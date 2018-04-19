@@ -28,6 +28,8 @@ export class Drupal8 extends ExternalInterface {
      */
     private headers:{[key:string]:string} = {};
 
+    relationshipsKeys: string[];
+
     /**
      * Creates the http interface
      * @param {HttpConfiguration} configuration Configuration object
@@ -41,6 +43,8 @@ export class Drupal8 extends ExternalInterface {
         super();
         this.useDiff = true;
 
+        this.relationshipsKeys = configuration.relationships || [];
+
         if (configuration.headers) {
             for (let header in configuration.headers) {
                 if (configuration.headers.hasOwnProperty(header)) {
@@ -52,8 +56,6 @@ export class Drupal8 extends ExternalInterface {
         this.dataStore = {
             user: undefined
         };
-
-
     }
 
     /**
@@ -78,6 +80,10 @@ export class Drupal8 extends ExternalInterface {
         }
 
         return value;
+    }
+
+    inRelationships(key: string): boolean {
+        return this.relationshipsKeys.indexOf(key) !== -1;
     }
 
     /**
@@ -224,9 +230,21 @@ export class Drupal8 extends ExternalInterface {
 
         this.addHeaders(request);
 
+        let dataObject: Object = {};
+        let relationshipsObject: Object = {};
+
+        for (let key in data) {
+            if (this.inRelationships(key)) {
+                relationshipsObject[key] = data[key];
+            } else {
+                dataObject[key] = data[key];
+            }
+        }
+
         let addObject: Object = {
             data: {
-                attributes: data,
+                attributes: dataObject,
+                relationships: relationshipsObject,
                 type: type
             }
         };
@@ -303,7 +321,7 @@ export class Drupal8 extends ExternalInterface {
             client_id: this.configuration.clientId,
             userName: login,
             password: password,
-            scope: this.configuration.scope || "administrator angular"
+            scope: this.configuration.scope
         };
 
         if (this.configuration.clientSecret) {
@@ -539,10 +557,9 @@ export class Drupal8 extends ExternalInterface {
      * @returns {EntityDataSet} Entity data
      */
     protected extractEntity(responseText:string):EntityDataSet {
-        let data:Object = JSON.parse(responseText)["data"]["attributes"];
-        data["id"] = data["uuid"];
-        console.log(data);
-        return data;
+        let attributes:Object = JSON.parse(responseText)["data"]["attributes"];
+        attributes["id"] = attributes["uuid"];
+        return attributes;
     }
 
     /**
@@ -553,8 +570,6 @@ export class Drupal8 extends ExternalInterface {
     protected extractCollection(responseText:string):CollectionDataSet {
         let data:Object = JSON.parse(responseText);
 
-        console.log("coll data", data);
-
         let collectionData:CollectionDataSet = {};
 
         data["data"].forEach((entityData:EntityDataSet) => {
@@ -562,7 +577,6 @@ export class Drupal8 extends ExternalInterface {
             collectionData[entityData["attributes"]["uuid"]] = entityData["attributes"];
         });
 
-        //console.log("coll data2", collectionData);
         return collectionData;
     }
 }

@@ -22,7 +22,11 @@ export class DataEntity {
      */
     nesting:{[key:string]:any} = {};
 
-    relationship: {[key: string]: DataEntity} = {};
+    /**
+     * JSONApi relationShips
+     * @type {{}}
+     */
+    relationship: {[key: string]: any} = {};
 
     /**
      * Reference object for diff
@@ -61,8 +65,12 @@ export class DataEntity {
      * @param {string} key Key name
      * @param value New value
      */
-    set(key:string, value:any) {
-        this.attributes[key] = value;
+    set (key:string, value:any) {
+        if (this.relationship[key]) {
+            this.relationship[key] = value;
+        } else {
+            this.attributes[key] = value;
+        }
     }
 
     /**
@@ -70,8 +78,12 @@ export class DataEntity {
      * @param {string} key Key name
      * @returns {any} Value
      */
-    get(key:string):any {
-        return this.attributes[key];
+    get (key:string):any {
+        if (this.attributes[key]) {
+            return this.attributes[key];
+        } else if (this.relationship[key]) {
+            return this.relationship[key];
+        }
     }
 
     /**

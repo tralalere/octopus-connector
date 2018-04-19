@@ -17,5 +17,7 @@ export interface Drupal8Configuration {
 
     clientSecret?: string;
 
-    scope?: string
+    scope?: string;
+
+    relationships?: string[];
 }
