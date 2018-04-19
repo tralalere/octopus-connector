@@ -44,7 +44,7 @@ export class Drupal8 extends ExternalInterface {
         if (configuration.headers) {
             for (let header in configuration.headers) {
                 if (configuration.headers.hasOwnProperty(header)) {
-                    this.headers[header] = header;
+                    this.headers[header] = configuration.headers[header];
                 }
             }
         }

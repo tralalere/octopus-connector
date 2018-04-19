@@ -45,7 +45,7 @@ export class Http extends ExternalInterface {
         if (configuration.headers) {
             for (let header in configuration.headers) {
                 if (configuration.headers.hasOwnProperty(header)) {
-                    this.headers[header] = header;
+                    this.headers[header] = configuration.headers[header];
                 }
             }
         }
@@ -109,7 +109,7 @@ export class Http extends ExternalInterface {
         let subject:ReplaySubject<EntityDataSet> = new ReplaySubject<EntityDataSet>(1);
 
         this.addHeaders(request);
-        
+
         request.onreadystatechange = () => {
             if (request.readyState === XMLHttpRequest.DONE) {
                 if (request.status === 200) {
@@ -121,7 +121,7 @@ export class Http extends ExternalInterface {
         };
 
         request.send();
-        
+
         return subject;
     }
 
