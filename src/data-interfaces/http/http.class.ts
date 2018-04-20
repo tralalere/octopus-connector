@@ -73,7 +73,7 @@ export class Http extends ExternalInterface {
             });
         } else if(expire && expire < Date.now()) {
             value.error(null);
-            this.logOut();
+            this.logout();
         } else {
             value.error(null);
         }
@@ -321,7 +321,7 @@ export class Http extends ExternalInterface {
         return subject;
     }
 
-    logOut() {
+    logout(): Observable<boolean> {
 
         // TODO: revoir cette partie du logout
         /*let keys:string[] = Object.keys(this.headers);
@@ -337,6 +337,8 @@ export class Http extends ExternalInterface {
         localStorage.removeItem(`${this.interfaceName}_expires_in`);
         localStorage.removeItem(`${this.interfaceName}_refreshToken`);
         this.dataStore.user = null;
+
+        return new BehaviorSubject(true);
     }
 
 
