@@ -485,6 +485,8 @@ export class DataConnector {
             let entitySubject:ReplaySubject<DataEntity> = this.getEntitySubject(type, id);
             let structure:ModelSchema = this.getEndpointStructureModel(type);
 
+            let embeddings: {[key: string]: string} = this.getEmbeddings(type);
+
             let checkResponse:Function = () => {
                 if (entityData instanceof Observable) {
                     entityData.subscribe((entity:EntityDataSet) => {
@@ -497,7 +499,7 @@ export class DataConnector {
                             // hasNesting ?
                             //let nested:{[key:string]:string} = this.getNesting(type);
 
-                            this.registerEntity(type, id, new DataEntity(type, entity, this, id), entitySubject);
+                            this.registerEntity(type, id, new DataEntity(type, entity, this, id, embeddings), entitySubject);
                         }
 
                     });
@@ -508,7 +510,7 @@ export class DataConnector {
                             entityData = structure.filterModel(entityData);
                         }
 
-                        let newEntity:DataEntity = new DataEntity(type, entityData, this, id);
+                        let newEntity:DataEntity = new DataEntity(type, entityData, this, id, embeddings);
 
                         // hasNesting ?
                         /*let nested:{[key:string]:string} = this.getNesting(type);
@@ -695,6 +697,8 @@ export class DataConnector {
 
         let entityData:EntityDataSet|Observable<EntityDataSet>;
 
+        let embeddings: {[key: string]: string} = this.getEmbeddings(entity.type);
+
         let checkResponse:Function = () => {
             if (entityData instanceof Observable) {
                 entityData.subscribe((saveEntity:EntityDataSet) => {
@@ -703,7 +707,7 @@ export class DataConnector {
                         saveEntity = structure.filterModel(saveEntity);
                     }
 
-                    this.registerEntity(entity.type, entity.id, new DataEntity(entity.type, saveEntity, this, entity.id), entitySubject);
+                    this.registerEntity(entity.type, entity.id, new DataEntity(entity.type, saveEntity, this, entity.id, embeddings), entitySubject);
                 });
             } else {
 
@@ -711,7 +715,7 @@ export class DataConnector {
                     entityData = structure.filterModel(entityData);
                 }
 
-                this.registerEntity(entity.type, entity.id, new DataEntity(entity.type, entityData, this, entity.id), entitySubject);
+                this.registerEntity(entity.type, entity.id, new DataEntity(entity.type, entityData, this, entity.id, embeddings), entitySubject);
             }
         };
 

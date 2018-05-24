@@ -35,7 +35,8 @@ export class DataCollection {
         public type:string,
         data:CollectionDataSet|EntityDataSet[],
         private connector:DataConnector = null,
-        structure:ModelSchema = null
+        structure:ModelSchema = null,
+        embeddings: {[key: string]: string} = null
     ) {
 
         if (Array.isArray(data)) {
@@ -45,7 +46,7 @@ export class DataCollection {
                     elem = structure.filterModel(elem);
                 }
 
-                this.entities.push(new DataEntity(type, elem, connector, elem["id"]));
+                this.entities.push(new DataEntity(type, elem, connector, elem["id"], embeddings));
             });
         } else {
             let keys:string[] = Object.keys(data);
@@ -55,7 +56,7 @@ export class DataCollection {
                     data[key] = structure.filterModel(data[key]);
                 }
 
-                this.entities.push(new DataEntity(type, data[key], connector, +key));
+                this.entities.push(new DataEntity(type, data[key], connector, +key, embeddings));
             });
         }
 

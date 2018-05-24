@@ -23,7 +23,7 @@ export class DataEntity {
     nesting:{[key:string]:any} = {};
 
 
-    embeddings: {[key: string]: DataEntity[]} = {};
+    //embeddings: {[key: string]: DataEntity[]} = {};
 
     relationship: {[key: string]: DataEntity} = {};
 
@@ -32,6 +32,12 @@ export class DataEntity {
      */
     private attributesRef:{[key:string]:any};
 
+    /**
+     *
+     * @type {{}}
+     */
+    private embeddings: {[key: string]: DataEntity[] | DataEntity} = {};
+
 
     /**
      * Create the data entity
@@ -39,16 +45,30 @@ export class DataEntity {
      * @param {EntityDataSet} data Entity data
      * @param {DataConnector} connector Reference to the connector
      * @param {number} id Entity id
+     * @param {Object} embeddingsConf
      */
     constructor(
         public type:string,
         data:EntityDataSet,
         private connector:DataConnector = null,
-        public id:number|string = null
+        public id:number|string = null,
+        private embeddingsConf: {[key: string]: string} = null
     ) {
         for (let key in data) {
             if (data.hasOwnProperty(key) && key !== "id") {
                 this.attributes[key] = data[key];
+
+                if (embeddingsConf && embeddingsConf[key] !== undefined) {
+                    if (Array.isArray(this.attributes[key])) {
+                        this.embeddings[key] = [];
+
+                        this.attributes[key].forEach((elem: EntityDataSet) => {
+                            (<DataEntity[]>this.embeddings[key]).push(new DataEntity(embeddingsConf[key], elem, connector, elem["id"], embeddingsConf));
+                        });
+                    } else {
+                        this.embeddings[key] = new DataEntity(embeddingsConf[key], this.attributes[key], connector, this.attributes[key]["id"], embeddingsConf);
+                    }
+                }
             }
         }
 
