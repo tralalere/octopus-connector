@@ -7,6 +7,7 @@ import {EndpointConfig} from "./endpoint-config.interface";
 import {HttpConfiguration} from "./data-interfaces/http/http-configuration.interface";
 import {NodejsConfiguration} from "./data-interfaces/nodejs/nodejs-configuration.interface";
 import {Drupal8Configuration} from "./data-interfaces/drupal8/drupal8-configuration.interface";
+import {Observable} from "rxjs/Observable";
 
 /**
  * Connector main configuration
@@ -17,6 +18,8 @@ export interface DataConnectorConfig {
      * Interface used when no interface name specified for an endpoint
      */
     defaultInterface:string;
+
+    language?: string | Observable<string>;
 
     /**
      * Delay before action retry

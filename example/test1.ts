@@ -6,6 +6,7 @@ import {InterfaceError} from "../src/data-interfaces/interface-error.class";
 
 let connector:DataConnector = new DataConnector({
     defaultInterface: "localstorage",
+    language: "fr",
     declarations: {
         http2: "http"
     },
@@ -13,42 +14,21 @@ let connector:DataConnector = new DataConnector({
         localstorage: {
             prefix: "test"
         },
-        drupal8: {
-            apiUrl: "https://preprod.lms.api.tralalere.com/api/",
-            headers: {
-                "Content-type": "application/json"
-            },
-            clientId: "f7d33bbc-d79a-48ac-8473-e7b833561466",
-            clientSecret: "tralalere",
-            scope: "administrator angular"
+        http: {
+            apiUrl: "https://savanturiers.api.tralalere.com/"
         }
     },
     map: {
-        "endpoint": "localstorage"
+        "endpoint": "localstorage",
+        "users": {
+            type: "http",
+            useLanguage: true
+        }
     }
 });
 
-/*connector.authenticated("http").subscribe((user:DataEntity) => {
-    console.log("Utilisateur courant", user);
-
-    connector.loadEntities("projets", [25, 250]).subscribe((entities:DataEntity[]) => {
-
-    }, (err:any) => {
-        console.log(err);
-    });
-
-}, () => {
-        console.log("pas connecté");
-});*/
-
-connector.authenticate("drupal8", "christophe", "tralalere2018").subscribe((data:DataEntity) => {
-    console.log("c'est bon", data);
-
-    connector.loadCollection("projets").subscribe((coll: DataCollection) => {
+connector.authenticate("http", "christophe", "tralalere2017").subscribe((user: DataEntity) =>  {
+    connector.loadCollection("users").subscribe((coll: DataCollection) => {
         console.log(coll);
-    })
-}, (error: InterfaceError) => {
-    console.log(error);
+    });
 });
-
-//connector.authenticate("http", "christophe", "tralalere2017");

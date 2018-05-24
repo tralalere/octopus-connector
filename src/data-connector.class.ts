@@ -42,6 +42,11 @@ export class DataConnector {
     private collectionsLiveStore:{[key:string]:CollectionStore} = {};
 
     /**
+     *
+     */
+    currentLanguage: string;
+
+    /**
      * Built-in external interfaces
      * @type {{}}
      */
@@ -67,7 +72,7 @@ export class DataConnector {
      * @param {DataConnectorConfig} configuration Data connector configuration
      */
     constructor(
-        private configuration:DataConnectorConfig
+        public configuration:DataConnectorConfig
     ) {
         if (this.configuration.declarations) {
             for (let declarationKey in this.configuration.declarations) {
@@ -85,14 +90,42 @@ export class DataConnector {
 
         this.retryTimeout = this.configuration.retryTimeout || 2000;
         this.maxRetry = this.configuration.maxRetry || 1000;
+
+        if (typeof this.configuration.language === "string") {
+            this.currentLanguage = this.configuration.language;
+        } else if (this.configuration.language instanceof Observable) {
+            this.configuration.language.subscribe((language: string) => {
+                this.currentLanguage = language;
+            });
+        }
     }
 
+    /**
+     *
+     * @param {string} type
+     * @returns {number}
+     */
     getRetryTimeout(type:string):number {
         return this.retryTimeout;
     }
 
+    /**
+     *
+     * @param {string} type
+     * @returns {number}
+     */
     getMaxRetry(type:string):number {
         return this.retryTimeout;
+    }
+
+    /**
+     *
+     * @param {string} language
+     */
+    setLanguage(language: string) {
+        if (typeof this.configuration.language === "string" || !this.configuration.language) {
+            this.currentLanguage = language;
+        }
     }
 
     /**
@@ -117,7 +150,7 @@ export class DataConnector {
      * @param {string} type Endpoint name
      * @returns {string | EndpointConfig} Type of the endpoint, or endpoint configuration object
      */
-    private getEndpointConfiguration(type:string):string|EndpointConfig {
+    getEndpointConfiguration(type:string):string|EndpointConfig {
         return this.configuration.map[type];
     }
 
@@ -144,6 +177,32 @@ export class DataConnector {
 
         if (conf && typeof conf === "object") {
             return conf.nesting || null;
+        }
+    }
+
+    /**
+     *
+     * @param {string} type
+     * @returns {{[p: string]: any}}
+     */
+    private getDatas(type: string): {[key: string]: any} {
+        let conf:string | EndpointConfig = this.getEndpointConfiguration(type);
+
+        if (conf && typeof conf === "object") {
+            return conf.datas || null;
+        }
+    }
+
+    /**
+     *
+     * @param {string} type
+     * @returns {{[p: string]: string}}
+     */
+    private getEmbeddings(type: string): {[key: string]: string} {
+        let conf: string | EndpointConfig = this.getEndpointConfiguration(type);
+
+        if (conf && typeof conf === "object") {
+            return conf.embeddings || null;
         }
     }
 
@@ -436,7 +495,7 @@ export class DataConnector {
                             }
 
                             // hasNesting ?
-                            let nested:{[key:string]:string} = this.getNesting(type);
+                            //let nested:{[key:string]:string} = this.getNesting(type);
 
                             this.registerEntity(type, id, new DataEntity(type, entity, this, id), entitySubject);
                         }
@@ -452,7 +511,7 @@ export class DataConnector {
                         let newEntity:DataEntity = new DataEntity(type, entityData, this, id);
 
                         // hasNesting ?
-                        let nested:{[key:string]:string} = this.getNesting(type);
+                        /*let nested:{[key:string]:string} = this.getNesting(type);
 
                         if (nested) {
                             let nestedKeys:string[] = Object.keys(nested);
@@ -472,7 +531,7 @@ export class DataConnector {
                                     });
                                 }
                             });
-                        }
+                        }*/
 
                         this.registerEntity(type, id, newEntity, entitySubject);
                     }

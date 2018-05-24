@@ -1,4 +1,5 @@
 import {ModelSchema} from "octopus-model";
+import {HttpEndpointConfiguration} from "./data-interfaces/http/http-endpoint-configuration.interface";
 
 /**
  * Individual endpoint config
@@ -21,6 +22,11 @@ export interface EndpointConfig {
     cached?:boolean;
 
     /**
+     *
+     */
+    useLanguage?: boolean;
+
+    /**
      * List of data attributes keys excluded in save and create actions, used in some services
      */
     exclusions?:string[];
@@ -29,4 +35,14 @@ export interface EndpointConfig {
      * List of nested attributes: key is attributeName, value is endpoint name
      */
     nesting?:{[key:string]:string};
+
+    /**
+     *
+     */
+    embeddings?: {[key: string]: string};
+
+    /**
+     * Optional data
+     */
+    datas?: HttpEndpointConfiguration;
 }

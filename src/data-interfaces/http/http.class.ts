@@ -5,6 +5,7 @@ import {BehaviorSubject, Observable, ReplaySubject} from "rxjs/Rx";
 import {CollectionDataSet, EntityDataSet} from "../../types";
 import {DataEntity} from "../../data-structures/data-entity.class";
 import {InterfaceError} from "../interface-error.class";
+import {EndpointConfig} from "../../endpoint-config.interface";
 
 /**
  * Http external interface
@@ -94,6 +95,26 @@ export class Http extends ExternalInterface {
         }
     }
 
+    private apiUrl(endpointName: string): string {
+
+        let endPointConf: string | EndpointConfig = this.connector.getEndpointConfiguration(endpointName);
+
+        let useLanguage: boolean = false;
+
+        if (endPointConf && typeof endPointConf === "object") {
+            useLanguage = endPointConf.useLanguage;
+        }
+
+        if (typeof this.configuration.apiUrl === "string") {
+
+            if (!useLanguage) {
+                return this.configuration.apiUrl + "api/";
+            } else {
+                return this.configuration.apiUrl + this.connector.currentLanguage + "/api/";
+            }
+        }
+    }
+
     /**
      * Load entity in http service
      * @param {string} type Endpoint name
@@ -103,7 +124,7 @@ export class Http extends ExternalInterface {
      */
     loadEntity(type:string, id:number, errorHandler:Function = null):Observable<EntityDataSet> {
         let request:XMLHttpRequest = new XMLHttpRequest();
-        let url:string = `${<string>this.configuration.apiUrl}${type}/${id}`;
+        let url:string = `${this.apiUrl(type)}${type}/${id}`;
         request.open("GET", url, true);
 
         let subject:ReplaySubject<EntityDataSet> = new ReplaySubject<EntityDataSet>(1);
@@ -135,7 +156,7 @@ export class Http extends ExternalInterface {
     loadCollection(type:string, filter:{[key:string]:any} = {}, errorHandler:Function = null):Observable<CollectionDataSet> {
         let request:XMLHttpRequest = new XMLHttpRequest();
 
-        let url:string = `${<string>this.configuration.apiUrl}${type}`;
+        let url:string = `${this.apiUrl(type)}${type}`;
 
         let filterKeys:string[] = Object.keys(filter);
 
@@ -183,7 +204,7 @@ export class Http extends ExternalInterface {
      */
     saveEntity(entity:EntityDataSet, type:string, id:number, errorHandler:Function = null):Observable<EntityDataSet> {
         let request:XMLHttpRequest = new XMLHttpRequest();
-        let url:string = `${<string>this.configuration.apiUrl}${type}/${id}`;
+        let url:string = `${this.apiUrl(type)}${type}/${id}`;
         request.open("PATCH", url, true);
 
         this.addHeaders(request);
@@ -214,7 +235,7 @@ export class Http extends ExternalInterface {
      */
     createEntity(type:string, data:EntityDataSet, errorHandler:Function = null):Observable<EntityDataSet> {
         let request:XMLHttpRequest = new XMLHttpRequest();
-        let url:string = `${<string>this.configuration.apiUrl}${type}`;
+        let url:string = `${this.apiUrl(type)}${type}`;
         request.open("POST", url, true);
 
         this.addHeaders(request);
@@ -245,7 +266,7 @@ export class Http extends ExternalInterface {
      */
     deleteEntity(type:string, id:number, errorHandler:Function = null):Observable<boolean> {
         let request:XMLHttpRequest = new XMLHttpRequest();
-        let url:string = `${<string>this.configuration.apiUrl}${type}/${id}`;
+        let url:string = `${this.apiUrl(type)}${type}/${id}`;
         request.open("DELETE", url,true);
 
         this.addHeaders(request);
@@ -279,7 +300,7 @@ export class Http extends ExternalInterface {
 
         let request:XMLHttpRequest = new XMLHttpRequest();
 
-        let url:string = `${<string>this.configuration.apiUrl}login-token`;
+        let url:string = `${<string>this.configuration.apiUrl}api/login-token`;
         request.open("GET", url,true);
 
         request.setRequestHeader("Authorization", 'Basic ' + btoa(login.trim() + ':' + password));
@@ -376,7 +397,7 @@ export class Http extends ExternalInterface {
 
         let request:XMLHttpRequest = new XMLHttpRequest();
 
-        let url:string = `${<string>this.configuration.apiUrl}refresh-token/${refreshToken}`;
+        let url:string = `${<string>this.configuration.apiUrl}api/refresh-token/${refreshToken}`;
         request.open("GET", url,true);
 
         request.onreadystatechange = () => {
@@ -420,7 +441,7 @@ export class Http extends ExternalInterface {
 
         let request:XMLHttpRequest = new XMLHttpRequest();
 
-        let url:string = `${<string>this.configuration.apiUrl}users/me`;
+        let url:string = `${<string>this.configuration.apiUrl}api/users/me`;
         request.open("GET", url,true);
         this.addHeaders(request);
 

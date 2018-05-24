@@ -22,7 +22,7 @@ export interface HttpConfiguration {
     /**
      * Base url of the api
      */
-    apiUrl:string|Function;
+    apiUrl: string | Function;
 
     /**
      * List of header which will be sent with the requests

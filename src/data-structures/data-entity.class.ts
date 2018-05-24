@@ -22,6 +22,9 @@ export class DataEntity {
      */
     nesting:{[key:string]:any} = {};
 
+
+    embeddings: {[key: string]: DataEntity[]} = {};
+
     relationship: {[key: string]: DataEntity} = {};
 
     /**
