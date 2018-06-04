@@ -17,6 +17,7 @@ import {EndpointConfig} from "./endpoint-config.interface";
 import {ModelSchema} from "octopus-model";
 import {InterfaceError} from "./data-interfaces/interface-error.class";
 import {Drupal8} from "./data-interfaces/drupal8/drupal8.class";
+import {BehaviorSubject} from 'rxjs/BehaviorSubject';
 
 /**
  * Data connector class
@@ -57,6 +58,9 @@ export class DataConnector {
         drupal8: Drupal8
     };
 
+
+    globalMessageSubject: ReplaySubject<string> = new ReplaySubject<string>(1);
+
     /**
      * Delay before action retry
      */
@@ -89,7 +93,7 @@ export class DataConnector {
         }
 
         this.retryTimeout = this.configuration.retryTimeout || 2000;
-        this.maxRetry = this.configuration.maxRetry || 1000;
+        this.maxRetry = this.configuration.maxRetry || 5;
 
         if (typeof this.configuration.language === "string") {
             this.currentLanguage = this.configuration.language;
@@ -97,6 +101,19 @@ export class DataConnector {
             this.configuration.language.subscribe((language: string) => {
                 this.currentLanguage = language;
             });
+        }
+    }
+
+    private sendMessage(errorCode: number) {
+        console.log(errorCode);
+        switch (errorCode) {
+            case -1:
+                this.globalMessageSubject.next("has_response");
+                break;
+
+            case 0:
+                this.globalMessageSubject.next("waiting_for_response");
+                break;
         }
     }
 
@@ -126,6 +143,16 @@ export class DataConnector {
         if (typeof this.configuration.language === "string" || !this.configuration.language) {
             this.currentLanguage = language;
         }
+    }
+
+
+    /**
+     *
+     * @param {number} code
+     */
+    globalCallback(code: number) {
+        let callbackId: string = "";
+        this.configuration.globalCallback(callbackId);
     }
 
     /**
@@ -417,10 +444,12 @@ export class DataConnector {
         let subject:ReplaySubject<DataEntity> = new ReplaySubject<DataEntity>(1);
 
         let errorHandler: Function = (error:InterfaceError) => {
+            this.sendMessage(error.code);
             subject.error(error);
         };
 
         selectedInterface.authenticate(login, password, errorHandler).map((data:EntityDataSet) => {
+            this.sendMessage(-1);
             return new DataEntity("users", data, this, data.id);
         }).subscribe((entity:DataEntity) => {
             subject.next(entity);
@@ -488,6 +517,9 @@ export class DataConnector {
             let embeddings: {[key: string]: string} = this.getEmbeddings(type);
 
             let checkResponse:Function = () => {
+
+                this.sendMessage(-1);
+
                 if (entityData instanceof Observable) {
                     entityData.subscribe((entity:EntityDataSet) => {
 
@@ -545,6 +577,8 @@ export class DataConnector {
                 let msg:string = `Error loading entity of type '${type}' with id ${id}. Error ${error.code}`;
                 console.warn(msg);
                 error.message = msg;
+
+                this.sendMessage(error.code);
 
                 if (error.code > 0) {
                     entitySubject.error(error);
@@ -620,6 +654,9 @@ export class DataConnector {
             let collection:CollectionDataSet|Observable<CollectionDataSet>;
 
             let checkResponse:Function = () => {
+
+                this.sendMessage(-1);
+
                 if (collection instanceof Observable) {
 
                     // attention, dans le cas de nodeJs, on ne doit pas faire de take(1)
@@ -635,6 +672,8 @@ export class DataConnector {
                 let msg:string = `Error loading collection of type '${type}'`;
                 console.warn(msg);
                 error.message = msg;
+
+                this.sendMessage(error.code);
 
                 if (error.code > 0) {
                     collectionSubject.error(error);
@@ -700,6 +739,9 @@ export class DataConnector {
         let embeddings: {[key: string]: string} = this.getEmbeddings(entity.type);
 
         let checkResponse:Function = () => {
+
+            this.sendMessage(-1);
+
             if (entityData instanceof Observable) {
                 entityData.subscribe((saveEntity:EntityDataSet) => {
 
@@ -724,6 +766,8 @@ export class DataConnector {
             console.warn(msg);
 
             error.message = msg;
+
+            this.sendMessage(error.code);
 
             if (error.code > 0) {
                 entitySubject.error(error);
@@ -787,6 +831,9 @@ export class DataConnector {
         let entity:EntityDataSet|Observable<EntityDataSet>;
 
         let checkResponse:Function = () => {
+
+            this.sendMessage(-1);
+
             if (entity instanceof Observable) {
                 entity.subscribe((createdEntity:EntityDataSet) => {
                     this.registerEntitySubject(type, createdEntity.id, entitySubject);
@@ -803,6 +850,8 @@ export class DataConnector {
             console.warn(msg);
 
             error.message = msg;
+
+            this.sendMessage(error.code);
 
             if (error.code > 0) {
                 entitySubject.error(error);
@@ -865,6 +914,9 @@ export class DataConnector {
         let count:number = 0;
 
         let checkResponse:Function = () => {
+
+            this.sendMessage(-1);
+
             if (result instanceof Observable) {
                 result.subscribe((res:boolean) => {
                     this.unregisterEntity(entity);
@@ -883,6 +935,7 @@ export class DataConnector {
             console.warn(msg);
 
             error.message = msg;
+            this.sendMessage(error.code);
 
             if (error.code > 0) {
                 subject.error(error);

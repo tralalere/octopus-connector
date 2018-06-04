@@ -54,4 +54,6 @@ export interface DataConnectorConfig {
     interfaces?:{
         [key:string]:ExternalInterface
     };
+
+    globalCallback?: Function;
 }

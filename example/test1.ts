@@ -5,7 +5,7 @@ import {DataCollection} from "../src/data-structures/data-collection.class";
 import {InterfaceError} from "../src/data-interfaces/interface-error.class";
 
 let connector:DataConnector = new DataConnector({
-    defaultInterface: "localstorage",
+    defaultInterface: "http",
     language: "fr",
     declarations: {
         http2: "http"
@@ -27,8 +27,8 @@ let connector:DataConnector = new DataConnector({
     }
 });
 
-connector.authenticate("http", "christophe", "tralalere2017").subscribe((user: DataEntity) =>  {
-    connector.loadCollection("users").subscribe((coll: DataCollection) => {
+connector.authenticate("http", "christophe", "Pass").subscribe((user: DataEntity) =>  {
+    connector.loadCollection("userskk").subscribe((coll: DataCollection) => {
         console.log(coll);
-    });
+    }, err => console.log(err));
 });
