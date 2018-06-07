@@ -105,16 +105,7 @@ export class DataConnector {
     }
 
     private sendMessage(errorCode: number) {
-        console.log(errorCode);
-        switch (errorCode) {
-            case -1:
-                this.globalMessageSubject.next("has_response");
-                break;
-
-            case 0:
-                this.globalMessageSubject.next("waiting_for_response");
-                break;
-        }
+        this.globalMessageSubject.next(String(errorCode));
     }
 
     /**
