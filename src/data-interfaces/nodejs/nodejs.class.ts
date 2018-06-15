@@ -67,7 +67,7 @@ export class Nodejs extends ExternalInterface {
             console.log('Connection Failed');
         });
 
-        this.socket.on('connect_error', () => {
+        this.socket.on('connect_error', (e) => {
             console.log('Connection Error');
         });
 
@@ -91,6 +91,10 @@ export class Nodejs extends ExternalInterface {
 
             let cid:number = data[0]["cid"];
 
+            if (data[0]["id"] && data[0]["data"]) {
+                data[0]["data"]["id"] = data[0]["id"];
+            }
+
             if (cid) {
                 let tmp: ReplaySubject<EntityDataSet> = this.temporaryStore[cid];
 
@@ -101,7 +105,7 @@ export class Nodejs extends ExternalInterface {
                 } else {
                     if (data[0]['command'] === "put") {
                         console.log("!!PUT", data[0]);
-                        this.connector.registerEntityByData(data[0]["type"], data[0]["data"]["id"] , data[0]['data']);
+                        this.connector.registerEntityByData(data[0]["type"], data[0]["id"] || data[0]["data"]["id"] , data[0]['data']);
                     }
 
                     if (data[0]['command'] === "update") {
@@ -210,6 +214,8 @@ export class Nodejs extends ExternalInterface {
         // à voir si il y a besoin d'initialiser
         //this.initializeSocket();
 
+        console.log("ici");
+
         let hash:string = ObjectHash(filter);
         let subject:ReplaySubject<CollectionDataSet> = new ReplaySubject<CollectionDataSet>(1);
 
@@ -277,6 +283,7 @@ export class Nodejs extends ExternalInterface {
         let subject:ReplaySubject<EntityDataSet> = new ReplaySubject<EntityDataSet>(1);
 
         let cid: number = Math.floor(Math.random() * Number.MAX_SAFE_INTEGER);
+        let id: number = Math.floor(Math.random() * Number.MAX_SAFE_INTEGER);
 
         this.errorsStore[cid] = errorHandler;
 
@@ -287,7 +294,8 @@ export class Nodejs extends ExternalInterface {
                 command: "put",
                 data: data,
                 type: type,
-                cid: cid
+                cid: cid,
+                id: id
             };
 
             this.temporaryStore[cid] = subject;

@@ -81,10 +81,15 @@ export class DataCollection {
      * @param {Observable<DataEntity>} entityObservable Entity observable to register
      */
     registerEntity(entity:DataEntity, entityObservable:Observable<DataEntity>) {
+        let count = 0;
         for (let collectionEntity of this.entities) {
             if (entity.id && entity.id === collectionEntity.id) {
+                this.entities[count] = entity;
+                this.entitiesObservables[count] = entityObservable;
                 return;
             }
+
+            count++;
         }
 
         this.entities.push(entity);
