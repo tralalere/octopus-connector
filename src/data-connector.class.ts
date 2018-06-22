@@ -59,7 +59,7 @@ export class DataConnector {
     };
 
 
-    globalMessageSubject: ReplaySubject<string> = new ReplaySubject<string>(1);
+    globalMessageSubject: ReplaySubject<InterfaceError> = new ReplaySubject<InterfaceError>(1);
 
     /**
      * Delay before action retry
@@ -104,8 +104,8 @@ export class DataConnector {
         }
     }
 
-    private sendMessage(errorCode: number) {
-        this.globalMessageSubject.next(String(errorCode));
+    private sendMessage(error: InterfaceError = null) {
+        this.globalMessageSubject.next(error);
     }
 
     /**
@@ -435,12 +435,12 @@ export class DataConnector {
         let subject:ReplaySubject<DataEntity> = new ReplaySubject<DataEntity>(1);
 
         let errorHandler: Function = (error:InterfaceError) => {
-            this.sendMessage(error.code);
+            this.sendMessage(error);
             subject.error(error);
         };
 
         selectedInterface.authenticate(login, password, errorHandler).map((data:EntityDataSet) => {
-            this.sendMessage(-1);
+            this.sendMessage();
             return new DataEntity("users", data, this, data.id);
         }).subscribe((entity:DataEntity) => {
             subject.next(entity);
@@ -509,7 +509,7 @@ export class DataConnector {
 
             let checkResponse:Function = () => {
 
-                this.sendMessage(-1);
+                this.sendMessage();
 
                 if (entityData instanceof Observable) {
                     entityData.subscribe((entity:EntityDataSet) => {
@@ -569,7 +569,7 @@ export class DataConnector {
                 console.warn(msg);
                 error.message = msg;
 
-                this.sendMessage(error.code);
+                this.sendMessage(error);
 
                 if (error.code > 0) {
                     entitySubject.error(error);
@@ -646,7 +646,7 @@ export class DataConnector {
 
             let checkResponse:Function = () => {
 
-                this.sendMessage(-1);
+                this.sendMessage();
 
                 if (collection instanceof Observable) {
 
@@ -660,11 +660,11 @@ export class DataConnector {
             };
 
             let errorHandler:Function = (error:InterfaceError) => {
-                let msg:string = `Error loading collection of type '${type}'`;
+                let msg:string = `Error loading collection of type '${type}' with data ${JSON.stringify(filter)}`;
                 console.warn(msg);
                 error.message = msg;
 
-                this.sendMessage(error.code);
+                this.sendMessage(error);
 
                 if (error.code > 0) {
                     collectionSubject.error(error);
@@ -731,7 +731,7 @@ export class DataConnector {
 
         let checkResponse:Function = () => {
 
-            this.sendMessage(-1);
+            this.sendMessage();
 
             if (entityData instanceof Observable) {
                 entityData.subscribe((saveEntity:EntityDataSet) => {
@@ -758,7 +758,7 @@ export class DataConnector {
 
             error.message = msg;
 
-            this.sendMessage(error.code);
+            this.sendMessage(error);
 
             if (error.code > 0) {
                 entitySubject.error(error);
@@ -823,7 +823,7 @@ export class DataConnector {
 
         let checkResponse:Function = () => {
 
-            this.sendMessage(-1);
+            this.sendMessage();
 
             if (entity instanceof Observable) {
                 entity.subscribe((createdEntity:EntityDataSet) => {
@@ -842,7 +842,7 @@ export class DataConnector {
 
             error.message = msg;
 
-            this.sendMessage(error.code);
+            this.sendMessage(error);
 
             if (error.code > 0) {
                 entitySubject.error(error);
@@ -906,7 +906,7 @@ export class DataConnector {
 
         let checkResponse:Function = () => {
 
-            this.sendMessage(-1);
+            this.sendMessage();
 
             if (result instanceof Observable) {
                 result.subscribe((res:boolean) => {
@@ -922,11 +922,11 @@ export class DataConnector {
         let result:boolean|Observable<boolean>;
 
         let errorHandler:Function = (error:InterfaceError) => {
-            let msg:string = `Error deleting entity if type '${entity.type}' with id ${entity.id}`;
+            let msg:string = `Error deleting entity of type '${entity.type}' with id ${entity.id}`;
             console.warn(msg);
 
             error.message = msg;
-            this.sendMessage(error.code);
+            this.sendMessage(error);
 
             if (error.code > 0) {
                 subject.error(error);

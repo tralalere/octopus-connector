@@ -116,8 +116,8 @@ export abstract class ExternalInterface {
      * @param {string} originalMessage Error original text message
      * @param {Function} errorHandler Error handler Function
      */
-    sendError(code:number, originalMessage:string, errorHandler:Function) {
-        let error:InterfaceError = new InterfaceError(code, "", originalMessage);
+    sendError(code:number, originalMessage:string, errorHandler:Function, data: Object = {}) {
+        let error:InterfaceError = new InterfaceError(code, "", originalMessage, data);
         errorHandler(error);
     }
 

@@ -136,7 +136,10 @@ export class Http extends ExternalInterface {
                 if (request.status === 200) {
                     subject.next(this.extractEntity(request.responseText));
                 } else {
-                    this.sendError(request.status, request.statusText, errorHandler);
+                    this.sendError(request.status, request.statusText, errorHandler, {
+                        entityType: type,
+                        entityId: id,
+                    });
                 }
             }
         };
@@ -184,6 +187,7 @@ export class Http extends ExternalInterface {
                 if (request.status === 200) {
                     subject.next(this.extractCollection(request.responseText));
                 } else {
+                    console.log(request);
                     this.sendError(request.status, request.statusText, errorHandler);
                 }
             }
