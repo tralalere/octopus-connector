@@ -170,7 +170,6 @@ export class DataEntity {
 
         keys.forEach((key:string) => {
             if (this.attributes[key] !== undefined &&
-                this.attributesRef[key] !== undefined &&
                 this.attributesRef[key] !== this.attributes[key]) {
                 diff[key] = this.attributes[key];
             }
