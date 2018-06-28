@@ -56,7 +56,7 @@ export class DataCollection {
                     data[key] = structure.filterModel(data[key]);
                 }
 
-                this.entities.push(new DataEntity(type, data[key], connector, +key, embeddings));
+                this.entities.push(new DataEntity(type, data[key], connector, key, embeddings));
             });
         }
 

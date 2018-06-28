@@ -4,6 +4,7 @@
 import {DataConnector} from "../data-connector.class";
 import {Observable} from "rxjs/Rx";
 import {EntityDataSet} from "../types";
+import {combineLatest} from 'rxjs/observable/combineLatest';
 
 /**
  * Data entity unit object
@@ -58,7 +59,7 @@ export class DataEntity {
             if (data.hasOwnProperty(key) && key !== "id") {
                 this.attributes[key] = data[key];
 
-                if (embeddingsConf && embeddingsConf[key] !== undefined) {
+                if (embeddingsConf && embeddingsConf[key] !== undefined && this.attributes[key]) {
                     if (Array.isArray(this.attributes[key])) {
                         this.embeddings[key] = [];
 
@@ -98,11 +99,66 @@ export class DataEntity {
     }
 
     /**
+     *
+     * @returns {boolean}
+     */
+    get hasChanges(): boolean {
+
+        if (Object.keys(this.attributes).length === 0) {
+            return false;
+        }
+
+        for (let key in this.attributes) {
+            if (this.attributes[key] !== this.attributesRef[key]) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     *
+     * @param {string} name
+     * @returns {DataEntity | DataEntity[]}
+     */
+    getEmbed(name: string): DataEntity | DataEntity[] {
+        return this.embeddings[name];
+    }
+
+    /**
      * Save the entity
      * @returns {Observable<DataEntity>} The observable associated to the entity in connector stores
      */
     save():Observable<DataEntity> {
 
+        const saveArray: Observable<DataEntity>[] = [];
+
+        for (let key in this.embeddings) {
+            if (this.embeddings[key] instanceof DataEntity) {
+                if ((<DataEntity>this.embeddings[key]).hasChanges) {
+                    saveArray.push((<DataEntity>this.embeddings[key]).save());
+                }
+
+            } else if (Array.isArray(this.embeddings[key])) {
+                (<DataEntity[]>this.embeddings[key]).forEach(entity => {
+                    if ((<DataEntity>entity).hasChanges) {
+                        saveArray.push((<DataEntity>entity).save());
+                    }
+                })
+            }
+        }
+
+        if (saveArray.length === 0) {
+            return this.saveAction();
+        } else {
+            return combineLatest(...saveArray).take(1).flatMap(() => {
+                return this.saveAction();
+            });
+        }
+    }
+
+    saveAction(): Observable<DataEntity> {
         let obs:Observable<DataEntity>;
 
         if (this.id !== -1) {

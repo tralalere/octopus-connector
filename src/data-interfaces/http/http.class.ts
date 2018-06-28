@@ -494,8 +494,8 @@ export class Http extends ExternalInterface {
     protected extractEntity(responseText:string):EntityDataSet {
         let data:Object = JSON.parse(responseText);
 
-        if (data["data"][0]["id"] !== undefined) {
-            data["data"][0]["id"] = +data["data"][0]["id"];
+        if (data["data"][0] && data["data"][0]["id"] !== undefined) {
+            data["data"][0]["id"] = data["data"][0]["id"];
         }
 
         return data["data"][0];
@@ -509,11 +509,14 @@ export class Http extends ExternalInterface {
     protected extractCollection(responseText:string):CollectionDataSet {
         let data:Object = JSON.parse(responseText);
 
+        console.log("coll data", data);
+
+
         let collectionData:CollectionDataSet = {};
 
         data["data"].forEach((entityData:EntityDataSet) => {
 
-            entityData["id"] = +entityData["id"];
+            entityData["id"] = entityData["id"];
 
             collectionData[entityData["id"]] = entityData;
         });

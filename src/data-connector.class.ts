@@ -92,7 +92,7 @@ export class DataConnector {
             }
         }
 
-        this.retryTimeout = this.configuration.retryTimeout || 2000;
+        this.retryTimeout = this.configuration.retryTimeout || 50000;
         this.maxRetry = this.configuration.maxRetry || 5;
 
         if (typeof this.configuration.language === "string") {
@@ -640,6 +640,8 @@ export class DataConnector {
 
         let count:number = 0;
 
+        let embeddings: {[key: string]: string} = this.getEmbeddings(type);
+
         if (selectedInterface) {
             let collectionSubject:ReplaySubject<DataCollection> = this.getCollectionObservable(type, filter);
             let collection:CollectionDataSet|Observable<CollectionDataSet>;
@@ -652,10 +654,10 @@ export class DataConnector {
 
                     // attention, dans le cas de nodeJs, on ne doit pas faire de take(1)
                     collection.subscribe((newCollection:CollectionDataSet) => {
-                        this.registerCollection(type, filter, new DataCollection(type, newCollection, this, structure));
+                        this.registerCollection(type, filter, new DataCollection(type, newCollection, this, structure, embeddings));
                     });
                 } else {
-                    this.registerCollection(type, filter, new DataCollection(type, collection, this, structure));
+                    this.registerCollection(type, filter, new DataCollection(type, collection, this, structure, embeddings));
                 }
             };
 
@@ -821,6 +823,8 @@ export class DataConnector {
 
         let entity:EntityDataSet|Observable<EntityDataSet>;
 
+        let embeddings: {[key: string]: string} = this.getEmbeddings(type);
+
         let checkResponse:Function = () => {
 
             this.sendMessage();
@@ -828,11 +832,11 @@ export class DataConnector {
             if (entity instanceof Observable) {
                 entity.subscribe((createdEntity:EntityDataSet) => {
                     this.registerEntitySubject(type, createdEntity.id, entitySubject);
-                    this.registerEntity(type, createdEntity.id, new DataEntity(type, createdEntity, this, createdEntity.id), entitySubject);
+                    this.registerEntity(type, createdEntity.id, new DataEntity(type, createdEntity, this, createdEntity.id, embeddings), entitySubject);
                 });
             } else {
                 this.registerEntitySubject(type, entity.id, entitySubject);
-                this.registerEntity(type, entity.id, new DataEntity(type, entity, this, entity.id), entitySubject);
+                this.registerEntity(type, entity.id, new DataEntity(type, entity, this, entity.id, embeddings), entitySubject);
             }
         };
 
