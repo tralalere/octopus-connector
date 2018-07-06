@@ -498,11 +498,21 @@ export class Http extends ExternalInterface {
     protected extractEntity(responseText:string):EntityDataSet {
         let data:Object = JSON.parse(responseText);
 
+        // pas sûr que ce code serve
         if (data["data"][0] && data["data"][0]["id"] !== undefined) {
             data["data"][0]["id"] = data["data"][0]["id"];
         }
 
-        return data["data"][0];
+        if (data["data"] && data["data"]["id"] !== undefined) {
+            data["data"]["id"] = data["data"]["id"];
+        }
+
+        if (data["data"][0]) {
+            return data["data"][0];
+        } else {
+            return data["data"];
+        }
+
     }
 
     /**
