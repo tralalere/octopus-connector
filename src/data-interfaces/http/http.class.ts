@@ -97,6 +97,10 @@ export class Http extends ExternalInterface {
 
     private apiUrl(endpointName: string): string {
 
+        let useApi: boolean = !this.configuration.useApiExtension === false;
+
+        let ext: string = useApi ? "api/" : "";
+
         let endPointConf: string | EndpointConfig = this.connector.getEndpointConfiguration(endpointName);
 
         let useLanguage: boolean = false;
@@ -108,9 +112,9 @@ export class Http extends ExternalInterface {
         if (typeof this.configuration.apiUrl === "string") {
 
             if (!useLanguage) {
-                return this.configuration.apiUrl + "api/";
+                return this.configuration.apiUrl + ext;
             } else {
-                return this.configuration.apiUrl + this.connector.currentLanguage + "/api/";
+                return this.configuration.apiUrl + this.connector.currentLanguage + "/" + ext;
             }
         }
     }

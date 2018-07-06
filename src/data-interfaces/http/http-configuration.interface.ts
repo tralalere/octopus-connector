@@ -28,4 +28,9 @@ export interface HttpConfiguration {
      * List of header which will be sent with the requests
      */
     headers?:{[key:string]:string};
+
+    /**
+     *
+     */
+    useApiExtension?: boolean;
 }
