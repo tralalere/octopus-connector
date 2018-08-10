@@ -131,31 +131,7 @@ export class DataEntity {
      * @returns {Observable<DataEntity>} The observable associated to the entity in connector stores
      */
     save():Observable<DataEntity> {
-
-        const saveArray: Observable<DataEntity>[] = [];
-
-        for (let key in this.embeddings) {
-            if (this.embeddings[key] instanceof DataEntity) {
-                if ((<DataEntity>this.embeddings[key]).hasChanges) {
-                    saveArray.push((<DataEntity>this.embeddings[key]).save());
-                }
-
-            } else if (Array.isArray(this.embeddings[key])) {
-                (<DataEntity[]>this.embeddings[key]).forEach(entity => {
-                    if ((<DataEntity>entity).hasChanges) {
-                        saveArray.push((<DataEntity>entity).save());
-                    }
-                })
-            }
-        }
-
-        if (saveArray.length === 0) {
-            return this.saveAction();
-        } else {
-            return combineLatest(...saveArray).take(1).flatMap(() => {
-                return this.saveAction();
-            });
-        }
+        return this.saveAction();
     }
 
     saveAction(): Observable<DataEntity> {
