@@ -17,7 +17,7 @@ import {EndpointConfig} from "./endpoint-config.interface";
 import {ModelSchema} from "octopus-model";
 import {InterfaceError} from "./data-interfaces/interface-error.class";
 import {Drupal8} from "./data-interfaces/drupal8/drupal8.class";
-import {BehaviorSubject} from 'rxjs/BehaviorSubject';
+import {combineLatest} from "rxjs/index";
 
 /**
  * Data connector class
@@ -616,7 +616,7 @@ export class DataConnector {
            observables.push(this.loadEntity(type, id));
         });
 
-        return Observable.combineLatest(...observables);
+        return combineLatest(...observables);
     }
 
     /**

@@ -1,11 +1,10 @@
 import {ExternalInterface} from "../abstract-external-interface.class";
 import {DataConnector} from "../../data-connector.class";
-import {HeaderObject, HttpConfiguration} from "./http-configuration.interface";
+import {HttpConfiguration} from "./http-configuration.interface";
 import {BehaviorSubject, Observable, ReplaySubject} from "rxjs/Rx";
 import {CollectionDataSet, EntityDataSet} from "../../types";
-import {DataEntity} from "../../data-structures/data-entity.class";
-import {InterfaceError} from "../interface-error.class";
 import {EndpointConfig} from "../../endpoint-config.interface";
+import {combineLatest} from "rxjs/index";
 
 /**
  * Http external interface
@@ -337,7 +336,7 @@ export class Http extends ExternalInterface {
                     this.sendError(request.status, request.statusText, errorHandler);
                 }
 
-                Observable.combineLatest(...observables).map((values:any[]) => {
+                combineLatest(...observables).map((values:any[]) => {
                     return values[0];
                 }).subscribe((data:EntityDataSet) => {
                     subject.next(data);
