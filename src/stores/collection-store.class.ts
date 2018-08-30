@@ -153,15 +153,27 @@ export class CollectionStore {
      * @param {FilterData} filter2
      * @returns {boolean}
      */
-    filterMatching(filter1:FilterData, filter2:FilterData):boolean {
+    filterMatching(filter1:FilterData = {}, filter2:FilterData = {}):boolean {
 
-        let filter1Keys:string[] = Object.keys(filter1);
+        // must have the same keys
+        const filter1Keys: string[] = Object.keys(filter1);
+        const filter2Keys: string[] = Object.keys(filter2);
 
-        filter1Keys.forEach((key:string) => {
+        if (filter1Keys.length !== filter2Keys.length) {
+            return false;
+        }
+
+        for (let key of filter1Keys) {
+            if (filter2Keys.indexOf(key) === -1) {
+                return false;
+            }
+        }
+
+        for (let key of filter1Keys) {
             if (filter2[key] === undefined || filter1[key] !== filter2[key]) {
                 return false;
             }
-        });
+        }
 
         return true;
     }

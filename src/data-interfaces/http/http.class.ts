@@ -4,7 +4,7 @@ import {HttpConfiguration} from "./http-configuration.interface";
 import {BehaviorSubject, Observable, ReplaySubject} from "rxjs/Rx";
 import {CollectionDataSet, EntityDataSet} from "../../types";
 import {EndpointConfig} from "../../endpoint-config.interface";
-import {combineLatest} from "rxjs/index";
+import {combineLatest} from 'rxjs/observable/combineLatest';
 
 /**
  * Http external interface

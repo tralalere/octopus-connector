@@ -17,7 +17,8 @@ import {EndpointConfig} from "./endpoint-config.interface";
 import {ModelSchema} from "octopus-model";
 import {InterfaceError} from "./data-interfaces/interface-error.class";
 import {Drupal8} from "./data-interfaces/drupal8/drupal8.class";
-import {combineLatest} from "rxjs/index";
+import {combineLatest} from 'rxjs/observable/combineLatest';
+
 
 /**
  * Data connector class
