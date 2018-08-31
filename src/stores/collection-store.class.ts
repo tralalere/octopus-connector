@@ -170,7 +170,7 @@ export class CollectionStore {
         }
 
         for (let key of filter1Keys) {
-            if (filter2[key] === undefined || filter1[key] !== filter2[key]) {
+            if (filter1[key] !== filter2[key]) {
                 return false;
             }
         }
