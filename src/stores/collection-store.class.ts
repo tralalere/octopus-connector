@@ -20,13 +20,13 @@ export class CollectionStore {
      * Filters indexed by their hash
      * @type {{}}
      */
-    private filters:FilterData = {};
+    public filters:FilterData = {};
 
     /**
      * Stored collections, indexed by filter hash
      * @type {{}}
      */
-    private collections:{[key:string]:DataCollection} = {};
+    public collections:{[key:string]:DataCollection} = {};
 
     /**
      * Creates the store

@@ -45,4 +45,9 @@ export interface EndpointConfig {
      * Optional data
      */
     datas?: HttpEndpointConfiguration;
+
+    /**
+     * Is automatic refresh enabled
+     */
+    refreshEnabled?: boolean;
 }

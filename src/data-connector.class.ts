@@ -697,6 +697,42 @@ export class DataConnector {
         return null;
     }
 
+    sendReloadNotification(type: string, data: Object = null) {
+
+        let conf: string | EndpointConfig = this.getEndpointConfiguration(type);
+
+        // il faut supprimer les embeddings de l'objet, pour le pas surcharger le service nodejs
+
+        if (conf && typeof conf === "object") {
+            if (conf.refreshEnabled) {
+
+                let dataToSend = {};
+
+                const embeddings: Object = this.getEmbeddings(type);
+
+                for (let key in data) {
+                    if (!embeddings || embeddings[key] === undefined) {
+                        dataToSend[key] = data[key];
+                    }
+                }
+
+                console.log("REFRESH NOTIFICATION SENDING", data, embeddings, dataToSend);
+
+                let refreshData: Object = {
+                    myType: type
+                };
+
+                if (data) {
+                    refreshData["data"] = dataToSend;
+                }
+
+                this.createEntity(this.configuration.liveRefreshService, {
+                    myType: type
+                }, false);
+            }
+        }
+    }
+
     /**
      * Save entity
      * @param {DataEntity} entity Entity to save
@@ -744,6 +780,7 @@ export class DataConnector {
                     }
 
                     this.registerEntity(entity.type, entity.id, new DataEntity(entity.type, saveEntity, this, entity.id, embeddings), entitySubject);
+                    this.sendReloadNotification(entity.type, saveEntity);
                 });
             } else {
 
@@ -752,7 +789,10 @@ export class DataConnector {
                 }
 
                 this.registerEntity(entity.type, entity.id, new DataEntity(entity.type, entityData, this, entity.id, embeddings), entitySubject);
+                this.sendReloadNotification(entity.type, entityData);
             }
+
+
         };
 
         let errorHandler:Function = (error:InterfaceError) => {
@@ -802,7 +842,7 @@ export class DataConnector {
      * @param {EntityDataSet} data Data used to create the entity
      * @returns {Observable<DataEntity>} The observable associated to this entity
      */
-    createEntity(type:string, data:{[key:string]:any} = {}):Observable<DataEntity> {
+    createEntity(type:string, data:{[key:string]:any} = {}, sendNotification: boolean = true):Observable<DataEntity> {
         let selectedInterface:ExternalInterface = this.getInterface(type);
 
         let structure:ModelSchema = this.getEndpointStructureModel(type);
@@ -834,11 +874,22 @@ export class DataConnector {
                 entity.subscribe((createdEntity:EntityDataSet) => {
                     this.registerEntitySubject(type, createdEntity.id, entitySubject);
                     this.registerEntity(type, createdEntity.id, new DataEntity(type, createdEntity, this, createdEntity.id, embeddings), entitySubject);
+
+                    if (sendNotification) {
+                        this.sendReloadNotification(type, createdEntity);
+                    }
                 });
             } else {
                 this.registerEntitySubject(type, entity.id, entitySubject);
                 this.registerEntity(type, entity.id, new DataEntity(type, entity, this, entity.id, embeddings), entitySubject);
+
+                if (sendNotification) {
+                    this.sendReloadNotification(type, entity);
+                }
             }
+
+
+
         };
 
         let errorHandler:Function = (error:InterfaceError) => {
@@ -917,11 +968,15 @@ export class DataConnector {
                 result.subscribe((res:boolean) => {
                     this.unregisterEntity(entity);
                     subject.next(res);
+                    this.sendReloadNotification(entity.type, entity.attributes);
                 });
             } else {
                 this.unregisterEntity(entity);
                 subject.next(result);
+                this.sendReloadNotification(entity.type, entity.attributes);
             }
+
+
         };
 
         let result:boolean|Observable<boolean>;
@@ -1000,10 +1055,53 @@ export class DataConnector {
      * @param {FilterData} filter Collection filter object
      */
     refreshCollection(type:string, filter:FilterData) {
-        let selectedInterface:ExternalInterface = this.getInterface(type);
+        // let selectedInterface:ExternalInterface = this.getInterface(type);
 
         if (this.collectionsLiveStore[type] && this.collectionsLiveStore[type].isInStore(filter)) {
             this.loadCollection(type, filter);
+        }
+    }
+
+    private objectMatchFilter(object: Object, filter: FilterData): boolean {
+        let filterKeys:string[] = Object.keys(filter);
+
+        for (let key of filterKeys) {
+            if (object[key] !== undefined && filter[key] !== object[key]) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    refreshCollectionWithData(type: string, data: Object) {
+        const store: CollectionStore = this.collectionsLiveStore[type];
+        let conf: string | EndpointConfig = this.getEndpointConfiguration(type);
+
+        if (conf && typeof conf === "object") {
+            if (conf.refreshEnabled) {
+                for (let key in store.collections) {
+                    const filter: FilterData = store.filters[key];
+
+                    if (this.objectMatchFilter(data, filter)) {
+                        this.loadCollection(type, filter);
+                    }
+                }
+            }
+        }
+    }
+
+    refreshAllCollectionsOfType(type: string) {
+        const store: CollectionStore = this.collectionsLiveStore[type];
+        let conf: string | EndpointConfig = this.getEndpointConfiguration(type);
+
+        if (conf && typeof conf === "object") {
+            if (conf.refreshEnabled) {
+                for (let key in store.collections) {
+                    const filter: FilterData = store.filters[key];
+                    this.loadCollection(type, filter);
+                }
+            }
         }
     }
 }

@@ -106,6 +106,10 @@ export class Nodejs extends ExternalInterface {
                     if (data[0]['command'] === "put") {
                         console.log("!!PUT", data[0]);
                         this.connector.registerEntityByData(data[0]["type"], data[0]["id"] || data[0]["data"]["id"] , data[0]['data']);
+
+                        if (data[0]["type"] === this.connector.configuration.liveRefreshService) {
+                            this.connector.refreshCollectionWithData(data[0]["data"]["myType"], data["0"]["data"]);
+                        }
                     }
 
                     if (data[0]['command'] === "update") {

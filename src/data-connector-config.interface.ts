@@ -56,4 +56,6 @@ export interface DataConnectorConfig {
     };
 
     globalCallback?: Function;
+
+    liveRefreshService?: string;
 }
