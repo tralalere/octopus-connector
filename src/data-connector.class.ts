@@ -1078,7 +1078,7 @@ export class DataConnector {
         const store: CollectionStore = this.collectionsLiveStore[type];
         let conf: string | EndpointConfig = this.getEndpointConfiguration(type);
 
-        if (conf && typeof conf === "object") {
+        if (conf && typeof conf === "object" && store) {
             if (conf.refreshEnabled) {
                 for (let key in store.collections) {
                     const filter: FilterData = store.filters[key];
@@ -1095,7 +1095,7 @@ export class DataConnector {
         const store: CollectionStore = this.collectionsLiveStore[type];
         let conf: string | EndpointConfig = this.getEndpointConfiguration(type);
 
-        if (conf && typeof conf === "object") {
+        if (conf && typeof conf === "object" && store) {
             if (conf.refreshEnabled) {
                 for (let key in store.collections) {
                     const filter: FilterData = store.filters[key];
