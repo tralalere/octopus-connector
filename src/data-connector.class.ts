@@ -738,7 +738,7 @@ export class DataConnector {
      * @param {DataEntity} entity Entity to save
      * @returns {Observable<DataEntity>} Observable associated to the entity
      */
-    saveEntity(entity:DataEntity):Observable<DataEntity> {
+    saveEntity(entity:DataEntity, dispatchBeforeResponse: boolean = false):Observable<DataEntity> {
 
         let selectedInterface:ExternalInterface = this.getInterface(entity.type);
         let structure:ModelSchema = this.getEndpointStructureModel(entity.type);
@@ -767,6 +767,10 @@ export class DataConnector {
         let entityData:EntityDataSet|Observable<EntityDataSet>;
 
         let embeddings: {[key: string]: string} = this.getEmbeddings(entity.type);
+
+        if (dispatchBeforeResponse) {
+            this.registerEntity(entity.type, entity.id, entity, entitySubject);
+        }
 
         let checkResponse:Function = () => {
 

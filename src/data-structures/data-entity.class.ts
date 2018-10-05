@@ -130,15 +130,15 @@ export class DataEntity {
      * Save the entity
      * @returns {Observable<DataEntity>} The observable associated to the entity in connector stores
      */
-    save():Observable<DataEntity> {
-        return this.saveAction();
+    save(dispatchBeforeResponse: boolean = false):Observable<DataEntity> {
+        return this.saveAction(dispatchBeforeResponse);
     }
 
-    saveAction(): Observable<DataEntity> {
+    saveAction(dispatchBeforeResponse: boolean = false): Observable<DataEntity> {
         let obs:Observable<DataEntity>;
 
         if (this.id !== -1) {
-            obs = this.connector.saveEntity(this);
+            obs = this.connector.saveEntity(this, dispatchBeforeResponse);
         } else {
             // temporary entity deletion
             this.remove();
