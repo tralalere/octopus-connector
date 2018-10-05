@@ -1019,8 +1019,13 @@ export class DataConnector {
      * @param {DataEntity} entity Entity to delete
      */
     unregisterEntity(entity:DataEntity) {
-        this.collectionsLiveStore[entity.type].deleteEntityFromCollection(entity);
-        this.entitiesLiveStore[entity.type].unregisterEntity(entity);
+        if (this.collectionsLiveStore[entity.type]) {
+            this.collectionsLiveStore[entity.type].deleteEntityFromCollection(entity);
+        }
+
+        if (this.entitiesLiveStore[entity.type]) {
+            this.entitiesLiveStore[entity.type].unregisterEntity(entity);
+        }
     }
 
 
