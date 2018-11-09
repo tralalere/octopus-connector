@@ -489,6 +489,7 @@ export class DataConnector {
      */
     logout(serviceName:string):Observable<boolean> {
         let selectedInterface:ExternalInterface = this.interfaces[serviceName];
+        this.clear();
         return selectedInterface.logout();
     }
 
