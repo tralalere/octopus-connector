@@ -5,6 +5,7 @@ import {BehaviorSubject, Observable, ReplaySubject} from "rxjs/Rx";
 import {CollectionDataSet, EntityDataSet} from "../../types";
 import {EndpointConfig} from "../../endpoint-config.interface";
 import {combineLatest} from 'rxjs/observable/combineLatest';
+import {CollectionOptionsInterface} from "../../collection-options.interface";
 
 /**
  * Http external interface
@@ -143,6 +144,85 @@ export class Http extends ExternalInterface {
                         entityType: type,
                         entityId: id,
                     });
+                }
+            }
+        };
+
+        request.send();
+
+        return subject;
+    }
+
+
+    paginatedLoadCollection(type: string, options: CollectionOptionsInterface, errorHandler: Function = null): Observable<CollectionDataSet> {
+        let request:XMLHttpRequest = new XMLHttpRequest();
+        let url:string = `${this.apiUrl(type)}${type}`;
+
+        let filtersLength: number = options.filter ? Object.keys(options.filter).length : 0;
+
+        if (filtersLength > 0 || options.offset || options.range || options.page) {
+            url += '?';
+        }
+
+        let started = false;
+
+        if (filtersLength > 0) {
+            started = true;
+
+            let keys: string[] = Object.keys(options.filter);
+
+            keys.forEach((key: string, index: number) => {
+                let val: any = options.filter[key];
+
+                url += `filter[${key}]=${val}`;
+
+                if (index < keys.length - 1) {
+                    url += "&";
+                }
+            });
+        }
+
+        if (options.page) {
+            if (started) {
+                url += '&';
+            } else {
+                started = true;
+            }
+
+            url += 'page=' + options.page;
+        }
+
+        if (options.range) {
+            if (started) {
+                url += '&';
+            } else {
+                started = true;
+            }
+
+            url += 'range=' + options.range;
+        }
+
+        if (options.offset) {
+            if (started) {
+                url += '&';
+            }
+
+            url += 'offset=' + options.offset;
+        }
+
+        request.open("GET", url, true);
+
+        this.addHeaders(request);
+
+        let subject:ReplaySubject<CollectionDataSet> = new ReplaySubject<CollectionDataSet>(1);
+
+        request.onreadystatechange = () => {
+            if (request.readyState === XMLHttpRequest.DONE) {
+                if (request.status === 200) {
+                    subject.next(this.extractCollection(request.responseText));
+                } else {
+                    console.log(request);
+                    this.sendError(request.status, request.statusText, errorHandler);
                 }
             }
         };

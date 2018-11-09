@@ -7,6 +7,7 @@ import {DataCollection} from "../data-structures/data-collection.class";
 import {BehaviorSubject} from "rxjs/BehaviorSubject";
 import {CollectionDataSet, EntityDataSet, FilterData} from "../types";
 import {InterfaceError} from "./interface-error.class";
+import {CollectionOptionsInterface} from "../collection-options.interface";
 
 /**
  * Base external interface
@@ -46,6 +47,18 @@ export abstract class ExternalInterface {
      */
     loadCollection(type:string, filter:FilterData, errorHandler:Function = null):CollectionDataSet|Observable<CollectionDataSet> {
         console.warn("LoadCollection not implemented in interface");
+        return null;
+    }
+
+
+    /**
+     *
+     * @param {string} type
+     * @param {CollectionOptionsInterface} options
+     * @returns {CollectionDataSet | Observable<CollectionDataSet>}
+     */
+    paginatedLoadCollection(type: string, options: CollectionOptionsInterface, errorHandler: Function = null): CollectionDataSet | Observable<CollectionDataSet> {
+        console.warn("PaginatedLoadCollection not implemented in interface");
         return null;
     }
 

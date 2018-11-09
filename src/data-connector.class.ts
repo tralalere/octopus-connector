@@ -18,6 +18,9 @@ import {ModelSchema} from "octopus-model";
 import {InterfaceError} from "./data-interfaces/interface-error.class";
 import {Drupal8} from "./data-interfaces/drupal8/drupal8.class";
 import {combineLatest} from 'rxjs/observable/combineLatest';
+import {CollectionOptionsInterface} from "./collection-options.interface";
+import {PaginatedCollection} from "./paginated-collection.interface";
+import {CollectionPaginator} from "./collection-paginator.class";
 
 
 /**
@@ -424,6 +427,24 @@ export class DataConnector {
         return obs;
     }
 
+
+    private paginatedRegisterCollection(type:string, filter:FilterData, collection:DataCollection, refresh:boolean = true): Observable<DataCollection> {
+        if (!this.collectionsLiveStore[type]) {
+            this.collectionsLiveStore[type] = new CollectionStore();
+        }
+
+        collection.entitiesObservables = this.registerCollectionEntities(type, collection);
+
+        let obs:Observable<DataCollection> = this.collectionsLiveStore[type].registerCollection(collection, filter);
+
+        // refresh de la collection
+        if (refresh) {
+            this.collectionsLiveStore[type].refreshCollections(filter);
+        }
+
+        return obs;
+    }
+
     /**
      * Authenticate to the service
      * @param {string} serviceName Name of service on which we authenticate
@@ -620,6 +641,105 @@ export class DataConnector {
         return combineLatest(...observables);
     }
 
+
+    paginatedLoadCollection(type: string, options: CollectionOptionsInterface): PaginatedCollection {
+        let paginator: CollectionPaginator = new CollectionPaginator(this, options, options.filter);
+        return this.paginatedLoadCollectionExec(type, options.filter, paginator);
+    }
+
+
+    paginatedLoadCollectionExec(type: string, filter: {[key: string]: any}, paginator: CollectionPaginator): PaginatedCollection {
+
+        // doit-on continuer à utiliser le cache quand on utilise cette méthode ?
+        /*if (this.useCache(type)) {
+            let obs:Observable<DataCollection> = this.getCollectionObservableInStore(type, filter);
+
+            if (obs) {
+                //return obs;
+            }
+        }*/
+        //---
+
+        let selectedInterface:ExternalInterface = this.getInterface(type);
+        let structure:ModelSchema = this.getEndpointStructureModel(type);
+
+        let count:number = 0;
+
+        let embeddings: {[key: string]: string} = this.getEmbeddings(type);
+
+        if (selectedInterface) {
+            let collectionSubject:ReplaySubject<DataCollection> = this.getCollectionObservable(type, filter);
+            let collection:CollectionDataSet|Observable<CollectionDataSet>;
+
+            let checkResponse:Function = () => {
+
+                this.sendMessage();
+
+                if (collection instanceof Observable) {
+
+                    collection.subscribe((newCollection:CollectionDataSet) => {
+                        // ici ?
+                        let coll: DataCollection = new DataCollection(type, newCollection, this, structure, embeddings);
+                        coll.paginated = true;
+                        this.registerCollection(type, filter, coll);
+                    });
+                } else {
+                    // et là ??
+                    let coll: DataCollection = new DataCollection(type, collection, this, structure, embeddings);
+                    coll.paginated = true;
+                    this.registerCollection(type, filter, coll);
+                }
+            };
+
+            let errorHandler:Function = (error:InterfaceError) => {
+                let msg:string = `Error loading collection of type '${type}' with data ${JSON.stringify(filter)}`;
+                console.warn(msg);
+                error.message = msg;
+
+                this.sendMessage(error);
+
+                if (error.code > 0) {
+                    collectionSubject.error(error);
+                    this.collectionsLiveStore[type].unregister(filter);
+                } else {
+                    if (count < this.getMaxRetry(type) || this.getMaxRetry(type) === -1) {
+                        setTimeout(() => {
+                            collection = selectedInterface.paginatedLoadCollection(type, {
+                                filter: filter,
+                                page: paginator.page,
+                                range: paginator.range,
+                                offset: paginator.offset
+                            }, errorHandler);
+                            checkResponse();
+                        }, this.getRetryTimeout(type));
+
+                        count++;
+                    } else {
+                        collectionSubject.error(error);
+                        this.collectionsLiveStore[type].unregister(filter);
+                    }
+                }
+
+            };
+
+            collection = selectedInterface.paginatedLoadCollection(type, {
+                filter: filter,
+                page: paginator.page,
+                range: paginator.range,
+                offset: paginator.offset
+            }, errorHandler);
+            checkResponse();
+
+            return {
+                collectionObservable: collectionSubject,
+                paginator: paginator
+            };
+        }
+
+        return null;
+    }
+
+
     /**
      * Load collection from specified endpoint
      * @param {string} type Endpoint name
@@ -761,7 +881,10 @@ export class DataConnector {
             }
         });
 
-        let entitySubject:ReplaySubject<DataEntity> = this.getEntitySubject(entity.type, entity.id);
+        //let entitySubject:ReplaySubject<DataEntity> = this.getEntitySubject(entity.type, entity.id);
+
+        let entitySubject:ReplaySubject<DataEntity> = new ReplaySubject<DataEntity>(1);
+
         let count:number = 0;
 
         let entityData:EntityDataSet|Observable<EntityDataSet>;
@@ -783,7 +906,10 @@ export class DataConnector {
                         saveEntity = structure.filterModel(saveEntity);
                     }
 
-                    this.registerEntity(entity.type, entity.id, new DataEntity(entity.type, saveEntity, this, entity.id, embeddings), entitySubject);
+
+                    let ent: DataEntity = new DataEntity(entity.type, saveEntity, this, entity.id, embeddings);
+                    entitySubject.next(ent);
+                    this.registerEntity(entity.type, entity.id, ent, entitySubject);
                     this.sendReloadNotification(entity.type, saveEntity);
                 });
             } else {
@@ -792,7 +918,9 @@ export class DataConnector {
                     entityData = structure.filterModel(entityData);
                 }
 
-                this.registerEntity(entity.type, entity.id, new DataEntity(entity.type, entityData, this, entity.id, embeddings), entitySubject);
+                let ent: DataEntity = new DataEntity(entity.type, entityData, this, entity.id, embeddings);
+                entitySubject.next(ent);
+                this.registerEntity(entity.type, entity.id, ent, entitySubject);
                 this.sendReloadNotification(entity.type, entityData);
             }
 
@@ -968,6 +1096,9 @@ export class DataConnector {
 
             this.sendMessage();
 
+            const cloned: Object = Object.assign({}, entity.attributes);
+            cloned['id'] = entity.id;
+
             if (result instanceof Observable) {
                 result.subscribe((res:boolean) => {
                     this.unregisterEntity(entity);
@@ -1074,6 +1205,8 @@ export class DataConnector {
     private objectMatchFilter(object: Object, filter: FilterData): boolean {
         let filterKeys:string[] = Object.keys(filter);
 
+        console.log("FILTER", filterKeys, object, filter);
+
         for (let key of filterKeys) {
             if (object[key] !== undefined && filter[key] !== object[key]) {
                 return false;
@@ -1089,10 +1222,14 @@ export class DataConnector {
 
         if (conf && typeof conf === "object" && store) {
             if (conf.refreshEnabled) {
+                console.log("LAAA", store.collections, store.filters, data);
                 for (let key in store.collections) {
                     const filter: FilterData = store.filters[key];
 
+                    console.log("LAAA", filter);
+
                     if (this.objectMatchFilter(data, filter)) {
+                        console.log("COLLCOLL");
                         this.loadCollection(type, filter);
                     }
                 }

@@ -12,6 +12,8 @@ import {ModelSchema} from "octopus-model";
  */
 export class DataCollection {
 
+    paginated = false;
+
     /**
      * Entities contained by the collection
      * @type {any[]}
