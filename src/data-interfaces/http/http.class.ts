@@ -43,10 +43,19 @@ export class Http extends ExternalInterface {
         super();
         this.useDiff = true;
 
-        if (configuration.headers) {
-            for (let header in configuration.headers) {
-                if (configuration.headers.hasOwnProperty(header)) {
-                    this.headers[header] = configuration.headers[header];
+        this.clear();
+    }
+
+
+    /**
+     *
+     */
+    clear(): void {
+
+        if (this.configuration.headers) {
+            for (let header in this.configuration.headers) {
+                if (this.configuration.headers.hasOwnProperty(header)) {
+                    this.headers[header] = this.configuration.headers[header];
                 }
             }
         }
@@ -54,9 +63,8 @@ export class Http extends ExternalInterface {
         this.dataStore = {
             user: undefined
         };
-
-
     }
+
 
     /**
      * Is the user authenticated on this service ?

@@ -32,6 +32,14 @@ export class LocalStorage extends ExternalInterface {
         this.useDiff = false;
     }
 
+
+    /**
+     *
+     */
+    clear(): void {
+        this.dataStore = {};
+    }
+
     /**
      * If a prefix is defined in the configuration, returns a concatenation of prefix and endpoint name
      * @param {string} type Name of the endpoint

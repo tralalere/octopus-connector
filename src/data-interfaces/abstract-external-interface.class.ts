@@ -53,6 +53,14 @@ export abstract class ExternalInterface {
 
     /**
      *
+     */
+    clear(): void {
+        console.warn("LoadCollection not implemented in interface");
+    }
+
+
+    /**
+     *
      * @param {string} type
      * @param {CollectionOptionsInterface} options
      * @returns {CollectionDataSet | Observable<CollectionDataSet>}

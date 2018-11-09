@@ -500,6 +500,15 @@ export class DataConnector {
 
     }
 
+    clear(): void {
+        this.entitiesLiveStore = {};
+        this.collectionsLiveStore = {};
+
+        for (let key in this.interfaces) {
+            this.interfaces[key].clear();
+        }
+    }
+
     /**
      * Load entity in specified endpoint
      * @param {string} type Endpoint name

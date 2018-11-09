@@ -50,6 +50,19 @@ export class Nodejs extends ExternalInterface {
         this.initializeSocket();
     }
 
+
+    clear(): void {
+        this.errorsStore = {};
+        this.collectionsErrorStore = {};
+
+        this.temporaryStore = {};
+        this.temporaryDeletionStore = {};
+
+        this.collectionSubjects = {};
+        this.dataCollections = {};
+        this.collectionFilters = {};
+    }
+
     private initializeSocket(forced:boolean = false) {
 
         if (this.socket && !forced) {
