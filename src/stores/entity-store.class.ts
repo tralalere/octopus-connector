@@ -19,6 +19,11 @@ export class EntityStore {
      */
     constructor() {}
 
+
+    clear(): void {
+
+    }
+
     /**
      * Registers the entity in store and update associated subject. If the subject does not exists, creates it
      * @param {DataEntity} entity Entity to register

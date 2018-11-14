@@ -371,6 +371,32 @@ export class DataConnector {
         return entitiesObservables;
     }
 
+
+    private replaceCollectionEntities(type:string, collection:DataCollection, filter: FilterData):Observable<DataEntity>[] {
+
+        if (!this.entitiesLiveStore[type]) {
+            this.entitiesLiveStore[type] = new EntityStore();
+        }
+
+        if (!this.collectionsLiveStore[type]) {
+            this.collectionsLiveStore[type] = new CollectionStore();
+        }
+
+        this.collectionsLiveStore[type].clearEntities(filter);
+
+        let entitiesObservables:Observable<DataEntity>[] = [];
+
+        collection.entities.forEach((entity:DataEntity) => {
+
+            let entityObservable:Observable<DataEntity> = this.getEntitySubject(type, entity.id);
+
+            this.collectionsLiveStore[entity.type].registerEntityInCollections(entity, entityObservable, false);
+            entitiesObservables.push(this.entitiesLiveStore[type].registerEntity(entity, entity.id));
+        });
+
+        return entitiesObservables;
+    }
+
     /**
      * Associate an entity suject the the entity in the entity store
      * @param {string} type Endpoint name
@@ -415,7 +441,12 @@ export class DataConnector {
             this.collectionsLiveStore[type] = new CollectionStore();
         }
 
-        collection.entitiesObservables = this.registerCollectionEntities(type, collection);
+        if (!collection.paginated) {
+            collection.entitiesObservables = this.registerCollectionEntities(type, collection);
+        } else {
+            collection.entitiesObservables = this.replaceCollectionEntities(type, collection, filter);
+        }
+
 
         let obs:Observable<DataCollection> = this.collectionsLiveStore[type].registerCollection(collection, filter);
 
@@ -653,22 +684,12 @@ export class DataConnector {
 
 
     paginatedLoadCollection(type: string, options: CollectionOptionsInterface): PaginatedCollection {
-        let paginator: CollectionPaginator = new CollectionPaginator(this, options, options.filter);
-        return this.paginatedLoadCollectionExec(type, options.filter, paginator);
+        let paginator: CollectionPaginator = new CollectionPaginator(this, type, options, options.filter);
+        return this.paginatedLoadCollectionExec(type, options.filter || {}, paginator);
     }
 
 
     paginatedLoadCollectionExec(type: string, filter: {[key: string]: any}, paginator: CollectionPaginator): PaginatedCollection {
-
-        // doit-on continuer à utiliser le cache quand on utilise cette méthode ?
-        /*if (this.useCache(type)) {
-            let obs:Observable<DataCollection> = this.getCollectionObservableInStore(type, filter);
-
-            if (obs) {
-                //return obs;
-            }
-        }*/
-        //---
 
         let selectedInterface:ExternalInterface = this.getInterface(type);
         let structure:ModelSchema = this.getEndpointStructureModel(type);

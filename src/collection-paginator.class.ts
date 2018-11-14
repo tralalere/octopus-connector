@@ -6,15 +6,27 @@ export class CollectionPaginator {
     private _page: number;
     private _offset: number;
     private _range: number;
+    private _filter: {[key: string]: any} = {};
 
     constructor(
         private connector: DataConnector,
+        private type: string,
         private options: CollectionOptionsInterface,
-        public filter: {[key: string]: any}
+        public mfilter: {[key: string]: any}
     ) {
         this._page = options.page;
         this._offset = options.offset;
         this._range = options.range;
+        this._filter = mfilter;
+    }
+
+    get filter(): {[key: string]: any} {
+        return this._filter;
+    }
+
+    set filter(value: {[key: string]: any}) {
+        this._filter = value;
+        this.reload();
     }
 
     get page(): number {
@@ -45,6 +57,6 @@ export class CollectionPaginator {
     }
 
     private reload() {
-        this.connector.paginatedLoadCollectionExec("jj", this.filter, this);
+        this.connector.paginatedLoadCollectionExec(this.type, this._filter, this);
     }
 }

@@ -33,6 +33,18 @@ export class CollectionStore {
      */
     constructor() {}
 
+
+    /**
+     *
+     */
+    clearEntities(filter: FilterData): void {
+        let hash:string = ObjectHash(filter);
+
+        if (this.collections[hash]) {
+            this.collections[hash].entities.length = 0;
+        }
+    }
+
     /**
      * Registers the collection in store and update associated subject. If the subject does not exists, creates it
      * @param {DataCollection} collection Collection to register
