@@ -7,6 +7,10 @@ export class CollectionPaginator {
     private _offset: number;
     private _range: number;
     private _filter: {[key: string]: any} = {};
+    count: number;
+
+    hasNextPage = false;
+    hasPreviousPage = false;
 
     constructor(
         private connector: DataConnector,
@@ -54,6 +58,15 @@ export class CollectionPaginator {
     set range(value: number) {
         this._range = value;
         this.reload();
+    }
+
+    updateCount(count: number): void {
+        this.count = count;
+
+        if (this._range > 0) {
+            this.hasPreviousPage = this._page > 1;
+            this.hasNextPage = Math.ceil(count / this._range) > this._page;
+        }
     }
 
     private reload() {

@@ -6,6 +6,7 @@ import {CollectionDataSet, EntityDataSet} from "../../types";
 import {EndpointConfig} from "../../endpoint-config.interface";
 import {combineLatest} from 'rxjs/observable/combineLatest';
 import {CollectionOptionsInterface} from "../../collection-options.interface";
+import {CollectionPaginator} from "../../collection-paginator.class";
 
 /**
  * Http external interface
@@ -162,7 +163,7 @@ export class Http extends ExternalInterface {
     }
 
 
-    paginatedLoadCollection(type: string, options: CollectionOptionsInterface, errorHandler: Function = null): Observable<CollectionDataSet> {
+    paginatedLoadCollection(type: string, options: CollectionOptionsInterface, paginator: CollectionPaginator, errorHandler: Function = null): Observable<CollectionDataSet> {
         let request:XMLHttpRequest = new XMLHttpRequest();
         let url:string = `${this.apiUrl(type)}${type}`;
 
@@ -607,10 +608,14 @@ export class Http extends ExternalInterface {
      * @param {string} responseText Response text from server
      * @returns {CollectionDataSet} Collection data
      */
-    protected extractCollection(responseText:string):CollectionDataSet {
+    protected extractCollection(responseText:string, paginator: CollectionPaginator = null):CollectionDataSet {
         let data:Object = JSON.parse(responseText);
 
         console.log("coll data", data);
+
+        if (paginator) {
+            paginator.updateCount(+data["count"]);
+        }
 
 
         let collectionData:CollectionDataSet = {};

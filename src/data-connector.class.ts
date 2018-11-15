@@ -740,7 +740,7 @@ export class DataConnector {
                                 page: paginator.page,
                                 range: paginator.range,
                                 offset: paginator.offset
-                            }, errorHandler);
+                            }, paginator, errorHandler);
                             checkResponse();
                         }, this.getRetryTimeout(type));
 
@@ -758,7 +758,7 @@ export class DataConnector {
                 page: paginator.page,
                 range: paginator.range,
                 offset: paginator.offset
-            }, errorHandler);
+            }, paginator, errorHandler);
             checkResponse();
 
             return {

@@ -14,6 +14,8 @@ export class DataCollection {
 
     paginated = false;
 
+    count: number;
+
     /**
      * Entities contained by the collection
      * @type {any[]}
