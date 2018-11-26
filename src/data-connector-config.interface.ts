@@ -8,6 +8,7 @@ import {HttpConfiguration} from "./data-interfaces/http/http-configuration.inter
 import {NodejsConfiguration} from "./data-interfaces/nodejs/nodejs-configuration.interface";
 import {Drupal8Configuration} from "./data-interfaces/drupal8/drupal8-configuration.interface";
 import {Observable} from "rxjs/Observable";
+import {CordovaLocalConfiguration} from "./data-interfaces/cordova-local/cordova-local-configuration.interface";
 
 /**
  * Connector main configuration
@@ -35,7 +36,7 @@ export interface DataConnectorConfig {
      * Base configurations for each service type
      */
     configuration: {
-        [key:string]: HttpConfiguration | LocalStorageConfiguration | NodejsConfiguration | Drupal8Configuration
+        [key:string]: HttpConfiguration | LocalStorageConfiguration | NodejsConfiguration | Drupal8Configuration | CordovaLocalConfiguration
     };
 
     // currently not used

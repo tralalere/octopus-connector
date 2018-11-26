@@ -228,7 +228,7 @@ export class Http extends ExternalInterface {
         request.onreadystatechange = () => {
             if (request.readyState === XMLHttpRequest.DONE) {
                 if (request.status === 200) {
-                    subject.next(this.extractCollection(request.responseText));
+                    subject.next(this.extractCollection(request.responseText, paginator));
                 } else {
                     console.log(request);
                     this.sendError(request.status, request.statusText, errorHandler);

@@ -21,6 +21,7 @@ import {combineLatest} from 'rxjs/observable/combineLatest';
 import {CollectionOptionsInterface} from "./collection-options.interface";
 import {PaginatedCollection} from "./paginated-collection.interface";
 import {CollectionPaginator} from "./collection-paginator.class";
+import {CordovaLocal} from "./data-interfaces/cordova-local/cordova-local.class";
 
 
 /**
@@ -59,7 +60,8 @@ export class DataConnector {
         localstorage: LocalStorage,
         http: Http,
         nodejs: Nodejs,
-        drupal8: Drupal8
+        drupal8: Drupal8,
+        cordova: CordovaLocal
     };
 
 
