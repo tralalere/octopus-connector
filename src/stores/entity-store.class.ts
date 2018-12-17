@@ -82,9 +82,9 @@ export class EntityStore {
      * @param {number} id Id used in registration
      * @returns {Observable<DataEntity>} Entity subject associated to the id
      */
-    getEntityObservable(id:number|string):ReplaySubject<DataEntity> {
+    getEntityObservable(id:number|string, createObservable: boolean = false):ReplaySubject<DataEntity> {
 
-        if (this.entitiesObservables[id]) {
+        if (this.entitiesObservables[id] && createObservable === false) {
             return this.entitiesObservables[id];
         } else {
             let subject:ReplaySubject<DataEntity> = new ReplaySubject<DataEntity>(1);

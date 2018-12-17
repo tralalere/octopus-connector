@@ -295,13 +295,13 @@ export class DataConnector {
      * @param {number} id Id of the entity
      * @returns {Observable<DataEntity>} The observable associated to the entity
      */
-    private getEntitySubject(type:string, id:number|string):ReplaySubject<DataEntity> {
+    private getEntitySubject(type:string, id:number|string, createObservable: boolean = false):ReplaySubject<DataEntity> {
 
         if (!this.entitiesLiveStore[type]) {
             this.entitiesLiveStore[type] = new EntityStore();
         }
 
-        return this.entitiesLiveStore[type].getEntityObservable(id);
+        return this.entitiesLiveStore[type].getEntityObservable(id, createObservable);
     }
 
     /**
@@ -567,7 +567,7 @@ export class DataConnector {
 
         if (selectedInterface) {
 
-            let entitySubject:ReplaySubject<DataEntity> = this.getEntitySubject(type, id);
+            let entitySubject:ReplaySubject<DataEntity> = this.getEntitySubject(type, id, true);
             let structure:ModelSchema = this.getEndpointStructureModel(type);
 
             let embeddings: {[key: string]: string} = this.getEmbeddings(type);
