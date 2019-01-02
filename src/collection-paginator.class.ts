@@ -38,8 +38,10 @@ export class CollectionPaginator {
     }
 
     set page(value: number) {
-        this._page = value;
-        this.reload();
+        if (this._page !== value) {
+            this._page = value;
+            this.reload();
+        }
     }
 
     get offset(): number {
@@ -47,8 +49,10 @@ export class CollectionPaginator {
     }
 
     set offset(value: number) {
-        this._offset = value;
-        this.reload();
+        if (this._offset !== value) {
+            this._offset = value;
+            this.reload();
+        }
     }
 
     get range(): number {
@@ -56,8 +60,10 @@ export class CollectionPaginator {
     }
 
     set range(value: number) {
-        this._range = value;
-        this.reload();
+        if (this._range !== value) {
+            this._range = value;
+            this.reload();
+        }
     }
 
     updateCount(count: number): void {
