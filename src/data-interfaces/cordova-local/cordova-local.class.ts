@@ -11,7 +11,7 @@ declare var LocalFileSystem: any;
 export class CordovaLocal extends ExternalInterface {
 
     fileSystem: any;
-    private dataStore:CollectionDataSet = {};
+    private dataStore:CollectionDataSet = [];
 
     constructor(
         private configuration: CordovaLocalConfiguration,
@@ -255,34 +255,24 @@ export class CordovaLocal extends ExternalInterface {
 
         let pointName:string = type;
         this.loadPointFromStorageIfEmpty(type, () => {
-            let dataSet:CollectionDataSet = {};
+            let dataSet:CollectionDataSet = [];
 
+            let obj: CollectionDataSet = this.dataStore[pointName];
 
-            let obj: Object = {};
-
-            /*if (Array.isArray(this.dataStore[pointName])) {
-                this.dataStore[pointName].forEach(elem => {
-                    obj[elem["id"]] = elem;
-                });*/
-            //} else {
-                obj = this.dataStore[pointName];
-            //}
-
-
-            let keys:string[] = Object.keys(obj);
+            //let keys:string[] = Object.keys(obj);
             let filterKeys:string[] = Object.keys(filter);
 
-            keys.forEach((key:string) => {
+            obj.forEach((tset: EntityDataSet, index: number) => {
                 let matching:boolean = true;
 
                 filterKeys.forEach((filterKey:string) => {
-                    if (filter[filterKey] !== obj[+key][filterKey]) {
+                    if (filter[filterKey] !== tset[filterKey]) {
                         matching = false;
                     }
                 });
 
                 if (matching) {
-                    dataSet[+key] = obj[+key];
+                    dataSet[index] = tset;
                 }
             });
 

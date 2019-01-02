@@ -163,7 +163,7 @@ export class Http extends ExternalInterface {
     }
 
 
-    paginatedLoadCollection(type: string, options: CollectionOptionsInterface, paginator: CollectionPaginator, errorHandler: Function = null): Observable<CollectionDataSet> {
+    paginatedLoadCollection(type: string, options: CollectionOptionsInterface, paginator: CollectionPaginator, errorHandler: Function = null): Observable<CollectionDataSet[]> {
         let request:XMLHttpRequest = new XMLHttpRequest();
         let url:string = `${this.apiUrl(type)}${type}`;
 
@@ -223,7 +223,7 @@ export class Http extends ExternalInterface {
 
         this.addHeaders(request);
 
-        let subject:ReplaySubject<CollectionDataSet> = new ReplaySubject<CollectionDataSet>(1);
+        let subject:ReplaySubject<CollectionDataSet[]> = new ReplaySubject<CollectionDataSet[]>(1);
 
         request.onreadystatechange = () => {
             if (request.readyState === XMLHttpRequest.DONE) {
@@ -248,7 +248,7 @@ export class Http extends ExternalInterface {
      * @param {Function} errorHandler Function used to handle errors
      * @returns {Observable<CollectionDataSet>} Observable returning the collection data
      */
-    loadCollection(type:string, filter:{[key:string]:any} = {}, errorHandler:Function = null):Observable<CollectionDataSet> {
+    loadCollection(type:string, filter:{[key:string]:any} = {}, errorHandler:Function = null):Observable<CollectionDataSet[]> {
         let request:XMLHttpRequest = new XMLHttpRequest();
 
         let url:string = `${this.apiUrl(type)}${type}`;
@@ -272,7 +272,7 @@ export class Http extends ExternalInterface {
 
         this.addHeaders(request);
 
-        let subject:ReplaySubject<CollectionDataSet> = new ReplaySubject<CollectionDataSet>(1);
+        let subject:ReplaySubject<CollectionDataSet[]> = new ReplaySubject<CollectionDataSet[]>(1);
 
         request.onreadystatechange = () => {
             if (request.readyState === XMLHttpRequest.DONE) {
@@ -608,7 +608,7 @@ export class Http extends ExternalInterface {
      * @param {string} responseText Response text from server
      * @returns {CollectionDataSet} Collection data
      */
-    protected extractCollection(responseText:string, paginator: CollectionPaginator = null):CollectionDataSet {
+    protected extractCollection(responseText:string, paginator: CollectionPaginator = null):CollectionDataSet[] {
         let data:Object = JSON.parse(responseText);
 
         console.log("coll data", data);
@@ -618,15 +618,16 @@ export class Http extends ExternalInterface {
         }
 
 
-        let collectionData:CollectionDataSet = {};
+        /*let collectionData:CollectionDataSet = {};
 
         data["data"].forEach((entityData:EntityDataSet) => {
 
             entityData["id"] = entityData["id"];
 
+            // pas bon, on ne doit pas indexer par id, l'ordre des entités disparait
             collectionData[entityData["id"]] = entityData;
-        });
+        });*/
 
-        return collectionData;
+        return data["data"];
     }
 }

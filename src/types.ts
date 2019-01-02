@@ -21,13 +21,7 @@ export interface EntityDataSet {
 /**
  * Collection raw data
  */
-export interface CollectionDataSet {
-
-    /**
-     * Entities data, indexed by id
-     */
-    [key:number]:EntityDataSet;
-}
+export interface CollectionDataSet extends Array<EntityDataSet> {}
 
 /**
  * Filter object

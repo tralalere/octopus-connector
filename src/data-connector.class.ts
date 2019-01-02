@@ -293,6 +293,7 @@ export class DataConnector {
      * Get the observable associated to an entity from the store, if the store is undefined, create it
      * @param {string} type Endpoint name
      * @param {number} id Id of the entity
+     * @param {boolean} createObservable If true, a new entity observable is created
      * @returns {Observable<DataEntity>} The observable associated to the entity
      */
     private getEntitySubject(type:string, id:number|string, createObservable: boolean = false):ReplaySubject<DataEntity> {
@@ -327,6 +328,12 @@ export class DataConnector {
     }
 
 
+    /**
+     * Registers an entity, using entity data
+     * @param {string} type - Endpoint type
+     * @param {number | string} id - Entity id
+     * @param {EntityDataSet} entityData - Datas
+     */
     registerEntityByData(type:string, id:number|string, entityData:EntityDataSet) {
 
         if (!this.entitiesLiveStore[type]) {
@@ -345,8 +352,8 @@ export class DataConnector {
     }
 
     /**
-     *
-     * @param {string} type
+     * Register a collection, using collection data
+     * @param {string} type - Collection type
      * @param {DataCollection} collection
      * @returns {Observable<DataEntity>[]}
      */
@@ -691,6 +698,13 @@ export class DataConnector {
     }
 
 
+    /**
+     * Alternate collection loading
+     * @param {string} type - Endpoint name
+     * @param {{[p: string]: any}} filter - Base filter (can be deleted)
+     * @param {CollectionPaginator} paginator
+     * @returns {PaginatedCollection}
+     */
     paginatedLoadCollectionExec(type: string, filter: {[key: string]: any}, paginator: CollectionPaginator): PaginatedCollection {
 
         let selectedInterface:ExternalInterface = this.getInterface(type);
