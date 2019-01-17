@@ -3,4 +3,5 @@ export interface CollectionOptionsInterface {
     page?: number;
     offset?: number;
     range?: number;
+    urlExtension?: string;
 }

@@ -167,6 +167,14 @@ export class Http extends ExternalInterface {
         let request:XMLHttpRequest = new XMLHttpRequest();
         let url:string = `${this.apiUrl(type)}${type}`;
 
+        if (options.urlExtension) {
+            if (options.urlExtension.charAt(0) !== "/") {
+                url += "/";
+            }
+
+            url += options.urlExtension;
+        }
+
         let filtersLength: number = options.filter ? Object.keys(options.filter).length : 0;
 
         if (filtersLength > 0 || options.offset || options.range || options.page) {

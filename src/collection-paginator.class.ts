@@ -6,6 +6,7 @@ export class CollectionPaginator {
     private _page: number;
     private _offset: number;
     private _range: number;
+    private _urlExtension: string;
     private _filter: {[key: string]: any} = {};
     count: number;
 
@@ -21,6 +22,7 @@ export class CollectionPaginator {
         this._page = options.page;
         this._offset = options.offset;
         this._range = options.range;
+        this._urlExtension = options.urlExtension;
         this._filter = mfilter;
     }
 
@@ -57,6 +59,15 @@ export class CollectionPaginator {
 
     set range(value: number) {
         this._range = value;
+        this.reload();
+    }
+
+    get urlExtension(): string {
+        return this._urlExtension;
+    }
+
+    set urlExtension(value: string) {
+        this._urlExtension = value;
         this.reload();
     }
 
