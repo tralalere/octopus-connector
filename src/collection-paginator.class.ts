@@ -1,5 +1,6 @@
 import {DataConnector} from "./data-connector.class";
 import {CollectionOptionsInterface} from "./collection-options.interface";
+import {OrderCriteria} from "./order-criteria.interface";
 
 export class CollectionPaginator {
 
@@ -7,6 +8,7 @@ export class CollectionPaginator {
     private _offset: number;
     private _range: number;
     private _urlExtension: string;
+    private _orderOptions: OrderCriteria[];
     private _filter: {[key: string]: any} = {};
     count: number;
 
@@ -24,6 +26,7 @@ export class CollectionPaginator {
         this._range = options.range;
         this._urlExtension = options.urlExtension;
         this._filter = mfilter;
+        this._orderOptions = options.orderOptions;
     }
 
     get filter(): {[key: string]: any} {
@@ -68,6 +71,15 @@ export class CollectionPaginator {
 
     set urlExtension(value: string) {
         this._urlExtension = value;
+        this.reload();
+    }
+
+    get orderOptions(): OrderCriteria[] {
+        return this._orderOptions;
+    }
+
+    set orderOptions(value: OrderCriteria[]) {
+        this._orderOptions = value;
         this.reload();
     }
 
