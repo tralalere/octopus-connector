@@ -83,7 +83,7 @@ export class CollectionPaginator {
         this.reload();
     }
 
-    updateCount(count: number): void {
+    public updateCount(count: number): void {
         this.count = count;
 
         if (this._range > 0) {
@@ -92,7 +92,7 @@ export class CollectionPaginator {
         }
     }
 
-    private reload() {
+    public reload(): void {
         this.connector.paginatedLoadCollectionExec(this.type, this._filter, this);
     }
 }
