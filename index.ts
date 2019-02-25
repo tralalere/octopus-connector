@@ -2,6 +2,10 @@
  * Created by Christophe on 10/10/2017.
  */
 
+export {OrderCriteria} from "./src/order-criteria.interface";
+
+export {OrderDirection} from "./src/order-direction.enum";
+
 export {PaginatedCollection} from "./src/paginated-collection.interface";
 
 export {InterfaceError} from "./src/data-interfaces/interface-error.class";

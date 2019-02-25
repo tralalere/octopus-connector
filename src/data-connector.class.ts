@@ -687,6 +687,7 @@ export class DataConnector {
 
     paginatedLoadCollection(type: string, options: CollectionOptionsInterface): PaginatedCollection {
         let paginator: CollectionPaginator = new CollectionPaginator(this, type, options, options.filter);
+        console.log("options3", options);
         return this.paginatedLoadCollectionExec(type, options.filter || {}, paginator);
     }
 
@@ -741,7 +742,9 @@ export class DataConnector {
                                 filter: filter,
                                 page: paginator.page,
                                 range: paginator.range,
-                                offset: paginator.offset
+                                offset: paginator.offset,
+                                urlExtension: paginator.urlExtension,
+                                orderOptions: paginator.orderOptions
                             }, paginator, errorHandler);
                             checkResponse();
                         }, this.getRetryTimeout(type));
@@ -759,7 +762,9 @@ export class DataConnector {
                 filter: filter,
                 page: paginator.page,
                 range: paginator.range,
-                offset: paginator.offset
+                offset: paginator.offset,
+                urlExtension: paginator.urlExtension,
+                orderOptions: paginator.orderOptions
             }, paginator, errorHandler);
             checkResponse();
 

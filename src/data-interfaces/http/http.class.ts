@@ -7,6 +7,7 @@ import {EndpointConfig} from "../../endpoint-config.interface";
 import {combineLatest} from 'rxjs/observable/combineLatest';
 import {CollectionOptionsInterface} from "../../collection-options.interface";
 import {CollectionPaginator} from "../../collection-paginator.class";
+import {OrderDirection} from "../../order-direction.enum";
 
 /**
  * Http external interface
@@ -167,6 +168,8 @@ export class Http extends ExternalInterface {
         let request:XMLHttpRequest = new XMLHttpRequest();
         let url:string = `${this.apiUrl(type)}${type}`;
 
+        console.log("options", options);
+
         if (options.urlExtension) {
             if (options.urlExtension.charAt(0) !== "/") {
                 url += "/";
@@ -175,13 +178,27 @@ export class Http extends ExternalInterface {
             url += options.urlExtension;
         }
 
+        let orderOptionsLength: number = options.orderOptions ? options.orderOptions.length : 0;
+
         let filtersLength: number = options.filter ? Object.keys(options.filter).length : 0;
 
-        if (filtersLength > 0 || options.offset || options.range || options.page) {
+        if (filtersLength > 0 || orderOptionsLength > 0 || options.offset || options.range || options.page ) {
             url += '?';
         }
 
         let started = false;
+
+        if (orderOptionsLength > 0) {
+            started = true;
+            url += 'sort=';
+
+            options.orderOptions.forEach((option, index) => {
+                url += (option.direction === OrderDirection.DESC ? "-" : "") + option.field;
+                if (index < orderOptionsLength - 1) {
+                    url += ",";
+                }
+            });
+        }
 
         if (filtersLength > 0) {
             started = true;
@@ -630,9 +647,10 @@ export class Http extends ExternalInterface {
 
         data["data"].forEach((entityData:EntityDataSet) => {
 
+            // ?????
             entityData["id"] = entityData["id"];
 
-            collectionData[entityData["id"]] = entityData;
+            collectionData["_" + entityData["id"]] = entityData;
         });
 
         return collectionData;

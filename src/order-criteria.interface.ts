@@ -1,4 +1,6 @@
-export interface OrderCriteriaInterface {
+import {OrderDirection} from "./order-direction.enum";
+
+export interface OrderCriteria {
     field: string;
-    direction: string;
+    direction: OrderDirection;
 }
