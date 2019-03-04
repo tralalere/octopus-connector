@@ -37,8 +37,8 @@ export class Nodejs extends ExternalInterface {
      * @param {DataConnector} connector Reference to the connector
      */
     constructor(
-        private configuration:NodejsConfiguration,
-        private connector:DataConnector
+      private configuration:NodejsConfiguration,
+      private connector:DataConnector
     ) {
         super();
         this.messagePrefix = this.configuration.messagePrefix || "message";
