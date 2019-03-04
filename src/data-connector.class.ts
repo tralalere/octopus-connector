@@ -874,7 +874,6 @@ export class DataConnector {
                     }
                 }
 
-                console.log("REFRESH NOTIFICATION SENDING", data, embeddings, dataToSend);
 
                 let refreshData: Object = {
                     myType: type
@@ -884,9 +883,9 @@ export class DataConnector {
                     refreshData["data"] = dataToSend;
                 }
 
-                this.createEntity(this.configuration.liveRefreshService, {
-                    myType: type
-                }, false);
+                console.log("REFRESH NOTIFICATION SENDING", refreshData);
+
+                this.createEntity(this.configuration.liveRefreshService, refreshData, false);
             }
         }
     }
