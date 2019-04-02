@@ -110,11 +110,11 @@ export class DataEntity {
 
         for (let key in this.attributes) {
             if (this.attributes[key] !== this.attributesRef[key]) {
-                return false;
+                return true;
             }
         }
 
-        return true;
+        return false;
     }
 
     /**
