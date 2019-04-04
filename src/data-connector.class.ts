@@ -1000,6 +1000,8 @@ export class DataConnector {
         if (!selectedInterface.useDiff || Object.keys(dataToSave).length > 0) {
             entityData = selectedInterface.saveEntity(dataToSave, entity.type, entity.id, errorHandler);
             checkResponse();
+        } else {
+            entitySubject.next(entity);
         }
 
         return entitySubject;
