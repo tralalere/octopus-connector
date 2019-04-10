@@ -893,9 +893,11 @@ export class DataConnector {
     /**
      * Save entity
      * @param {DataEntity} entity Entity to save
+     * @param {boolean} forceReload whether to reload data if nothing is saved or not
+     * @param {boolean} dispatchBeforeResponse register entity before save happens
      * @returns {Observable<DataEntity>} Observable associated to the entity
      */
-    saveEntity(entity:DataEntity, dispatchBeforeResponse: boolean = false):Observable<DataEntity> {
+    saveEntity(entity:DataEntity, forceReload: boolean = false, dispatchBeforeResponse: boolean = false): Observable<DataEntity> {
 
         let selectedInterface:ExternalInterface = this.getInterface(entity.type);
         let structure:ModelSchema = this.getEndpointStructureModel(entity.type);
@@ -1000,6 +1002,12 @@ export class DataConnector {
         if (!selectedInterface.useDiff || Object.keys(dataToSave).length > 0) {
             entityData = selectedInterface.saveEntity(dataToSave, entity.type, entity.id, errorHandler);
             checkResponse();
+        } else if (forceReload) {
+            this.loadEntity(entity.type, entity.id)
+                .take(1)
+                .subscribe((newEntity: DataEntity) => {
+                    entitySubject.next(newEntity);
+                });
         } else {
             entitySubject.next(entity);
         }
