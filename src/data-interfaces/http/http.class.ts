@@ -153,6 +153,7 @@ export class Http extends ExternalInterface {
                     this.sendError(request.status, request.statusText, errorHandler, {
                         entityType: type,
                         entityId: id,
+                        response: JSON.parse(request.responseText)
                     });
                 }
             }
@@ -256,7 +257,9 @@ export class Http extends ExternalInterface {
                     subject.next(this.extractCollection(request.responseText, paginator));
                 } else {
                     console.log(request);
-                    this.sendError(request.status, request.statusText, errorHandler);
+                    this.sendError(request.status, request.statusText, errorHandler, {
+                        response: JSON.parse(request.responseText)
+                    });
                 }
             }
         };
@@ -305,7 +308,9 @@ export class Http extends ExternalInterface {
                     subject.next(this.extractCollection(request.responseText));
                 } else {
                     console.log(request);
-                    this.sendError(request.status, request.statusText, errorHandler);
+                    this.sendError(request.status, request.statusText, errorHandler, {
+                        response: JSON.parse(request.responseText)
+                    });
                 }
             }
         };
@@ -337,7 +342,9 @@ export class Http extends ExternalInterface {
                 if (request.status === 200) {
                     subject.next(this.extractEntity(request.responseText));
                 } else {
-                    this.sendError(request.status, request.statusText, errorHandler);
+                    this.sendError(request.status, request.statusText, errorHandler, {
+                        response: JSON.parse(request.responseText)
+                    });
                 }
             }
         };
@@ -368,7 +375,9 @@ export class Http extends ExternalInterface {
                 if (request.status === 200) {
                     subject.next(this.extractEntity(request.responseText));
                 } else {
-                    this.sendError(request.status, request.statusText, errorHandler);
+                    this.sendError(request.status, request.statusText, errorHandler, {
+                        response: JSON.parse(request.responseText)
+                    });
                 }
             }
         };
@@ -399,7 +408,9 @@ export class Http extends ExternalInterface {
                 if (request.status === 200) {
                     subject.next(true);
                 } else {
-                    this.sendError(request.status, request.statusText, errorHandler);
+                    this.sendError(request.status, request.statusText, errorHandler, {
+                        response: JSON.parse(request.responseText)
+                    });
                 }
             }
         };
@@ -447,7 +458,9 @@ export class Http extends ExternalInterface {
                         this.setRefreshToken(loginData["refresh_token"]);
                     }
                 } else {
-                    this.sendError(request.status, request.statusText, errorHandler);
+                    this.sendError(request.status, request.statusText, errorHandler, {
+                        response: JSON.parse(request.responseText)
+                    });
                 }
 
                 combineLatest(...observables).map((values:any[]) => {
@@ -531,7 +544,9 @@ export class Http extends ExternalInterface {
                     this.setRefreshToken(userData["refresh_token"]);
                     subject.next(userData);
                 } else {
-                    this.sendError(request.status, request.statusText, errorHandler);
+                    this.sendError(request.status, request.statusText, errorHandler, {
+                        response: JSON.parse(request.responseText)
+                    });
                 }
             }
         };
@@ -574,7 +589,9 @@ export class Http extends ExternalInterface {
                     this.setMe(userData, complete);
                 } else {
                     if (errorHandler) {
-                        this.sendError(request.status, request.statusText, errorHandler);
+                        this.sendError(request.status, request.statusText, errorHandler, {
+                            response: JSON.parse(request.responseText)
+                        });
                     }
 
                     subject.error(null);
