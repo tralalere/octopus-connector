@@ -22,6 +22,7 @@ import {CollectionOptionsInterface} from "./collection-options.interface";
 import {PaginatedCollection} from "./paginated-collection.interface";
 import {CollectionPaginator} from "./collection-paginator.class";
 import {CordovaLocal} from "./data-interfaces/cordova-local/cordova-local.class";
+import {Subject} from "rxjs";
 
 
 /**
@@ -46,6 +47,12 @@ export class DataConnector {
      * @type {{}} Collections stores, indexed by endpoint name
      */
     private collectionsLiveStore:{[key:string]:CollectionStore} = {};
+
+    /**
+     * Server push listeners
+     * @type {{}} Listeners, indexed by endpoint name
+     */
+    private pushListeners: {[key:string]:Observable<DataEntity>} = {};
 
     /**
      *
@@ -342,6 +349,10 @@ export class DataConnector {
 
         this.collectionsLiveStore[entity.type].registerEntityInCollections(entity, obs);
         this.entitiesLiveStore[type].registerEntity(entity, id);
+
+        if (this.pushListeners[type]) {
+            (<Subject<DataEntity>>this.pushListeners[type]).next(entity);
+        }
     }
 
     /**
@@ -537,10 +548,24 @@ export class DataConnector {
     clear(): void {
         this.entitiesLiveStore = {};
         this.collectionsLiveStore = {};
+        this.pushListeners = {};
 
         for (let key in this.interfaces) {
             this.interfaces[key].clear();
         }
+    }
+
+    /**
+     * Listen for an endpoint to be notified when data is pushed from the backend
+     * @param {string} type Endpoint name
+     * @returns {Observable<DataEntity>} DataEntity observable associated to this entity
+     */
+    public listen(type: string): Observable<DataEntity> {
+        if (!this.pushListeners[type]) {
+            this.pushListeners[type] = new Subject<DataEntity>();
+        }
+
+        return this.pushListeners[type];
     }
 
     /**
