@@ -561,7 +561,6 @@ export class DataConnector {
      * @returns {Observable<DataEntity>} DataEntity observable associated to this entity
      */
     public listen(type: string): Observable<DataEntity> {
-        console.log('I`m listening');
         if (!this.pushListeners[type]) {
             this.pushListeners[type] = new Subject<DataEntity>();
         }
