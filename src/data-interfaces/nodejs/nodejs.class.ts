@@ -17,9 +17,6 @@ export class Nodejs extends ExternalInterface {
     private connectionCommand:string;
     private socket:any;
 
-    private temporaryStore:{[key:number]:ReplaySubject<EntityDataSet>} = {};
-    private temporaryDeletionStore:{[key:number]:ReplaySubject<boolean>} = {};
-
     private errorsStore:{[key:number]:Function} = {};
     private collectionsErrorStore:{[key:number]:Function} = {};
 
@@ -54,9 +51,6 @@ export class Nodejs extends ExternalInterface {
     clear(): void {
         this.errorsStore = {};
         this.collectionsErrorStore = {};
-
-        this.temporaryStore = {};
-        this.temporaryDeletionStore = {};
 
         this.collectionSubjects = {};
         this.dataCollections = {};
@@ -102,50 +96,25 @@ export class Nodejs extends ExternalInterface {
         this.socket.on(this.messagePrefix, (data:Object[]) => {
             console.log("MESSAGE DATA: ", data);
 
-            let cid:number = data[0]["cid"];
-
-            if (data[0]["id"] && data[0]["data"]) {
-                data[0]["data"]["id"] = data[0]["id"];
+            if (data["id"] && data["data"]) {
+                data["data"]["id"] = data["id"];
             }
 
-            if (cid) {
-                let tmp: ReplaySubject<EntityDataSet> = this.temporaryStore[cid];
+            if (data['command'] === "put") {
+                this.connector.registerEntityByData(data["type"], data["id"] || data["data"]["id"] , data['data']);
 
-                if (tmp) {
-                    tmp.next(data[0]["data"]);
-                    delete this.temporaryStore[cid];
-                    delete this.errorsStore[cid];
-                } else {
-                    if (data[0]['command'] === "put") {
-                        console.log("!!PUT", data[0]);
-                        this.connector.registerEntityByData(data[0]["type"], data[0]["id"] || data[0]["data"]["id"] , data[0]['data']);
-
-                        if (data[0]["type"] === this.connector.configuration.liveRefreshService) {
-                            console.log("zero", data["0"]["data"]);
-                            this.connector.refreshCollectionWithData(data[0]["data"]["myType"], data["0"]["data"]);
-                        }
-                    }
-
-                    if (data[0]['command'] === "update") {
-                        console.log("!!UPDATE", data[0]);
-                        this.connector.registerEntityByData(data[0]["type"], data[0]["id"] || data[0]["data"]["id"], data[0]['data']);
-                    }
-                }
-
-                let deletionTmp: ReplaySubject<boolean> = this.temporaryDeletionStore[cid];
-
-                if (deletionTmp) {
-                    deletionTmp.next(true);
-                    delete this.temporaryDeletionStore[cid];
-                    delete this.errorsStore[cid];
-                } else {
-                    if (data[0]['command'] === "delete") {
-                        console.log("!!DELETE", data[0]);
-                        this.connector.unregisterEntityTypeAndId(data[0]["type"], data[0]["id"]);
-                    }
+                if (data["type"] === this.connector.configuration.liveRefreshService) {
+                    this.connector.refreshCollectionWithData(data["data"]["myType"], data["data"]);
                 }
             }
 
+            if (data['command'] === "update") {
+                this.connector.registerEntityByData(data["type"], data["id"] || data["data"]["id"], data['data']);
+            }
+
+            if (data['command'] === "delete") {
+                this.connector.unregisterEntityTypeAndId(data["type"], data["id"]);
+            }
         });
     }
 
@@ -202,8 +171,6 @@ export class Nodejs extends ExternalInterface {
         } else {
             this.errorsStore[cid] = errorHandler;
 
-            this.temporaryStore[cid] = subject;
-
             let requestData:Object = {
                 command: "update",
                 data: data,
@@ -231,8 +198,6 @@ export class Nodejs extends ExternalInterface {
 
         // à voir si il y a besoin d'initialiser
         //this.initializeSocket();
-
-        console.log("ici");
 
         let hash:string = ObjectHash(filter);
         let subject:ReplaySubject<CollectionDataSet> = new ReplaySubject<CollectionDataSet>(1);
@@ -316,7 +281,6 @@ export class Nodejs extends ExternalInterface {
                 id: id
             };
 
-            this.temporaryStore[cid] = subject;
             this.socket.emit("message", requestData);
         }
 
@@ -341,8 +305,6 @@ export class Nodejs extends ExternalInterface {
         if (!this.connected) {
             this.sendError(0, '', errorHandler);
         } else {
-            this.temporaryDeletionStore[cid] = subject;
-
             let requestData:Object = {
                 command: "delete",
                 id: id,
