@@ -1,9 +1,9 @@
 import {Observable} from "rxjs/Observable";
 import {DataCollection} from "../data-structures/data-collection.class";
 import * as ObjectHash from "object-hash";
-import {ReplaySubject} from "rxjs/Rx";
 import {DataEntity} from "../data-structures/data-entity.class";
 import {FilterData} from "../types";
+import {Subject} from "rxjs";
 
 /**
  * Collection store: where the collections and the collection observables are stored for an endpoint
@@ -14,7 +14,7 @@ export class CollectionStore {
      * Stored collection observables, indexed by filter hash
      * @type {{}}
      */
-    private collectionObservables:{[key:string]:ReplaySubject<DataCollection>} = {};
+    private collectionObservables:{[key:string]:Subject<DataCollection>} = {};
 
     /**
      * Filters indexed by their hash
@@ -57,12 +57,12 @@ export class CollectionStore {
         this.filters[hash] = filter;
         this.collections[hash] = collection;
 
-        let collectionSubject:ReplaySubject<DataCollection>;
+        let collectionSubject:Subject<DataCollection>;
 
         if (this.collectionObservables[hash]) {
             collectionSubject = this.collectionObservables[hash];
         } else {
-            collectionSubject = new ReplaySubject<DataCollection>(1);
+            collectionSubject = new Subject<DataCollection>();
             this.collectionObservables[hash] = collectionSubject;
         }
 
@@ -195,14 +195,14 @@ export class CollectionStore {
      * @param {FilterData} filter Filter object
      * @returns {Observable<DataCollection>} The observable associated to the filter object
      */
-    getCollectionSubject(filter:FilterData):ReplaySubject<DataCollection> {
+    getCollectionSubject(filter:FilterData):Subject<DataCollection> {
 
         let hash:string = ObjectHash(filter);
 
         if (this.collectionObservables[hash]) {
             return this.collectionObservables[hash];
         } else {
-            let subject:ReplaySubject<DataCollection> = new ReplaySubject<DataCollection>(1);
+            let subject:Subject<DataCollection> = new Subject<DataCollection>();
             this.collectionObservables[hash] = subject;
             return subject;
         }

@@ -431,7 +431,7 @@ export class DataConnector {
      * @param {FilterData} filter Filter object
      * @returns {Observable<DataCollection>} Observable associated to the collection
      */
-    private getCollectionObservable(type:string, filter:FilterData):ReplaySubject<DataCollection> {
+    private getCollectionObservable(type:string, filter:FilterData):Subject<DataCollection> {
 
         if (!this.collectionsLiveStore[type]) {
             this.collectionsLiveStore[type] = new CollectionStore();
@@ -727,7 +727,7 @@ export class DataConnector {
         let embeddings: {[key: string]: string} = this.getEmbeddings(type);
 
         if (selectedInterface) {
-            let collectionSubject:ReplaySubject<DataCollection> = this.getCollectionObservable(type, filter);
+            let collectionSubject:Subject<DataCollection> = this.getCollectionObservable(type, filter);
             let collection:CollectionDataSet|Observable<CollectionDataSet>;
 
             let checkResponse:Function = () => {
@@ -827,7 +827,7 @@ export class DataConnector {
         let embeddings: {[key: string]: string} = this.getEmbeddings(type);
 
         if (selectedInterface) {
-            let collectionSubject:ReplaySubject<DataCollection> = this.getCollectionObservable(type, filter);
+            let collectionSubject:Subject<DataCollection> = this.getCollectionObservable(type, filter);
             let collection:CollectionDataSet|Observable<CollectionDataSet>;
 
             let checkResponse:Function = () => {
