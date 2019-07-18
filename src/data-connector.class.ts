@@ -1323,7 +1323,7 @@ export class DataConnector {
         }
     }
 
-    public getUnexpectedLogoutSubject(serviceName:string):ReplaySubject<null> {
+    public getUnexpectedLogoutSubject(serviceName:string):Subject<null> {
         let selectedInterface:ExternalInterface = this.interfaces[serviceName];
         return selectedInterface.unexpectedLogoutSubject;
     }
