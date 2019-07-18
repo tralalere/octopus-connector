@@ -46,8 +46,9 @@ export class Http extends ExternalInterface {
         this.useDiff = true;
 
         this.clear();
-    }
 
+        window.addEventListener("storage", (event) => this.OnUnexpectedStorageChange(event));
+    }
 
     /**
      *
@@ -671,5 +672,21 @@ export class Http extends ExternalInterface {
         });
 
         return collectionData;
+    }
+
+    /**
+     * Callback appelé lors du déclanchement d'un event de type StorageEvent. Cela n'a lieu que si le localstorage a été modifié depuis une autre page.
+     * Dans ce cas, nous controllons s'il s'agit d'une déconnexion pour notifier ensuite les abonnées a OnUnexpectedLogout
+     * @param event
+     * @return
+     */
+    private OnUnexpectedStorageChange(event: StorageEvent) {
+        if(
+            event.key === `${this.interfaceName}_accessToken`
+            && event.newValue === null
+            && event.oldValue !== null
+        ) {
+            this.unexpectedLogoutSubject.next();
+        }
     }
 }

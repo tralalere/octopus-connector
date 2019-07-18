@@ -1322,4 +1322,9 @@ export class DataConnector {
             }
         }
     }
+
+    public getUnexpectedLogoutSubject(serviceName:string):ReplaySubject<null> {
+        let selectedInterface:ExternalInterface = this.interfaces[serviceName];
+        return selectedInterface.unexpectedLogoutSubject;
+    }
 }

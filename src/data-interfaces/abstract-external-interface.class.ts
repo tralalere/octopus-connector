@@ -9,6 +9,7 @@ import {CollectionDataSet, EntityDataSet, FilterData} from "../types";
 import {InterfaceError} from "./interface-error.class";
 import {CollectionOptionsInterface} from "../collection-options.interface";
 import {CollectionPaginator} from "../collection-paginator.class";
+import {ReplaySubject} from "rxjs";
 
 /**
  * Base external interface
@@ -16,6 +17,7 @@ import {CollectionPaginator} from "../collection-paginator.class";
 export abstract class ExternalInterface {
 
     authenticated:Observable<EntityDataSet>;
+    public unexpectedLogoutSubject: ReplaySubject<null> = new ReplaySubject<null>();
 
     /**
      * if true, the save method will only send the modified properties to the service
