@@ -200,6 +200,10 @@ export class Http extends ExternalInterface {
                     url += ",";
                 }
             });
+
+            if ((filtersLength > 0) || (options.page) || (options.range) || (options.offset)){
+                url += "&";
+            }
         }
 
         if (filtersLength > 0) {
