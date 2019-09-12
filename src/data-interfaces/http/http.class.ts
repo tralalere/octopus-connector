@@ -200,13 +200,15 @@ export class Http extends ExternalInterface {
                     url += ",";
                 }
             });
-            if (started) {
-                url += '&';
-            }
         }
 
         if (filtersLength > 0) {
-            started = true;
+            if (started) {
+                url += '&';
+            }
+            else {
+                started = true;
+            }
 
             let keys: string[] = Object.keys(options.filter);
 
