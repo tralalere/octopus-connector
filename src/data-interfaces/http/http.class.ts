@@ -203,7 +203,12 @@ export class Http extends ExternalInterface {
         }
 
         if (filtersLength > 0) {
-            started = true;
+            if (started) {
+                url += '&';
+            }
+            else {
+                started = true;
+            }
 
             let keys: string[] = Object.keys(options.filter);
 
