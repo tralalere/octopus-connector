@@ -286,11 +286,12 @@ export class DataConnector {
      * Get the observable associated to the collection from the store
      * @param {string} type Endpoint name
      * @param {FilterData} filter Filter object
+     * @param useCache
      * @returns {Observable<DataCollection>} The observable associated to the collection
      */
-    private getCollectionObservableInStore(type:string, filter:FilterData):Observable<DataCollection> {
+    private getCollectionObservableInStore(type:string, filter:FilterData, useCache = false):Observable<DataCollection> {
         if (this.collectionsLiveStore[type]) {
-            return this.collectionsLiveStore[type].getCollectionSubject(filter);
+            return this.collectionsLiveStore[type].getCollectionSubject(filter, useCache);
         }
 
         return null;
@@ -429,15 +430,16 @@ export class DataConnector {
      * Get observable associated to the collection from the store. If store is undefined, create it
      * @param {string} type Endpoint name
      * @param {FilterData} filter Filter object
+     * @param useCache
      * @returns {Observable<DataCollection>} Observable associated to the collection
      */
-    private getCollectionObservable(type:string, filter:FilterData):Subject<DataCollection> {
+    private getCollectionObservable(type:string, filter:FilterData, useCache = false):Subject<DataCollection> {
 
         if (!this.collectionsLiveStore[type]) {
             this.collectionsLiveStore[type] = new CollectionStore();
         }
 
-        return this.collectionsLiveStore[type].getCollectionSubject(filter);
+        return this.collectionsLiveStore[type].getCollectionSubject(filter, useCache);
     }
 
     /**
@@ -810,9 +812,10 @@ export class DataConnector {
      * @returns {Observable<DataCollection>} Observable associated to this collection
      */
     loadCollection(type:string, filter:FilterData = {}):Observable<DataCollection> {
+        const useCache = this.useCache(type);
 
-        if (this.useCache(type)) {
-            let obs:Observable<DataCollection> = this.getCollectionObservableInStore(type, filter);
+        if (useCache) {
+            let obs:Observable<DataCollection> = this.getCollectionObservableInStore(type, filter, useCache);
 
             if (obs) {
                 return obs;
@@ -827,7 +830,7 @@ export class DataConnector {
         let embeddings: {[key: string]: string} = this.getEmbeddings(type);
 
         if (selectedInterface) {
-            let collectionSubject:Subject<DataCollection> = this.getCollectionObservable(type, filter);
+            let collectionSubject:Subject<DataCollection> = this.getCollectionObservable(type, filter, useCache);
             let collection:CollectionDataSet|Observable<CollectionDataSet>;
 
             let checkResponse:Function = () => {
