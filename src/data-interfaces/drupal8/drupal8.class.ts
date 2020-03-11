@@ -297,7 +297,7 @@ export class Drupal8 extends ExternalInterface {
             }
         };
 
-        let data: Object = {
+        let data: any = {
             grant_type: "password",
             client_id: this.configuration.clientId,
             userName: login,
