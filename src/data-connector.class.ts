@@ -714,7 +714,6 @@ export class DataConnector {
 
     paginatedLoadCollection(type: string, options: CollectionOptionsInterface): PaginatedCollection {
         let paginator: CollectionPaginator = new CollectionPaginator(this, type, options, options.filter);
-        console.log("options3", options);
         return this.paginatedLoadCollectionExec(type, options.filter || {}, paginator);
     }
 
@@ -911,8 +910,6 @@ export class DataConnector {
                     refreshData["data"] = dataToSend;
                 }
 
-                console.log("REFRESH NOTIFICATION SENDING", refreshData);
-
                 this.createEntity(this.configuration.liveRefreshService, refreshData, false);
             }
         }
@@ -937,8 +934,6 @@ export class DataConnector {
         } else {
             dataToSave = entity.getClone();
         }
-
-        console.log("dataToSave", dataToSave);
 
         let exclusions:string[] = this.getExclusions(entity.type);
 
@@ -1280,8 +1275,6 @@ export class DataConnector {
     private objectMatchFilter(object: Object, filter: FilterData): boolean {
         let filterKeys:string[] = Object.keys(filter);
 
-        console.log("FILTER", filterKeys, object, filter);
-
         for (let key of filterKeys) {
             if (object[key] !== undefined && filter[key] !== object[key]) {
                 return false;
@@ -1297,14 +1290,10 @@ export class DataConnector {
 
         if (conf && typeof conf === "object" && store) {
             if (conf.refreshEnabled) {
-                console.log("LAAA", store.collections, store.filters, data);
                 for (let key in store.collections) {
                     const filter: FilterData = store.filters[key];
 
-                    console.log("LAAA", filter);
-
                     if (this.objectMatchFilter(data, filter)) {
-                        console.log("COLLCOLL");
                         this.loadCollection(type, filter);
                     }
                 }

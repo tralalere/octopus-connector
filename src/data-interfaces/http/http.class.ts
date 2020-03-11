@@ -170,8 +170,6 @@ export class Http extends ExternalInterface {
         let request:XMLHttpRequest = new XMLHttpRequest();
         let url:string = `${this.apiUrl(type)}${type}`;
 
-        console.log("options", options);
-
         if (options.urlExtension) {
             if (options.urlExtension.charAt(0) !== "/") {
                 url += "/";
@@ -262,7 +260,6 @@ export class Http extends ExternalInterface {
                 if (request.status === 200) {
                     subject.next(this.extractCollection(request.responseText, paginator));
                 } else {
-                    console.log(request);
                     this.sendError(request.status, request.statusText, errorHandler, {
                         response: JSON.parse(request.responseText)
                     });
@@ -313,7 +310,6 @@ export class Http extends ExternalInterface {
                 if (request.status === 200) {
                     subject.next(this.extractCollection(request.responseText));
                 } else {
-                    console.log(request);
                     this.sendError(request.status, request.statusText, errorHandler, {
                         response: JSON.parse(request.responseText)
                     });
@@ -450,7 +446,6 @@ export class Http extends ExternalInterface {
                 if (request.status === 200) {
                     let loginData:Object = JSON.parse(request.responseText);
                     let expire:number = +loginData["expires_in"] - 3600;
-                    console.log(loginData);
                     if(expire < 3600){
                         if(localStorage.getItem(`${this.interfaceName}_accessToken`)){
                             observables.push(this.setToken(loginData["access_token"], errorHandler));
@@ -544,7 +539,6 @@ export class Http extends ExternalInterface {
             if (request.readyState === XMLHttpRequest.DONE) {
                 if (request.status === 200) {
                     let userData:Object = JSON.parse(request.responseText);
-                    console.log(userData);
                     this.setToken(userData["access_token"], errorHandler);
                     this.setExpireDate(+userData["expires_in"] - 3600);
                     this.setRefreshToken(userData["refresh_token"]);
@@ -658,8 +652,6 @@ export class Http extends ExternalInterface {
      */
     protected extractCollection(responseText:string, paginator: CollectionPaginator = null):CollectionDataSet {
         let data:Object = JSON.parse(responseText);
-
-        console.log("coll data", data);
 
         if (paginator) {
             paginator.updateCount(+data["count"]);

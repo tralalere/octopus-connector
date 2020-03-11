@@ -105,7 +105,7 @@ export class Drupal8 extends ExternalInterface {
         let subject:ReplaySubject<EntityDataSet> = new ReplaySubject<EntityDataSet>(1);
 
         this.addHeaders(request);
-        
+
         request.onreadystatechange = () => {
             if (request.readyState === XMLHttpRequest.DONE) {
                 if (request.status === 200) {
@@ -117,7 +117,7 @@ export class Drupal8 extends ExternalInterface {
         };
 
         request.send();
-        
+
         return subject;
     }
 
@@ -180,7 +180,6 @@ export class Drupal8 extends ExternalInterface {
     saveEntity(entity:EntityDataSet, type:string, id:number, errorHandler:Function = null):Observable<EntityDataSet> {
         let request:XMLHttpRequest = new XMLHttpRequest();
         let url:string = `${<string>this.configuration.apiUrl}${type}/${id}`;
-        console.log(url);
         request.open("PATCH", url, true);
 
         this.addHeaders(request);
@@ -346,7 +345,6 @@ export class Drupal8 extends ExternalInterface {
 
                     let loginData:Object = JSON.parse(request.responseText);
                     let expire:number = +loginData["expires_in"] - 3600;
-                    console.log(loginData);
                     if(expire < 3600){
                         if(localStorage.getItem(`${this.interfaceName}_accessToken`)){
                             observables.push(this.setToken(loginData["access_token"], errorHandler));
@@ -499,7 +497,6 @@ export class Drupal8 extends ExternalInterface {
                 if (request.status === 200) {
                     let userData:Object = JSON.parse(request.responseText)["data"][0]["attributes"];
                     userData["id"] = userData["uuid"];
-                    console.log(userData);
                     subject.next(userData);
                     this.setMe(userData, complete);
                 } else {
@@ -541,7 +538,6 @@ export class Drupal8 extends ExternalInterface {
     protected extractEntity(responseText:string):EntityDataSet {
         let data:Object = JSON.parse(responseText)["data"]["attributes"];
         data["id"] = data["uuid"];
-        console.log(data);
         return data;
     }
 
@@ -553,8 +549,6 @@ export class Drupal8 extends ExternalInterface {
     protected extractCollection(responseText:string):CollectionDataSet {
         let data:Object = JSON.parse(responseText);
 
-        console.log("coll data", data);
-
         let collectionData:CollectionDataSet = {};
 
         data["data"].forEach((entityData:EntityDataSet) => {
@@ -562,7 +556,6 @@ export class Drupal8 extends ExternalInterface {
             collectionData[entityData["attributes"]["uuid"]] = entityData["attributes"];
         });
 
-        //console.log("coll data2", collectionData);
         return collectionData;
     }
 }
