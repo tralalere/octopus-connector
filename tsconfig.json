@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "target": "es5",
-    "module": "commonjs",
+    "module": "es2015",
     "moduleResolution": "node",
     "sourceMap": true,
     "emitDecoratorMetadata": true,
@@ -12,7 +12,7 @@
     "typeRoots": [
       "../node_modules/@types"
     ],
-    "lib": ["es2017", "dom"],
+    "lib": ["es2015", "es2017", "dom"],
     "baseUrl": ".",
     "paths": {
       "*": [
@@ -22,5 +22,16 @@
     "rootDirs": [
       "."
     ]
+  },
+  "files": [
+    "index.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "bundles"
+  ],
+  "angularCompilerOptions": {
+    "strictMetadataEmit": true,
+    "skipTemplateCodegen": true
   }
 }
