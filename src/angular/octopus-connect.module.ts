@@ -3,8 +3,6 @@ import {OctopusConnectService} from "./octopus-connect.service";
 import {DataConnectorConfig} from "../..";
 import {ConfigurationProvider} from "./configuration-provider.class";
 
-export {OctopusConnectService} from './octopus-connect.service';
-
 @NgModule({
     providers: [
         OctopusConnectService
