@@ -17,3 +17,5 @@ export * from "./src/data-structures/data-entity.class";
 export * from "./src/data-structures/data-collection.class";
 
 export * from "./src/data-interfaces/abstract-external-interface.class";
+
+export * from "./src/angular/octopus-connect.module";
