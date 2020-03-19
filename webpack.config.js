@@ -18,5 +18,5 @@ module.exports = {
             { test: /\.ts?$/, loader: "ts-loader" }
         ]
     },
-    externals: /(rxjs)/i
+    externals: [/^\@angular\//, /^rxjs\//]
 };

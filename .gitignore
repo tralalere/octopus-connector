@@ -1,2 +1,6 @@
 .idea/
 node_modules/
+*.d.ts
+*.js
+*.js.map
+*.metadata.json
