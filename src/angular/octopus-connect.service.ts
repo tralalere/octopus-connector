@@ -1,6 +1,6 @@
 import {Injectable} from "@angular/core";
 import {ConfigurationProvider} from "./configuration-provider.class";
-import {DataConnector} from "../..";
+import {DataConnector} from "../data-connector.class";
 
 @Injectable()
 export class OctopusConnectService extends DataConnector {
