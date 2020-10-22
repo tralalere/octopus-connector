@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<script src="../node_modules/systemjs/dist/system.js"></script>
+<script src="systemjs.config.js"></script>
+<link rel="stylesheet" href="css/test.css">
+<script>
+    System.import("test1.js");
+</script>
+<div class="count" id="count"></div>
+<div id="displayer1"></div>
+<div id="displayer2"></div>
+<div class="actions">
+    <input type="button" value="Ajout d'une entité 1" id="test-button1">
+    <input type="button" value="Ajout d'une entité 2" id="test-button2">
+    <input type="text" value="1" id="key2">
+</div>
+<div class="actions">
+    <input type="button" value="Ajout d'une entité temp 1" id="test-temp-button1">
+</div>
+<div class="actions">
+    <input type="button" value="Refresh 1" id="refresh-button1">
+    <input type="button" value="Refresh 2" id="refresh-button2">
+</div>
+</body>
+</html>
