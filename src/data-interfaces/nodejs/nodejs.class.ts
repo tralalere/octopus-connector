@@ -1,11 +1,12 @@
+
+import {map} from 'rxjs/operators';
 import {ExternalInterface} from "../abstract-external-interface.class";
 import {DataConnector} from "../../data-connector.class";
 import {NodejsConfiguration} from "./nodejs-configuration.interface";
-import {Observable} from "rxjs/Rx";
+import {Observable, ReplaySubject} from "rxjs";
 import {CollectionDataSet, EntityDataSet, FilterData} from "../../types";
 import * as ObjectHash from "object-hash";
 import * as io from 'socket.io-client';
-import {ReplaySubject} from "rxjs/Rx";
 
 /**
  * Nodejs interface
@@ -150,9 +151,9 @@ export class Nodejs extends ExternalInterface {
 
         return this.loadCollection(type, {
             id: id
-        }).map((data: CollectionDataSet) => {
+        }).pipe(map((data: CollectionDataSet) => {
             return data[0];
-        })
+        }))
     }
 
     saveEntity(data:EntityDataSet, type:string, id:number, errorHandler:Function = null):Observable<EntityDataSet> {

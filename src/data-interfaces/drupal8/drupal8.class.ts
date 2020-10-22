@@ -1,7 +1,10 @@
+
+import {combineLatest as observableCombineLatest, Observable, ReplaySubject} from 'rxjs';
+
+import {map} from 'rxjs/operators';
 import {ExternalInterface} from "../abstract-external-interface.class";
 import {DataConnector} from "../../data-connector.class";
 import {HttpConfiguration} from "../http/http-configuration.interface";
-import {Observable, ReplaySubject} from "rxjs/Rx";
 import {CollectionDataSet, EntityDataSet} from "../../types";
 import {Drupal8Configuration} from "./drupal8-configuration.interface";
 
@@ -361,9 +364,9 @@ export class Drupal8 extends ExternalInterface {
                     this.sendError(request.status, request.statusText, errorHandler);
                 }
 
-                Observable.combineLatest(...observables).map((values:any[]) => {
+                observableCombineLatest(...observables).pipe(map((values:any[]) => {
                     return values[0];
-                }).subscribe((data:EntityDataSet) => {
+                })).subscribe((data:EntityDataSet) => {
                     subject.next(data);
                 });
             }

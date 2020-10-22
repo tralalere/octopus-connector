@@ -1,10 +1,11 @@
+
+import {take} from 'rxjs/operators';
 /**
  * Created by Christophe on 10/10/2017.
  */
 import {DataConnector} from "../data-connector.class";
-import {Observable} from "rxjs/Rx";
+import {Observable, combineLatest} from "rxjs";
 import {EntityDataSet} from "../types";
-import {combineLatest} from 'rxjs/observable/combineLatest';
 
 /**
  * Data entity unit object
@@ -145,7 +146,7 @@ export class DataEntity {
             obs = this.connector.createEntity(this.type, this.attributes);
         }
 
-        obs.take(1).subscribe(() => {
+        obs.pipe(take(1)).subscribe(() => {
             this.generateReferenceObject();
         });
 

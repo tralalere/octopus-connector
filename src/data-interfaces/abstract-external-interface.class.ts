@@ -1,15 +1,13 @@
 /**
  * Created by Christophe on 22/11/2017.
  */
-import {Observable} from "rxjs/Rx";
+import {Observable, BehaviorSubject, Subject} from "rxjs";
 import {DataEntity} from "../data-structures/data-entity.class";
 import {DataCollection} from "../data-structures/data-collection.class";
-import {BehaviorSubject} from "rxjs/BehaviorSubject";
 import {CollectionDataSet, EntityDataSet, FilterData} from "../types";
 import {InterfaceError} from "./interface-error.class";
 import {CollectionOptionsInterface} from "../collection-options.interface";
 import {CollectionPaginator} from "../collection-paginator.class";
-import {Subject} from "rxjs";
 
 /**
  * Base external interface

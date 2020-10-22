@@ -1,7 +1,5 @@
 import {DataEntity} from "../data-structures/data-entity.class";
-import {Observable} from "rxjs/Observable";
-import {BehaviorSubject} from "rxjs/Rx";
-import {ReplaySubject} from "rxjs/Rx";
+import {Observable, BehaviorSubject, ReplaySubject} from "rxjs";
 
 /**
  * Entity store: where the entities and the entities observables are stored for an endpoint

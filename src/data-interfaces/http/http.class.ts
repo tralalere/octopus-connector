@@ -1,10 +1,11 @@
+
+import {map} from 'rxjs/operators';
 import {ExternalInterface} from "../abstract-external-interface.class";
 import {DataConnector} from "../../data-connector.class";
 import {HttpConfiguration} from "./http-configuration.interface";
-import {BehaviorSubject, Observable, ReplaySubject} from "rxjs/Rx";
+import {BehaviorSubject, Observable, ReplaySubject, combineLatest} from "rxjs";
 import {CollectionDataSet, EntityDataSet} from "../../types";
 import {EndpointConfig} from "../../endpoint-config.interface";
-import {combineLatest} from 'rxjs/observable/combineLatest';
 import {CollectionOptionsInterface} from "../../collection-options.interface";
 import {CollectionPaginator} from "../../collection-paginator.class";
 import {OrderDirection} from "../../order-direction.enum";
@@ -464,9 +465,9 @@ export class Http extends ExternalInterface {
                     });
                 }
 
-                combineLatest(...observables).map((values:any[]) => {
+                combineLatest(...observables).pipe(map((values:any[]) => {
                     return values[0];
-                }).subscribe((data:EntityDataSet) => {
+                })).subscribe((data:EntityDataSet) => {
                     subject.next(data);
                 });
             }

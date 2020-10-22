@@ -2,7 +2,7 @@ import {ExternalInterface} from "../abstract-external-interface.class";
 import {CordovaLocalConfiguration} from "./cordova-local-configuration.interface";
 import {DataConnector} from "../../data-connector.class";
 import {CollectionDataSet, EntityDataSet, FilterData} from "../../types";
-import {Observable, ReplaySubject} from "rxjs/Rx";
+import {Observable, ReplaySubject} from "rxjs";
 declare var window: any;
 declare var cordova: any;
 declare var device: any;
