@@ -7,7 +7,7 @@ import {EndpointConfig} from "./endpoint-config.interface";
 import {HttpConfiguration} from "./data-interfaces/http/http-configuration.interface";
 import {NodejsConfiguration} from "./data-interfaces/nodejs/nodejs-configuration.interface";
 import {Drupal8Configuration} from "./data-interfaces/drupal8/drupal8-configuration.interface";
-import {Observable} from "rxjs/Observable";
+import {Observable} from "rxjs";
 import {CordovaLocalConfiguration} from "./data-interfaces/cordova-local/cordova-local-configuration.interface";
 
 /**

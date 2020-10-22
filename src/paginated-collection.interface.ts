@@ -1,4 +1,4 @@
-import {Observable} from "rxjs/Rx";
+import {Observable} from "rxjs";
 import {DataCollection} from "./data-structures/data-collection.class";
 import {CollectionPaginator} from "./collection-paginator.class";
 

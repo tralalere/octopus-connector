@@ -1,7 +1,7 @@
 /**
  * Created by Christophe on 12/10/2017.
  */
-import {Observable, BehaviorSubject} from "rxjs/Rx";
+import {Observable, BehaviorSubject} from "rxjs";
 import {LocalStorageConfiguration} from "./local-storage-configuration.interface";
 import {DataConnector} from "../../data-connector.class";
 import {ExternalInterface} from "../abstract-external-interface.class";

@@ -1,9 +1,8 @@
-import {Observable} from "rxjs/Observable";
+import {Observable, ReplaySubject, Subject} from "rxjs";
 import {DataCollection} from "../data-structures/data-collection.class";
 import * as ObjectHash from "object-hash";
 import {DataEntity} from "../data-structures/data-entity.class";
 import {FilterData} from "../types";
-import {ReplaySubject, Subject} from "rxjs";
 
 /**
  * Collection store: where the collections and the collection observables are stored for an endpoint

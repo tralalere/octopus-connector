@@ -4,7 +4,7 @@
 import {DataConnector} from "../data-connector.class";
 import {DataEntity} from "./data-entity.class";
 import {CollectionDataSet, EntityDataSet} from "../types";
-import {Observable} from "rxjs/Observable";
+import {Observable} from "rxjs";
 import {ModelSchema} from "octopus-model";
 
 /**

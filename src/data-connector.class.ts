@@ -1,9 +1,11 @@
+
+import {take, map} from 'rxjs/operators';
 /**
  * Created by Christophe on 10/10/2017.
  */
 import {DataConnectorConfig} from "./data-connector-config.interface";
 import {DataEntity} from "./data-structures/data-entity.class";
-import {Observable} from "rxjs/Rx";
+import {Observable, ReplaySubject, combineLatest, Subject} from "rxjs";
 import {DataCollection} from "./data-structures/data-collection.class";
 import {ExternalInterface} from "./data-interfaces/abstract-external-interface.class";
 import {LocalStorage} from "./data-interfaces/local-storage/local-storage.class";
@@ -12,17 +14,14 @@ import {Http} from "./data-interfaces/http/http.class";
 import {Nodejs} from "./data-interfaces/nodejs/nodejs.class";
 import {CollectionStore} from "./stores/collection-store.class";
 import {EntityStore} from "./stores/entity-store.class";
-import {ReplaySubject} from "rxjs/Rx";
 import {EndpointConfig} from "./endpoint-config.interface";
 import {ModelSchema} from "octopus-model";
 import {InterfaceError} from "./data-interfaces/interface-error.class";
 import {Drupal8} from "./data-interfaces/drupal8/drupal8.class";
-import {combineLatest} from 'rxjs/observable/combineLatest';
 import {CollectionOptionsInterface} from "./collection-options.interface";
 import {PaginatedCollection} from "./paginated-collection.interface";
 import {CollectionPaginator} from "./collection-paginator.class";
 import {CordovaLocal} from "./data-interfaces/cordova-local/cordova-local.class";
-import {Subject} from "rxjs";
 
 
 /**
@@ -507,10 +506,10 @@ export class DataConnector {
             subject.error(error);
         };
 
-        selectedInterface.authenticate(login, password, errorHandler).map((data:EntityDataSet) => {
+        selectedInterface.authenticate(login, password, errorHandler).pipe(map((data:EntityDataSet) => {
             this.sendMessage();
             return new DataEntity("users", data, this, data.id);
-        }).subscribe((entity:DataEntity) => {
+        })).subscribe((entity:DataEntity) => {
             subject.next(entity);
         });
 
@@ -524,9 +523,9 @@ export class DataConnector {
      */
     authenticated(serviceName:string):Observable<DataEntity> {
         let selectedInterface:ExternalInterface = this.interfaces[serviceName];
-        return selectedInterface.authenticated.map((data:EntityDataSet) => {
+        return selectedInterface.authenticated.pipe(map((data:EntityDataSet) => {
             return new DataEntity("users", data, this, data.id);
-        });
+        }));
     }
 
     /**
@@ -1026,8 +1025,8 @@ export class DataConnector {
             entityData = selectedInterface.saveEntity(dataToSave, entity.type, entity.id, errorHandler);
             checkResponse();
         } else if (forceReload) {
-            this.loadEntity(entity.type, entity.id)
-                .take(1)
+            this.loadEntity(entity.type, entity.id).pipe(
+                take(1))
                 .subscribe((newEntity: DataEntity) => {
                     entitySubject.next(newEntity);
                 });
@@ -1241,7 +1240,7 @@ export class DataConnector {
      */
     unregisterEntityTypeAndId(type:string, id:number|string) {
 
-        this.entitiesLiveStore[type].getEntityObservable(id).take(1).subscribe((entity:DataEntity) => {
+        this.entitiesLiveStore[type].getEntityObservable(id).pipe(take(1)).subscribe((entity:DataEntity) => {
             this.unregisterEntity(entity);
         });
     }
