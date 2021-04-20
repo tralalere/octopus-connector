@@ -1,8 +1,9 @@
 {
   "compilerOptions": {
+    "downlevelIteration": true,
     "importHelpers": true,
-    "target": "es5",
-    "module": "es2015",
+    "target": "es2015",
+    "module": "esnext",
     "moduleResolution": "node",
     "sourceMap": true,
     "emitDecoratorMetadata": true,
