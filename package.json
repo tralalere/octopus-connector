@@ -2,6 +2,7 @@
   "name": "octopus-connect",
   "version": "8.0.0",
   "description": "",
+  "main_ivy_ngcc": "__ivy_ngcc__/index.js",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
@@ -22,15 +23,15 @@
   },
   "homepage": "https://github.com/tralalere/octopus-connect#readme",
   "devDependencies": {
-    "@angular/animations": "^8.2.14",
-    "@angular/common": "^8.2.14",
-    "@angular/compiler": "^8.2.14",
-    "@angular/compiler-cli": "^8.2.14",
-    "@angular/core": "^8.2.14",
-    "@angular/platform-browser": "^8.2.14",
-    "@angular/platform-browser-dynamic": "^8.2.14",
-    "@angular/platform-server": "^8.2.14",
-    "@angular/router": "^8.2.14",
+    "@angular/animations": "^9.1.13",
+    "@angular/common": "^9.1.13",
+    "@angular/compiler": "^9.1.13",
+    "@angular/compiler-cli": "^9.1.13",
+    "@angular/core": "^9.1.13",
+    "@angular/platform-browser": "^9.1.13",
+    "@angular/platform-browser-dynamic": "^9.1.13",
+    "@angular/platform-server": "^9.1.13",
+    "@angular/router": "^9.1.13",
     "@types/flake-idgen": "^0.1.30",
     "@types/object-hash": "^1.1.0",
     "@types/uuid": "^3.4.3",
@@ -40,12 +41,12 @@
     "systemjs": "^0.20.19",
     "ts-loader": "^3.5.0",
     "typedoc": "^0.10.0",
-    "typescript": "^3.5.3",
+    "typescript": "~3.8.3",
     "webpack": "^3.11.0"
   },
   "dependencies": {
-    "@angular/cli": "^8.3.29",
-    "@angular/forms": "^8.2.14",
+    "@angular/cli": "^9.1.15",
+    "@angular/forms": "^9.1.13",
     "biguint-format": "^1.0.0",
     "buffer": "^5.1.0",
     "flake-idgen": "^1.1.0",
@@ -55,6 +56,10 @@
     "socket.io-client": "^2.0.4",
     "tslib": "^1.9.0",
     "uuid": "^3.2.1",
-    "zone.js": "~0.9.1"
+    "zone.js": "~0.10.3"
+  },
+  "__processed_by_ivy_ngcc__": {
+    "main": "9.1.13",
+    "typings": "9.1.13"
   }
 }
