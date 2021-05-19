@@ -38,7 +38,7 @@ export class CollectionStore {
      *
      */
     clearEntities(filter: FilterData): void {
-        let hash: string = ObjectHash(filter);
+        const hash: string = ObjectHash(filter);
 
         if (this.collections[hash]) {
             this.collections[hash].entities.length = 0;
@@ -53,7 +53,7 @@ export class CollectionStore {
      */
     registerCollection(collection: DataCollection, filter: FilterData): Observable<DataCollection> {
 
-        let hash: string = ObjectHash(filter);
+        const hash: string = ObjectHash(filter);
         this.filters[hash] = filter;
         this.collections[hash] = collection;
 
@@ -66,7 +66,7 @@ export class CollectionStore {
             this.collectionObservables[hash] = collectionSubject;
         }
 
-        //collectionSubject.next(collection);
+        // collectionSubject.next(collection);
         return collectionSubject;
     }
 
@@ -77,7 +77,7 @@ export class CollectionStore {
      * @param {boolean} refreshCollection If true, the collection observable is refreshed
      */
     registerEntityInCollections(entity: DataEntity, entityObservable: Observable<DataEntity>, refreshCollection: boolean = true) {
-        let collectionKeys: string[] = Object.keys(this.collections);
+        const collectionKeys: string[] = Object.keys(this.collections);
 
         collectionKeys.forEach((key: string) => {
             if (this.entityMatchFilter(entity, this.filters[key])) {
@@ -95,7 +95,7 @@ export class CollectionStore {
      * @param {FilterData} filter Filter object
      */
     refreshCollections(filter: FilterData) {
-        let filterKeys: string[] = Object.keys(this.collectionObservables);
+        const filterKeys: string[] = Object.keys(this.collectionObservables);
 
         filterKeys.forEach((hash: string) => {
             if (this.filterMatching(filter, this.filters[hash])) {
@@ -110,7 +110,7 @@ export class CollectionStore {
      */
     deleteEntityFromCollection(entity: DataEntity) {
 
-        let collectionKeys: string[] = Object.keys(this.collections);
+        const collectionKeys: string[] = Object.keys(this.collections);
 
         collectionKeys.forEach((key: string) => {
             if (this.entityMatchFilter(entity, this.filters[key])) {
@@ -126,7 +126,7 @@ export class CollectionStore {
      */
     unregister(filter: FilterData) {
 
-        let hash: string = ObjectHash(filter);
+        const hash: string = ObjectHash(filter);
 
         if (this.collections[hash]) {
             delete this.collections[hash];
@@ -148,9 +148,9 @@ export class CollectionStore {
      * @returns {boolean} True if the entity matches the filter
      */
     entityMatchFilter(entity: DataEntity, filter: FilterData): boolean {
-        let filterKeys: string[] = Object.keys(filter);
+        const filterKeys: string[] = Object.keys(filter);
 
-        for (let key of filterKeys) {
+        for (const key of filterKeys) {
             if (entity.attributes[key] !== undefined && filter[key] !== entity.attributes[key]) {
                 return false;
             }
@@ -175,13 +175,13 @@ export class CollectionStore {
             return false;
         }
 
-        for (let key of filter1Keys) {
+        for (const key of filter1Keys) {
             if (filter2Keys.indexOf(key) === -1) {
                 return false;
             }
         }
 
-        for (let key of filter1Keys) {
+        for (const key of filter1Keys) {
             if (filter1[key] !== filter2[key]) {
                 return false;
             }
@@ -198,7 +198,7 @@ export class CollectionStore {
      */
     getCollectionSubject(filter: FilterData, useCache = false): Subject<DataCollection> {
 
-        let hash: string = ObjectHash(filter);
+        const hash: string = ObjectHash(filter);
 
         if (this.collectionObservables[hash]) {
             return this.collectionObservables[hash];
@@ -221,7 +221,7 @@ export class CollectionStore {
      * @returns {boolean}
      */
     isInStore(filter: FilterData): boolean {
-        let hash: string = ObjectHash(filter);
+        const hash: string = ObjectHash(filter);
         return !!this.collections[hash];
     }
 }

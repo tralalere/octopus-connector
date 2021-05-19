@@ -4,7 +4,7 @@ import {DataConnector} from '../../data-connector.class';
 import {NodejsConfiguration} from './nodejs-configuration.interface';
 import {Observable, ReplaySubject} from 'rxjs';
 import {CollectionDataSet, EntityDataSet, FilterData} from '../../types';
-import { sha1 as ObjectHash} from 'object-hash';
+import {sha1 as ObjectHash} from 'object-hash';
 import io from 'socket.io-client';
 
 
@@ -21,13 +21,13 @@ export class Nodejs extends ExternalInterface {
     private errorsStore: { [key: number]: Function } = {};
     private collectionsErrorStore: { [key: number]: Function } = {};
 
-    private connected: boolean = true;
+    private connected = true;
 
     private collectionSubjects: { [key: string]: { [key: string]: ReplaySubject<CollectionDataSet> } } = {};
     private dataCollections: { [key: string]: { [key: string]: CollectionDataSet } } = {};
     private collectionFilters: { [key: string]: { [key: string]: FilterData } } = {};
 
-    //private temporaryCollectionsStore:{[key:string]:ReplaySubject<CollectionDataSet>} = {};
+    // private temporaryCollectionsStore:{[key:string]:ReplaySubject<CollectionDataSet>} = {};
 
     /**
      * Create the nodejs interface
@@ -94,25 +94,25 @@ export class Nodejs extends ExternalInterface {
             this.dispatchErrors();
         });
 
-        this.socket.on(this.messagePrefix, (data: Object[]) => {
-            if (data['id'] && data['data']) {
-                data['data']['id'] = data['id'];
+        this.socket.on(this.messagePrefix, (data: any) => {
+            if (data.id && data.data) {
+                data.data.id = data.id;
             }
 
-            if (data['command'] === 'put') {
-                this.connector.registerEntityByData(data['type'], data['id'] || data['data']['id'], data['data']);
+            if (data.command === 'put') {
+                this.connector.registerEntityByData(data.type, data.id || data.data.id, data.data);
 
-                if (data['type'] === this.connector.configuration.liveRefreshService) {
-                    this.connector.refreshCollectionWithData(data['data']['myType'], data['data']);
+                if (data.type === this.connector.configuration.liveRefreshService) {
+                    this.connector.refreshCollectionWithData(data.data.myType, data.data);
                 }
             }
 
-            if (data['command'] === 'update') {
-                this.connector.registerEntityByData(data['type'], data['id'] || data['data']['id'], data['data']);
+            if (data.command === 'update') {
+                this.connector.registerEntityByData(data.type, data.id || data.data.id, data.data);
             }
 
-            if (data['command'] === 'delete') {
-                this.connector.unregisterEntityTypeAndId(data['type'], data['id']);
+            if (data.command === 'delete') {
+                this.connector.unregisterEntityTypeAndId(data.type, data.id);
             }
         });
     }
@@ -122,17 +122,17 @@ export class Nodejs extends ExternalInterface {
      */
     private dispatchErrors() {
         // error managing
-        for (let id in this.errorsStore) {
+        for (const id in this.errorsStore) {
             if (this.errorsStore.hasOwnProperty(id)) {
                 this.sendError(0, '', this.errorsStore[id]);
                 delete this.errorsStore[id];
             }
         }
 
-        for (let id in this.collectionsErrorStore) {
+        for (const id in this.collectionsErrorStore) {
             if (this.collectionsErrorStore.hasOwnProperty(id)) {
                 this.sendError(0, '', this.collectionsErrorStore[id]);
-                //delete this.collectionsErrorStore[id];
+                // delete this.collectionsErrorStore[id];
             }
         }
     }
@@ -150,7 +150,7 @@ export class Nodejs extends ExternalInterface {
         }
 
         return this.loadCollection(type, {
-            id: id
+            id
         }).pipe(map((data: CollectionDataSet) => {
             return data[0];
         }));
@@ -158,21 +158,21 @@ export class Nodejs extends ExternalInterface {
 
     saveEntity(data: EntityDataSet, type: string, id: number, errorHandler: Function = null): Observable<EntityDataSet> {
 
-        let subject: ReplaySubject<EntityDataSet> = new ReplaySubject<EntityDataSet>(1);
+        const subject: ReplaySubject<EntityDataSet> = new ReplaySubject<EntityDataSet>(1);
 
-        let cid: number = Math.floor(Math.random() * Number.MAX_SAFE_INTEGER);
+        const cid: number = Math.floor(Math.random() * Number.MAX_SAFE_INTEGER);
 
         if (!this.connected) {
             this.sendError(0, '', errorHandler);
         } else {
             this.errorsStore[cid] = errorHandler;
 
-            let requestData: Object = {
+            const requestData: Object = {
                 command: 'update',
-                data: data,
-                id: id,
-                type: type,
-                cid: cid
+                data,
+                id,
+                type,
+                cid
             };
 
             this.socket.emit('message', requestData);
@@ -191,10 +191,10 @@ export class Nodejs extends ExternalInterface {
     loadCollection(type: string, filter: { [key: string]: any } = {}, errorHandler: Function = null): Observable<CollectionDataSet> {
 
         // à voir si il y a besoin d'initialiser
-        //this.initializeSocket();
+        // this.initializeSocket();
 
-        let hash: string = ObjectHash(filter);
-        let subject: ReplaySubject<CollectionDataSet> = new ReplaySubject<CollectionDataSet>(1);
+        const hash: string = ObjectHash(filter);
+        const subject: ReplaySubject<CollectionDataSet> = new ReplaySubject<CollectionDataSet>(1);
 
         if (!this.dataCollections[type]) {
             this.dataCollections[type] = {};
@@ -215,18 +215,18 @@ export class Nodejs extends ExternalInterface {
             this.sendError(0, '', errorHandler);
         } else {
 
-            let cid: number = Math.floor(Math.random() * Number.MAX_SAFE_INTEGER);
+            const cid: number = Math.floor(Math.random() * Number.MAX_SAFE_INTEGER);
 
-            let evtName: string = this.retrieveEvent + type;
+            const evtName: string = this.retrieveEvent + type;
 
             this.socket.emit('connexion', type, filter, cid);
 
-            let callback = (data: CollectionDataSet) => {
-                let res: CollectionDataSet = {};
+            const callback = (data: CollectionDataSet) => {
+                const res: CollectionDataSet = {};
 
-                for (let id in data) {
-                    let mid: number = data[id]['data']['id'] || data[id]['id'];
-                    res[mid] = data[id]['data'];
+                for (const id in data) {
+                    const mid: number = data[id].data.id || data[id].id;
+                    res[mid] = data[id].data;
                 }
 
                 this.dataCollections[type][hash] = res;
@@ -254,22 +254,22 @@ export class Nodejs extends ExternalInterface {
      */
     createEntity(type: string, data: EntityDataSet, errorHandler: Function = null): Observable<EntityDataSet> {
 
-        let subject: ReplaySubject<EntityDataSet> = new ReplaySubject<EntityDataSet>(1);
+        const subject: ReplaySubject<EntityDataSet> = new ReplaySubject<EntityDataSet>(1);
 
-        let cid: number = Math.floor(Math.random() * Number.MAX_SAFE_INTEGER);
-        let id: number = Math.floor(Math.random() * Number.MAX_SAFE_INTEGER);
+        const cid: number = Math.floor(Math.random() * Number.MAX_SAFE_INTEGER);
+        const id: number = Math.floor(Math.random() * Number.MAX_SAFE_INTEGER);
 
         this.errorsStore[cid] = errorHandler;
 
         if (!this.connected) {
             this.sendError(0, '', errorHandler);
         } else {
-            let requestData: Object = {
+            const requestData: Object = {
                 command: 'put',
-                data: data,
-                type: type,
-                cid: cid,
-                id: id
+                data,
+                type,
+                cid,
+                id
             };
 
             this.socket.emit('message', requestData);
@@ -287,20 +287,20 @@ export class Nodejs extends ExternalInterface {
      */
     deleteEntity(type: string, id: number, errorHandler: Function = null): Observable<boolean> {
 
-        let subject: ReplaySubject<boolean> = new ReplaySubject<boolean>(1);
+        const subject: ReplaySubject<boolean> = new ReplaySubject<boolean>(1);
 
-        let cid: number = Math.floor(Math.random() * Number.MAX_SAFE_INTEGER);
+        const cid: number = Math.floor(Math.random() * Number.MAX_SAFE_INTEGER);
 
         this.errorsStore[cid] = errorHandler;
 
         if (!this.connected) {
             this.sendError(0, '', errorHandler);
         } else {
-            let requestData: Object = {
+            const requestData: Object = {
                 command: 'delete',
-                id: id,
-                type: type,
-                cid: cid
+                id,
+                type,
+                cid
             };
 
             this.socket.emit('message', requestData);
